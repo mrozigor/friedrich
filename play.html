@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!-- vim:set nowrap: -->
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
+<meta name="theme-color" content="#444">
+<meta charset="utf-8">
+<title>FRIEDRICH</title>
+<link rel="icon" href="favicon/favicon_frederick.png">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/common/client.css">
+<link rel="stylesheet" href="play.css">
+<script defer src="/common/client.js"></script>
+<script defer src="data.js"></script>
+<script defer src="play.js"></script>
+</head>
+<body>
+
+<header>
+	<div id="toolbar">
+		<details>
+			<summary><img src="/images/cog.svg"></summary>
+			<menu>
+				<li><a target="_blank" href="/friedrich/info/FriedrichRules.pdf">Rules</a>
+				<li><a target="_blank" href="/friedrich/info/cards.html">Cards</a>
+			</menu>
+		</details>
+		<button onclick="toggle_pieces()"><img src="/images/earth-africa-europe.svg"></button>
+	</div>
+</header>
+
+<aside>
+	<div id="roles"></div>
+	<div id="log"></div>
+</aside>
+
+<main>
+
+<div id="mapwrap">
+	<div id="map">
+		<div id="spaces"></div>
+		<div id="markers"></div>
+		<div id="pieces"></div>
+	</div>
+</div>
+
+<div id="defend_panel" class="panel hide">
+<div id="defend_header" class="panel_header">Defend</div>
+<div id="defend" class="panel_body">
+</div>
+</div>
+
+<div id="attack_panel" class="panel hide">
+<div id="attack_header" class="panel_header">Attack</div>
+<div id="attack" class="panel_body">
+</div>
+</div>
+
+<div id="hand_prussia_panel" class="panel">
+<div id="hand_prussia_header" class="panel_header">Prussia</div>
+<div id="hand_prussia" class="panel_body">
+</div>
+</div>
+
+<div id="hand_hanover_panel" class="panel">
+<div id="hand_hanover_header" class="panel_header">Hanover</div>
+<div id="hand_hanover" class="panel_body">
+</div>
+</div>
+
+<div id="hand_russia_panel" class="panel">
+<div id="hand_russia_header" class="panel_header">Russia</div>
+<div id="hand_russia" class="panel_body">
+</div>
+</div>
+
+<div id="hand_sweden_panel" class="panel">
+<div id="hand_sweden_header" class="panel_header">Sweden</div>
+<div id="hand_sweden" class="panel_body">
+</div>
+</div>
+
+<div id="hand_austria_panel" class="panel">
+<div id="hand_austria_header" class="panel_header">Austria</div>
+<div id="hand_austria" class="panel_body">
+</div>
+</div>
+
+<div id="hand_imperial_panel" class="panel">
+<div id="hand_imperial_header" class="panel_header">Imperial Army</div>
+<div id="hand_imperial" class="panel_body">
+</div>
+</div>
+
+<div id="hand_france_panel" class="panel">
+<div id="hand_france_header" class="panel_header">France</div>
+<div id="hand_france" class="panel_body">
+</div>
+</div>
+
+<div id="clock_of_fate_panel" class="panel">
+<div id="clock_of_fate_header" class="panel_header">Clock of Fate</div>
+<div id="clock_of_fate" class="panel_body">
+</div>
+</div>
+
+</main>
+
+<footer id="status"></footer>
+
+</body>
