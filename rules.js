@@ -372,6 +372,15 @@ function turn_power_draw() {
 		return 2
 	}
 
+	if (game.scenario === 2 && game.power === P_PRUSSIA) {
+		n = 5
+		if (set_has(game.fate, FC_LORD_BUTE))
+			n -= 1
+		if (set_has(game.fate, FC_POEMS))
+			n -= 1
+		return n
+	}
+
 	switch (game.power) {
 		case P_PRUSSIA:
 			n = 7
@@ -615,6 +624,12 @@ function goto_start_turn() {
 		if (check_victory())
 			return
 
+		// dropped out powers are virtual in 2p scenarios
+		if (game.scenario === 1 || game.scenario === 2) {
+			resume_start_turn()
+			return
+		}
+
 		if (fc === FC_ELISABETH) {
 			game.power = P_PRUSSIA
 			game.active = current_player()
@@ -691,7 +706,54 @@ function check_power_victory(victory, city_list, power) {
 		set_add(victory, power)
 }
 
+function check_victory_list(victory) {
+	if (victory.length > 0) {
+		goto_game_over(
+			victory.map(player_from_power).join(", "),
+			victory.map(p => POWER_NAME[p]).join(" and ") + " won."
+		)
+		return true
+	} else {
+		return false
+	}
+}
+
 function check_victory() {
+	if (game.scenario === 1)
+		return check_victory_the_war_in_the_west()
+	if (game.scenario === 2)
+		return check_victory_the_austrian_theatre()
+	return check_victory_4()
+}
+
+function check_victory_the_war_in_the_west() {
+	if (has_france_dropped_out()) {
+		goto_game_over(R_FREDERICK, "Prussia won.")
+		return true
+	}
+	if (has_conquered_all_of(full_objective[P_FRANCE])) {
+		goto_game_over(R_POMPADOUR, "France won.")
+		return true
+	}
+	return false
+}
+
+function check_victory_the_austrian_theatre() {
+	if (has_russia_dropped_out() && has_sweden_dropped_out() && has_france_dropped_out()) {
+		goto_game_over(R_FREDERICK, "Prussia won.")
+		return true
+	}
+
+	let victory = []
+
+	check_power_victory(victory, full_objective, P_AUSTRIA)
+	check_power_victory(victory, full_objective, P_IMPERIAL)
+	check_power_victory(victory, full_objective, P_PRUSSIA)
+
+	return check_victory_list(victory)
+}
+
+function check_victory_4() {
 	// Prussian victory
 	if (has_russia_dropped_out() && has_sweden_dropped_out() && has_france_dropped_out()) {
 		goto_game_over(R_FREDERICK, "Prussia won.")
@@ -717,15 +779,7 @@ function check_victory() {
 		check_power_victory(victory, full_objective, P_IMPERIAL)
 	}
 
-	if (victory.length > 0) {
-		goto_game_over(
-			victory.map(player_from_power).join(", "),
-			victory.map(p => POWER_NAME[p]).join(" and ") + " won."
-		)
-		return true
-	} else {
-		return false
-	}
+	return check_victory_list(victory)
 }
 
 /* TACTICAL CARDS */
@@ -756,19 +810,14 @@ function next_tactics_deck() {
 
 	// find two largest discard piles
 	let a = find_largest_discard(held)
-	log("Deck " + a + ": " + held[a])
-	if (held[a] === 50) {
-		goto_game_over("Draw", "All cards held.")
+	if (held[a] === 50)
 		return
-	}
 	held[a] = 100
 
 	let b = find_largest_discard(held)
 	log("Deck " + b + ": " + held[b])
-	if (held[b] === 50) {
-		goto_game_over("Draw", "All cards held.")
+	if (held[b] === 50)
 		return
-	}
 
 	log("Shuffled new deck from discards " + (a+1) + " and " + (b+1) + ".")
 
@@ -783,17 +832,25 @@ function next_tactics_deck() {
 function draw_next_tc() {
 	if (game.deck.length === 0)
 		next_tactics_deck()
+	if (game.deck.length === 0)
+		return -1
 	return game.deck.pop()
 }
 
 function goto_tactical_cards() {
 	let n = turn_power_draw()
 
-	log("Draw " + n + " TC.")
-
 	game.draw = []
-	for (let i = 0; i < n; ++i)
-		set_add(game.draw, draw_next_tc())
+	for (let i = 0; i < n; ++i) {
+		let c = draw_next_tc()
+		if (c >= 0)
+			set_add(game.draw, c)
+	}
+
+	if (game.draw.length < n)
+		log("Drew " + game.draw.length + " / " + n + " TC.")
+	else
+		log("Drew " + n + " TC.")
 
 	game.state = "tactical_cards"
 }
