@@ -795,8 +795,12 @@ function next_tactics_deck() {
 	let held = [ 0, 0, 0, 0 ]
 
 	// count cards in hands
-	for (let pow of all_powers)
+	for (let pow of all_powers) {
 		for (let c of game.hand[pow])
+			held[to_deck(c)]++
+	}
+	if (game.draw)
+		for (let c of game.draw)
 			held[to_deck(c)]++
 
 	// find next unused deck
@@ -807,6 +811,8 @@ function next_tactics_deck() {
 			return
 		}
 	}
+
+	log("Discards " + held.map(x=>50-x).join(", "))
 
 	// find two largest discard piles
 	let a = find_largest_discard(held)
@@ -866,7 +872,7 @@ function should_power_discard_tc() {
 states.tactical_cards = {
 	prompt() {
 		view.draw = game.draw
-		if (should_power_discard_tc()) {
+		if (should_power_discard_tc() && game.draw.length > 0) {
 			prompt("Drew " + game.draw.length + " TCs. Discard one of them.")
 			for (let c of game.draw)
 				gen_action_card(c)
@@ -2279,6 +2285,8 @@ function make_tactics_deck(n) {
 
 function make_tactics_discard(n) {
 	return make_tactics_deck(n).filter(c => {
+		if (game.draw && set_has(game.draw, c))
+			return false
 		for (let pow of all_powers)
 			if (set_has(game.hand[pow], c))
 				return false
