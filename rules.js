@@ -5,11 +5,21 @@ const R_ELISABETH = "Elisabeth"
 const R_MARIA_THERESA = "Maria Theresa"
 const R_POMPADOUR = "Pompadour"
 
-const ROLE_NAME_4 = [
+const SCENARIO_INDEX = {
+	"4P": 4,
+	"3P": 3,
+	"The War in the West": 1,
+	"The Austrian Theatre": 2,
+}
+
+const ROLE_NAME_1 = [
 	R_FREDERICK,
-	R_ELISABETH,
-	R_MARIA_THERESA,
 	R_POMPADOUR,
+]
+
+const ROLE_NAME_2 = [
+	R_FREDERICK,
+	R_MARIA_THERESA,
 ]
 
 const ROLE_NAME_3 = [
@@ -18,20 +28,25 @@ const ROLE_NAME_3 = [
 	R_MARIA_THERESA,
 ]
 
-exports.roles = function (_scenario, options) {
-	let n = parseInt(options.players) || 4
-	if (n === 3)
-		return ROLE_NAME_3
-	else
-		return ROLE_NAME_4
+const ROLE_NAME_4 = [
+	R_FREDERICK,
+	R_ELISABETH,
+	R_MARIA_THERESA,
+	R_POMPADOUR,
+]
+
+exports.roles = function (scenario, _options) {
+	let n = SCENARIO_INDEX[scenario]
+	switch (n) {
+		case 1: return ROLE_NAME_1
+		case 2: return ROLE_NAME_2
+		case 3: return ROLE_NAME_3
+		case 4: return ROLE_NAME_4
+	}
+	return [ "Nobody" ]
 }
 
-exports.scenarios = [
-	"Standard",
-//	"Expert",
-//	"2P The War in the West",
-//	"2P The Austrian Theatre",
-]
+exports.scenarios = Object.keys(SCENARIO_INDEX)
 
 /* DATA */
 
@@ -94,6 +109,8 @@ const REMOVED = ELIMINATED + 1
 const max_power_troops_4 = [ 32, 12, 16, 4, 30, 6, 20 ]
 
 function max_power_troops(pow) {
+	if (game.scenario === 1 && pow === P_PRUSSIA)
+		return 3
 	return max_power_troops_4[pow]
 }
 
@@ -143,6 +160,7 @@ const all_power_generals = [
 ]
 
 const GEN_FRIEDRICH = 0
+const GEN_SEYDLITZ = 5
 const GEN_CUMBERLAND = 9
 
 const all_power_generals_rev = all_power_generals.map(list => list.slice().reverse())
@@ -347,6 +365,11 @@ function is_protected_from_reconquest(s) {
 
 function turn_power_draw(pow) {
 	let n = 0
+
+	if (game.scenario === 1 && pow === P_PRUSSIA) {
+		n = 2
+	}
+
 	switch (pow) {
 		case P_PRUSSIA:
 			n = 7
@@ -384,6 +407,10 @@ function turn_power_draw(pow) {
 }
 
 function has_power_dropped_out(pow) {
+	if (game.scenario === 1)
+		return pow !== P_PRUSSIA && pow !== P_HANOVER && pow !== P_FRANCE
+	if (game.scenario === 2)
+		return pow !== P_PRUSSIA && pow !== P_HANOVER && pow !== P_AUSTRIA && pow !== P_IMPERIAL
 	switch (pow) {
 		case P_RUSSIA: return has_russia_dropped_out()
 		case P_SWEDEN: return has_sweden_dropped_out()
@@ -420,6 +447,10 @@ function has_removed_all_pieces(pow) {
 
 function player_from_power(pow) {
 	let role = null
+
+	if (game.scenario === 2 && pow === P_IMPERIAL)
+		return R_MARIA_THERESA
+
 	switch (pow) {
 		case P_PRUSSIA:
 		case P_HANOVER:
@@ -444,6 +475,7 @@ function player_from_power(pow) {
 			role = R_POMPADOUR
 			break
 	}
+
 	if (game.scenario === 3 && role === R_POMPADOUR)
 		role = R_ELISABETH
 	return role
@@ -634,6 +666,12 @@ function end_action_stage() {
 }
 
 function goto_end_of_turn() {
+	if (game.scenario === 1 || game.scenario === 2) {
+		log("Imaginary player draws 5 TC.")
+		for (let i = 0; i < 5; ++i)
+			draw_next_tc()
+	}
+
 	goto_start_turn()
 }
 
@@ -2181,7 +2219,7 @@ exports.setup = function (seed, scenario, options) {
 		count: 0,
 	}
 
-	game.scenario = parseInt(options.players) || 4
+	game.scenario = SCENARIO_INDEX[scenario]
 
 	if (options.seeded)
 		game.clock = make_seeded_fate_deck()
@@ -2193,6 +2231,12 @@ exports.setup = function (seed, scenario, options) {
 	shuffle_bigint(game.deck)
 
 	log("# " + scenario)
+
+	if (game.scenario === 1)
+		setup_the_war_in_the_west()
+
+	if (game.scenario === 2)
+		setup_the_austrian_theatre()
 
 	return game
 }
@@ -2207,6 +2251,24 @@ function remove_power_from_play(pow) {
 	for (let s of full_objective[pow])
 		set_delete(game.conquest, s)
 	game.hand[pow] = []
+}
+
+function setup_the_war_in_the_west() {
+	remove_power_from_play(P_RUSSIA)
+	remove_power_from_play(P_SWEDEN)
+	remove_power_from_play(P_AUSTRIA)
+	remove_power_from_play(P_IMPERIAL)
+
+	remove_power_from_play(P_PRUSSIA)
+	game.pos[GEN_SEYDLITZ] = find_city("Brandenburg")
+	game.troops[GEN_SEYDLITZ] = 3
+	game.pos[24] = find_city("Jüterbog")
+}
+
+function setup_the_austrian_theatre() {
+	remove_power_from_play(P_RUSSIA)
+	remove_power_from_play(P_SWEDEN)
+	remove_power_from_play(P_FRANCE)
 }
 
 states.setup = {
