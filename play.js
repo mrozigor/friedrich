@@ -22,9 +22,9 @@ const last_city = cities.name.length - 1
 const ELIMINATED = data.cities.name.length
 const REMOVED = ELIMINATED + 1
 const ELIMINATED_TRAIN_X = 1065
-const ELIMINATED_TRAIN_Y = 200
+const ELIMINATED_TRAIN_Y = 210
 const ELIMINATED_GENERAL_X = 1040
-const ELIMINATED_GENERAL_Y = 150
+const ELIMINATED_GENERAL_Y = 160
 const ELIMINATED_GENERAL_DX = 50
 
 const all_objectives = []
