@@ -375,7 +375,11 @@ TWOD.piece.cylinder {
 
 .card.action {
 	box-shadow: 0 0 0 4px white;
+}
+
+.card.action:hover {
 	margin-top: -10px;
+	margin-bottom: 10px;
 }
 
 /*

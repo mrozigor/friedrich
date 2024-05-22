@@ -204,12 +204,12 @@ function make_tc_deck(n) {
 	for (let suit = 0; suit <= 3; ++suit) {
 		for (let value = 2; value <= 13; ++value) {
 			let c = (n << 7) | (suit << 4) | value
-			ui.tc[c] = create_piece("card", c, "card tc " + suit_class[suit] + value)
+			ui.tc[c] = create_piece("card", c, "card tc deck_" + (n+1) + " " + suit_class[suit] + value)
 		}
 	}
 	for (let value = 2; value <= 3; ++value) {
 		let c = (n << 7) | (4 << 4) | value
-		ui.tc[c] = create_piece("card", c, "card tc R")
+		ui.tc[c] = create_piece("card", c, "card tc deck_" + (n+1) + " R")
 	}
 }
 

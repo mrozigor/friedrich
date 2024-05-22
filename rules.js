@@ -864,7 +864,10 @@ function goto_tactical_cards() {
 	else
 		log("Drew " + n + " TC.")
 
-	game.state = "tactical_cards"
+	if (should_power_discard_tc() && game.draw.length > 0)
+		game.state = "tactical_cards_discard"
+	else
+		game.state = "tactical_cards_show"
 }
 
 function should_power_discard_tc() {
@@ -875,23 +878,37 @@ function should_power_discard_tc() {
 	return false
 }
 
-states.tactical_cards = {
+states.tactical_cards_discard = {
 	prompt() {
 		view.draw = game.draw
-		if (should_power_discard_tc() && game.draw.length > 0) {
-			prompt("Drew " + game.draw.length + " TCs. Discard one of them.")
-			for (let c of game.draw)
-				gen_action_card(c)
-		} else {
-			prompt("Drew " + game.draw.length + " TCs.")
-			view.actions.end_cards = 1
-		}
+		prompt("Drew " + game.draw.length + " TCs. Discard one of them.")
+		for (let c of game.draw)
+			gen_action_card(c)
 	},
 	card(c) {
 		push_undo()
 		log("Discarded 1 TC.")
 		set_delete(game.draw, c)
+		game.state = "tactical_cards_discard_done"
+	},
+}
+
+states.tactical_cards_discard_done = {
+	prompt() {
+		view.draw = game.draw
+		prompt("Drew " + (game.draw.length+1) + " TCs. Discard one of them.")
+		view.actions.end_cards = 1
+	},
+	end_cards() {
 		end_tactical_cards()
+	},
+}
+
+states.tactical_cards_show = {
+	prompt() {
+		view.draw = game.draw
+		prompt("Drew " + game.draw.length + " TCs.")
+		view.actions.end_cards = 1
 	},
 	end_cards() {
 		end_tactical_cards()
