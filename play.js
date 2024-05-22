@@ -1,5 +1,7 @@
 "use strict"
 
+// TODO: sort selected generals above deselected generals when detaching?
+
 function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
 }
@@ -121,6 +123,15 @@ const ui = {
 	markers_element: document.getElementById("markers"),
 	clock_of_fate: document.getElementById("clock_of_fate"),
 	power_panel_list: document.getElementById("power_panel_list"),
+	power_panel: [
+		document.getElementById("hand_prussia_panel"),
+		document.getElementById("hand_hanover_panel"),
+		document.getElementById("hand_russia_panel"),
+		document.getElementById("hand_sweden_panel"),
+		document.getElementById("hand_austria_panel"),
+		document.getElementById("hand_imperial_panel"),
+		document.getElementById("hand_france_panel"),
+	],
 	hand: [
 		document.getElementById("hand_prussia"),
 		document.getElementById("hand_hanover"),
@@ -219,6 +230,16 @@ function make_fate_card(fc) {
 	else
 		e.className = "card fate c" + fc
 	return e
+}
+
+function has_removed_all_pieces(pow) {
+	for (let p of all_power_generals[pow])
+		if (view.pos[p] !== REMOVED)
+			return false
+	for (let p of all_power_trains[pow])
+		if (view.pos[p] !== REMOVED)
+			return false
+	return true
 }
 
 function on_init() {
@@ -376,6 +397,47 @@ function on_init() {
 		ui.spaces_element.appendChild(e)
 	}
 
+	ui.power_panel_list.replaceChildren()
+	switch (params.role) {
+	default:
+	case "Friedrich":
+		ui.power_panel_list.appendChild(ui.power_panel[P_PRUSSIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_HANOVER])
+		ui.power_panel_list.appendChild(ui.power_panel[P_RUSSIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_SWEDEN])
+		ui.power_panel_list.appendChild(ui.power_panel[P_AUSTRIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_IMPERIAL])
+		ui.power_panel_list.appendChild(ui.power_panel[P_FRANCE])
+		break
+	case "Elisabeth":
+		ui.power_panel_list.appendChild(ui.power_panel[P_RUSSIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_SWEDEN])
+		ui.power_panel_list.appendChild(ui.power_panel[P_AUSTRIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_IMPERIAL])
+		ui.power_panel_list.appendChild(ui.power_panel[P_FRANCE])
+		ui.power_panel_list.appendChild(ui.power_panel[P_PRUSSIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_HANOVER])
+		break
+	case "Maria Theresa":
+		ui.power_panel_list.appendChild(ui.power_panel[P_AUSTRIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_IMPERIAL])
+		ui.power_panel_list.appendChild(ui.power_panel[P_FRANCE])
+		ui.power_panel_list.appendChild(ui.power_panel[P_PRUSSIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_HANOVER])
+		ui.power_panel_list.appendChild(ui.power_panel[P_RUSSIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_SWEDEN])
+		break
+	case "Pompadour":
+		ui.power_panel_list.appendChild(ui.power_panel[P_FRANCE])
+		ui.power_panel_list.appendChild(ui.power_panel[P_PRUSSIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_HANOVER])
+		ui.power_panel_list.appendChild(ui.power_panel[P_RUSSIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_SWEDEN])
+		ui.power_panel_list.appendChild(ui.power_panel[P_AUSTRIA])
+		ui.power_panel_list.appendChild(ui.power_panel[P_IMPERIAL])
+		break
+	}
+
 	update_favicon()
 }
 
@@ -383,9 +445,13 @@ function on_init() {
 
 function layout_general_offset(g, s) {
 	let n = 0
-	for (let i = g+1; i < 24; ++i)
-		if (view.pos[i] === s)
+	for (let i = g+1; i < 24; ++i) {
+		if (view.pos[i] === s) {
 			++n
+			if (is_action("piece", i))
+				++n
+		}
+	}
 	return n
 }
 
@@ -522,6 +588,12 @@ function update_favicon() {
 	}
 }
 
+function cmp_tc(a, b) {
+	let ax = (to_suit(a) << 7) + (to_value(a) << 3) + to_deck(a)
+	let bx = (to_suit(b) << 7) + (to_value(b) << 3) + to_deck(b)
+	return ax - bx
+}
+
 function on_update() {
 	ui.header.classList.toggle("prussia", view.power === P_PRUSSIA)
 	ui.header.classList.toggle("hanover", view.power === P_HANOVER)
@@ -542,7 +614,10 @@ function on_update() {
 		ui.turns[i].classList.toggle("hide", (typeof view.fate === "object") || (i + 1 < view.fate))
 
 	for (let pow = 0; pow < 7; ++pow) {
+		ui.power_panel[pow].classList.toggle("hide", has_removed_all_pieces(pow))
+
 		ui.hand[pow].replaceChildren()
+		view.hand[pow].sort(cmp_tc)
 		for (let c of view.hand[pow]) {
 			if ((c & 15) === 0)
 				ui.hand[pow].appendChild(ui.tc_back[c>>7][back[c>>7]++])
@@ -551,22 +626,12 @@ function on_update() {
 		}
 	}
 
-	if (false) {
-		if (view.draw) {
-			ui.draw_panel.classList.remove("hide")
-			ui.draw.replaceChildren()
-			for (let c of view.draw)
-				ui.draw.appendChild(ui.tc[c])
-		} else {
-			ui.draw_panel.classList.add("hide")
-		}
-	} else {
-		if (view.draw) {
-			if (view.hand[view.power].length > 0)
-				ui.hand[view.power].appendChild(ui.tcbreak)
-			for (let c of view.draw)
-				ui.hand[view.power].appendChild(ui.tc[c])
-		}
+	if (view.draw) {
+		view.draw.sort(cmp_tc)
+		if (view.hand[view.power].length > 0)
+			ui.hand[view.power].appendChild(ui.tcbreak)
+		for (let c of view.draw)
+			ui.hand[view.power].appendChild(ui.tc[c])
 	}
 
 	ui.clock_of_fate.replaceChildren()
@@ -596,7 +661,7 @@ function on_update() {
 	action_button("next", "Next")
 	action_button("done", "Done")
 
-	action_button("end_cards", "End cards")
+	action_button("end_cards", "End card draw")
 	action_button("end_setup", "End setup")
 	action_button("end_recruit", "End recruit")
 	action_button("end_movement", "End movement")

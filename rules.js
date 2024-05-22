@@ -111,6 +111,8 @@ const max_power_troops_4 = [ 32, 12, 16, 4, 30, 6, 20 ]
 function max_power_troops(pow) {
 	if (game.scenario === 1 && pow === P_PRUSSIA)
 		return 3
+	if (game.scenario === 2 && pow === P_PRUSSIA)
+		return 24
 	return max_power_troops_4[pow]
 }
 
@@ -813,6 +815,10 @@ function next_tactics_deck() {
 	}
 
 	log("Discards " + held.map(x=>50-x).join(", "))
+	log("Deck 1: " + make_tactics_discard(0).map(x=>"C"+x).join(" "))
+	log("Deck 2: " + make_tactics_discard(1).map(x=>"C"+x).join(" "))
+	log("Deck 3: " + make_tactics_discard(2).map(x=>"C"+x).join(" "))
+	log("Deck 4: " + make_tactics_discard(3).map(x=>"C"+x).join(" "))
 
 	// find two largest discard piles
 	let a = find_largest_discard(held)
@@ -883,6 +889,7 @@ states.tactical_cards = {
 	},
 	card(c) {
 		push_undo()
+		log("Discarded 1 TC.")
 		set_delete(game.draw, c)
 		end_tactical_cards()
 	},
@@ -2355,6 +2362,8 @@ function remove_power_from_play(pow) {
 		game.pos[p] = REMOVED
 	for (let s of full_objective[pow])
 		set_delete(game.conquest, s)
+	if (game.hand[pow].length > 0)
+		log("Discarded " + game.hand[pow].length + " TCs.")
 	game.hand[pow] = []
 }
 
@@ -2371,9 +2380,14 @@ function setup_the_war_in_the_west() {
 }
 
 function setup_the_austrian_theatre() {
+	remove_power_from_play(P_HANOVER)
 	remove_power_from_play(P_RUSSIA)
 	remove_power_from_play(P_SWEDEN)
 	remove_power_from_play(P_FRANCE)
+
+	game.pos[5] = REMOVED
+	game.pos[6] = REMOVED
+	game.pos[7] = REMOVED
 }
 
 states.setup = {
@@ -2382,8 +2396,10 @@ states.setup = {
 		let done = true
 		for (let p of all_power_generals[game.power]) {
 			if (game.pos[p] < ELIMINATED && game.troops[p] === 0) {
-				gen_action_piece(p)
-				done = false
+				if (is_supreme_commander(p)) {
+					gen_action_piece(p)
+					done = false
+				}
 			}
 		}
 		if (done)
