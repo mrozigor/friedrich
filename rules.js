@@ -91,7 +91,11 @@ const FC_AMERICA = 18
 const ELIMINATED = data.cities.name.length
 const REMOVED = ELIMINATED + 1
 
-const max_power_troops = [ 32, 12, 16, 4, 30, 6, 20 ]
+const max_power_troops_4 = [ 32, 12, 16, 4, 30, 6, 20 ]
+
+function max_power_troops(pow) {
+	return max_power_troops_4[pow]
+}
 
 const all_powers = [ 0, 1, 2, 3, 4, 5, 6 ]
 
@@ -508,7 +512,7 @@ function count_used_troops() {
 function count_unused_generals() {
 	let n = 0
 	for (let p of all_power_generals[game.power])
-		if (game.troops[p] === 0)
+		if (game.pos[p] !== REMOVED && game.troops[p] === 0)
 			++n
 	return n
 }
@@ -578,7 +582,6 @@ function goto_start_turn() {
 			return
 
 		if (fc === FC_ELISABETH) {
-			game.hand[P_RUSSIA] = []
 			game.power = P_PRUSSIA
 			game.active = current_player()
 			game.state = "russia_quits_the_game_1"
@@ -586,7 +589,6 @@ function goto_start_turn() {
 		}
 
 		if (fc === FC_SWEDEN) {
-			game.hand[P_SWEDEN] = []
 			game.power = P_PRUSSIA
 			game.active = current_player()
 			game.state = "sweden_quits_the_game_1"
@@ -594,7 +596,6 @@ function goto_start_turn() {
 		}
 
 		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))) {
-			game.hand[P_FRANCE] = []
 			game.power = P_HANOVER
 			game.active = current_player()
 			game.state = "france_quits_the_game_1"
@@ -645,12 +646,9 @@ function has_conquered_all_of(list) {
 	return true
 }
 
-function check_power_victory(list, power) {
-	if (has_conquered_all_of(list[power])) {
-		goto_game_over(player_from_power(power), POWER_NAME[power] + " won.")
-		return true
-	}
-	return false
+function check_power_victory(victory, city_list, power) {
+	if (has_conquered_all_of(city_list[power]))
+		set_add(victory, power)
 }
 
 function check_victory() {
@@ -660,29 +658,34 @@ function check_victory() {
 		return true
 	}
 
-	// Normal victory conditions
-	if (
-		check_power_victory(full_objective, P_RUSSIA) ||
-		check_power_victory(full_objective, P_SWEDEN) ||
-		check_power_victory(full_objective, P_AUSTRIA) ||
-		check_power_victory(full_objective, P_IMPERIAL) ||
-		check_power_victory(full_objective, P_FRANCE)
-	)
-		return true
+	let victory = []
 
-	// Eased victory conditions
+	check_power_victory(victory, full_objective, P_RUSSIA)
+	check_power_victory(victory, full_objective, P_FRANCE)
+
 	if (has_russia_dropped_out()) {
-		if (check_power_victory(primary_objective, P_SWEDEN))
-			return true
-	}
-	if (has_imperial_army_switched_players()) {
-		if (check_power_victory(primary_objective, P_AUSTRIA))
-			return true
-		if (check_power_victory(primary_objective, P_IMPERIAL))
-			return true
+		check_power_victory(victory, primary_objective, P_SWEDEN)
+	} else {
+		check_power_victory(victory, full_objective, P_SWEDEN)
 	}
 
-	return false
+	if (has_imperial_army_switched_players()) {
+		check_power_victory(victory, primary_objective, P_AUSTRIA)
+		check_power_victory(victory, primary_objective, P_IMPERIAL)
+	} else {
+		check_power_victory(victory, full_objective, P_AUSTRIA)
+		check_power_victory(victory, full_objective, P_IMPERIAL)
+	}
+
+	if (victory.length > 0) {
+		goto_game_over(
+			victory.map(player_from_power).join(", "),
+			victory.map(p => POWER_NAME[p]).join(" and ") + " won."
+		)
+		return true
+	} else {
+		return false
+	}
 }
 
 /* TACTICAL CARDS */
@@ -1169,7 +1172,7 @@ function goto_recruit() {
 	game.count = 0
 
 	// TODO: reveal too much if we skip recruitment phase?
-	if (count_eliminated_trains() === 0 && count_used_troops() === max_power_troops[game.power]) {
+	if (count_eliminated_trains() === 0 && count_used_troops() === max_power_troops(game.power)) {
 		end_recruit()
 		return
 	}
@@ -1200,13 +1203,13 @@ states.recruit = {
 		let cost = troop_cost()
 		let buy_amount = (game.count / cost) | 0
 		let n_troops = count_used_troops()
-		let av_troops = max_power_troops[game.power] - n_troops
+		let av_troops = max_power_troops(game.power) - n_troops
 		let av_trains = count_eliminated_trains()
 
 		if (av_trains === 0 && av_troops === 0)
-			prompt(`Nothing to recruit. ${n_troops}/${max_power_troops[game.power]} troops.`)
+			prompt(`Nothing to recruit. ${n_troops}/${max_power_troops(game.power)} troops.`)
 		else
-			prompt(`Recruit supply trains and/or troops. ${n_troops}/${max_power_troops[game.power]} troops. ${game.count} points.`)
+			prompt(`Recruit supply trains and/or troops. ${n_troops}/${max_power_troops(game.power)} troops. ${game.count} points.`)
 
 		if (buy_amount < av_troops + av_trains) {
 			for (let c of game.hand[game.power])
@@ -1921,6 +1924,7 @@ states.russia_quits_the_game_3 = {
 		view.actions.done = 1
 	},
 	done() {
+		remove_power_from_play(P_RUSSIA)
 		resume_start_turn()
 	},
 }
@@ -1962,6 +1966,7 @@ states.sweden_quits_the_game_3 = {
 		view.actions.done = 1
 	},
 	done() {
+		remove_power_from_play(P_SWEDEN)
 		resume_start_turn()
 	},
 }
@@ -1990,6 +1995,7 @@ states.france_quits_the_game_2 = {
 	},
 	piece(p) {
 		retire_general(p)
+		remove_power_from_play(P_FRANCE)
 		resume_start_turn()
 	},
 }
@@ -2191,12 +2197,24 @@ exports.setup = function (seed, scenario, options) {
 	return game
 }
 
+function remove_power_from_play(pow) {
+	for (let p of all_power_generals[pow]) {
+		game.pos[p] = REMOVED
+		game.troops[p] = 0
+	}
+	for (let p of all_power_trains[pow])
+		game.pos[p] = REMOVED
+	for (let s of full_objective[pow])
+		set_delete(game.conquest, s)
+	game.hand[pow] = []
+}
+
 states.setup = {
 	prompt() {
-		prompt("Setup troops: " + count_used_troops() + " / " + max_power_troops[game.power])
+		prompt("Setup troops: " + count_used_troops() + " / " + max_power_troops(game.power))
 		let done = true
 		for (let p of all_power_generals[game.power]) {
-			if (game.troops[p] === 0) {
+			if (game.pos[p] < ELIMINATED && game.troops[p] === 0) {
 				gen_action_piece(p)
 				done = false
 			}
@@ -2222,7 +2240,7 @@ states.setup_general = {
 
 		let n_selected = game.selected.length
 		let n_other = count_unused_generals() - game.selected.length
-		let n_troops = max_power_troops[game.power] - count_used_troops()
+		let n_troops = max_power_troops(game.power) - count_used_troops()
 
 		// leave at least 1 for each remaining general
 		let take_max = Math.min(8 * n_selected, n_troops - n_other)
