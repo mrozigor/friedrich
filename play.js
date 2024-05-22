@@ -119,6 +119,17 @@ const ui = {
 	spaces_element: document.getElementById("spaces"),
 	pieces_element: document.getElementById("pieces"),
 	markers_element: document.getElementById("markers"),
+	clock_of_fate: document.getElementById("clock_of_fate"),
+	power_panel_list: document.getElementById("power_panel_list"),
+	hand: [
+		document.getElementById("hand_prussia"),
+		document.getElementById("hand_hanover"),
+		document.getElementById("hand_russia"),
+		document.getElementById("hand_sweden"),
+		document.getElementById("hand_austria"),
+		document.getElementById("hand_imperial"),
+		document.getElementById("hand_france"),
+	],
 	cities: [],
 	action_register: [],
 }
@@ -280,16 +291,6 @@ function on_init() {
 	for (let e of ui.turns)
 		ui.pieces_element.appendChild(e)
 
-	ui.hand = [
-		document.getElementById("hand_prussia"),
-		document.getElementById("hand_hanover"),
-		document.getElementById("hand_russia"),
-		document.getElementById("hand_sweden"),
-		document.getElementById("hand_austria"),
-		document.getElementById("hand_imperial"),
-		document.getElementById("hand_france"),
-	]
-
 	ui.tc = []
 	make_tc_deck(0)
 	make_tc_deck(1)
@@ -303,7 +304,8 @@ function on_init() {
 		make_tc_deck_back("deck_4"),
 	]
 
-	ui.clock_of_fate = document.getElementById("clock_of_fate")
+	ui.tcbreak = document.createElement("div")
+	ui.tcbreak.className = "draw-break"
 
 	ui.fate = []
 	for (let fc = 0; fc <= 18; ++fc)
@@ -543,9 +545,27 @@ function on_update() {
 		ui.hand[pow].replaceChildren()
 		for (let c of view.hand[pow]) {
 			if ((c & 15) === 0)
-				ui.hand[pow].append(ui.tc_back[c>>7][back[c>>7]++])
+				ui.hand[pow].appendChild(ui.tc_back[c>>7][back[c>>7]++])
 			else
-				ui.hand[pow].append(ui.tc[c])
+				ui.hand[pow].appendChild(ui.tc[c])
+		}
+	}
+
+	if (false) {
+		if (view.draw) {
+			ui.draw_panel.classList.remove("hide")
+			ui.draw.replaceChildren()
+			for (let c of view.draw)
+				ui.draw.appendChild(ui.tc[c])
+		} else {
+			ui.draw_panel.classList.add("hide")
+		}
+	} else {
+		if (view.draw) {
+			if (view.hand[view.power].length > 0)
+				ui.hand[view.power].appendChild(ui.tcbreak)
+			for (let c of view.draw)
+				ui.hand[view.power].appendChild(ui.tc[c])
 		}
 	}
 
@@ -576,6 +596,7 @@ function on_update() {
 	action_button("next", "Next")
 	action_button("done", "Done")
 
+	action_button("end_cards", "End cards")
 	action_button("end_setup", "End setup")
 	action_button("end_recruit", "End recruit")
 	action_button("end_movement", "End movement")

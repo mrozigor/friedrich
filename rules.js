@@ -363,14 +363,16 @@ function is_protected_from_reconquest(s) {
 
 /* STATE */
 
-function turn_power_draw(pow) {
+function turn_power_draw() {
 	let n = 0
 
-	if (game.scenario === 1 && pow === P_PRUSSIA) {
-		n = 2
+	if (game.scenario === 1 && game.power === P_PRUSSIA) {
+		if (set_has(game.fate, FC_LORD_BUTE) || set_has(game.fate, FC_POEMS))
+			return 1
+		return 2
 	}
 
-	switch (pow) {
+	switch (game.power) {
 		case P_PRUSSIA:
 			n = 7
 			if (set_has(game.fate, FC_LORD_BUTE))
@@ -785,16 +787,54 @@ function draw_next_tc() {
 }
 
 function goto_tactical_cards() {
-	let pow = game.power
-	let n = turn_power_draw(pow)
+	let n = turn_power_draw()
 
 	log("Draw " + n + " TC.")
 
+	game.draw = []
 	for (let i = 0; i < n; ++i)
-		set_add(game.hand[pow], draw_next_tc())
+		set_add(game.draw, draw_next_tc())
+
+	game.state = "tactical_cards"
+}
+
+function should_power_discard_tc() {
+	if (game.power === P_FRANCE)
+		return true
+	if (game.scenario === 1 && game.power === P_PRUSSIA)
+		return true
+	return false
+}
+
+states.tactical_cards = {
+	prompt() {
+		view.draw = game.draw
+		if (should_power_discard_tc()) {
+			prompt("Drew " + game.draw.length + " TCs. Discard one of them.")
+			for (let c of game.draw)
+				gen_action_card(c)
+		} else {
+			prompt("Drew " + game.draw.length + " TCs.")
+			view.actions.end_cards = 1
+		}
+	},
+	card(c) {
+		push_undo()
+		set_delete(game.draw, c)
+		end_tactical_cards()
+	},
+	end_cards() {
+		end_tactical_cards()
+	},
+}
+
+function end_tactical_cards() {
+	for (let c of game.draw)
+		set_add(game.hand[game.power], c)
+	delete game.draw
 
 	// MARIA: supply is before movement
-	
+
 	goto_movement()
 }
 
@@ -2200,7 +2240,7 @@ exports.setup = function (seed, scenario, options) {
 		active: "Frederick",
 		power: P_PRUSSIA,
 
-		turn: 5,
+		turn: 0,
 		step: 0,
 		clock: null,
 		fate: [],

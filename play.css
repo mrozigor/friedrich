@@ -375,12 +375,14 @@ TWOD.piece.cylinder {
 
 .card.action {
 	box-shadow: 0 0 0 4px white;
+	margin-top: -10px;
 }
 
 /*
 .card.tc.reverse + .card.tc.reverse { margin-left: -200px; }
 */
 
+.draw-break { margin-left: 180px; }
 .card.tc { margin-right: -180px; }
 .panel_body { padding-right: calc(18px + 180px); }
 
