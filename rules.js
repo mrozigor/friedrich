@@ -1452,6 +1452,7 @@ states.move_general_NEW = {
 		log("P" + who + " " + path.map(s => "S" + s).join(" > "))
 
 		let stop = false
+		path.shift() // skip start space
 		for (let s of path)
 			stop ||= move_general_to(s)
 
