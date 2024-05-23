@@ -2336,6 +2336,59 @@ function end_supply() {
 
 /* CARDS OF FATE */
 
+/*
+const fate_effect_text = [
+    "No effect.",
+    "Any one Russian on-map general receives a new troop for free (if possible).",
+    "Austria and Russia may exchange one TC with each other.",
+    "Tottleben receives a new troop for free (if possible and if on-map).",
+    "No effect.",
+    "If Fermor starts his move in Küstrin (H6) or in an adjacent city, he may not move next turn.",
+    "Apraxin immediately loses one troop (but not if he has to be taken off-map).",
+    "Next turn, Saltikov may move only 2 cities (3 on main roads).",
+    "No effect.",
+    "Next turn, if Prussia and France fight each other, they may not use TCs with values of 10 or more.",
+    "Next turn, Soubise and Hildburghausen may not attack with the same TC-symbol.",
+    "Next turn, no general may be attacked in the city of Halle (E4) and no supply train may be eliminated in the city of Halle.",
+    "Next turn, the first TC played by France is worth an additional point.",
+    "No effect.",
+    "France may discard any one TC for a new one from the draw deck.",
+    "Next turn, Cumberland may not move into attack position; he may not eliminate a supply train.",
+    "Next turn, Soubise may not move into attack position; he may not eliminate a supply train.",
+    "No effect.",
+    "Next turn, Richelieu may move 2 cities only (3 on main roads).",
+    "If stacked, Chevert may not unstack next turn.",
+    "Austria may move Laudon by one city immediately; Laudon may even unstack.",
+    "Daun receives one new troop (if possible and if on-map).",
+    "No effect.",
+    "Austria may flip any one Prussian general/stack in Austria or Saxony, and in doing so, set him out of supply.",
+    "Next turn, Friedrich may not move into attack position and may not eliminate a supply train.",
+    "No effect.",
+    "Next turn, Friedrich may not receive any new troops.",
+    "If Friedrich is involved in combat next turn, Prussia must reach a positive score with the first TC(s) she plays (if possible).",
+    "Any one Prussian on-map general receives a new troop for free (if possible).",
+    "Next turn, any Prussians who are attacked by Daun may move to any empty adjacent city (before the combat is resolved); by doing so they avoid all combat.",
+    "No effect.",
+    "If Friedrich attacks next turn, his first TC is worth 5 additional points.",
+    "All Russian generals 5 or 6 cities distant from their nearest supply train are immediately out of supply; flip them.",
+    "Next turn, Friedrich may move 4 cities, even as a stack (5 on main roads).",
+    "No effect.",
+    "Prussia may draw randomly one TC from Austria, after first giving one TC of her choice to Austria.",
+    "Next turn, every Prussian general who receives new troops may not move into attack position.",
+    "Any one Prussian general with 2 or more troops loses one troop immediately.",
+    "If Friedrich is attacked next turn, the first TC played by Prussia is worth nothing (0 points).",
+    "No effect.",
+    "Next turn, Prussia may play the 11 of spades (Seydlitz) once at double value.",
+    "Any one Hanoverian on-map general receives a new troop (if possible).",
+    "Next turn, Prinz Heinrich protects objectives up to 4 cities distant.",
+    "No effect.",
+    "Next turn, Daun may move only 2 cities (3 on main roads).",
+    "If Ehrensvärd is 5 or 6 cities distant from his supply train, he is immediately out of supply; flip him.",
+    "If Hildburghausen has lost a battle this turn, Prussia may move him 2 cities westwards (if possible).",
+    "No effect."
+]
+*/
+
 states.russia_quits_the_game_1 = {
 	prompt() {
 		prompt("Russia quits the game. Remove all Russian pieces.")
