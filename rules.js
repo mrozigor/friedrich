@@ -1268,6 +1268,9 @@ states.move_supply_train_NEW = {
 		if (game.move_minor)
 			map_for_each_key(game.move_minor, s => { if (s !== here) gen_action_space(s) })
 
+		view.move_major = game.move_major
+		view.move_minor = game.move_minor
+
 		/*
 		if (game.count < 2 + game.major)
 			for (let next of data.cities.major_roads[here])
@@ -1400,6 +1403,9 @@ states.move_general_NEW = {
 			gen_action_piece(who)
 			view.actions.stop = 1
 		}
+
+		view.move_major = game.move_major
+		view.move_minor = game.move_minor
 
 		if (game.move_major)
 			map_for_each_key(game.move_major, s => { if (s !== here) gen_action_space_or_piece(s) })
@@ -1654,7 +1660,7 @@ states.recruit = {
 			if (av_troops > 0)
 				for (let p of all_power_generals[game.power])
 					if (game.troops[p] < 8)
-						gen_action_piece(p)
+						gen_action_supreme_commander(game.pos[p])
 			if (av_trains > 0)
 				for (let p of all_power_trains[game.power])
 					if (game.pos[p] === ELIMINATED)
@@ -1678,7 +1684,9 @@ states.recruit = {
 			game.selected = [ p ]
 			game.state = "re_enter"
 		} else {
-			game.troops[p]++
+			for (let x of all_power_generals[game.power])
+				if (game.pos[x] === game.pos[p] && game.troops[x] < 8)
+					game.troops[x] ++
 		}
 	},
 	end_recruit() {
@@ -1868,6 +1876,7 @@ function gen_play_card(suit) {
 states.combat_attack = {
 	prompt() {
 		prompt("Attack: " + game.count)
+
 		view.selected = [
 			get_supreme_commander(game.attacker),
 			get_supreme_commander(game.defender)
@@ -1897,6 +1906,7 @@ states.combat_attack = {
 states.combat_defend = {
 	prompt() {
 		prompt("Defend: " + (-game.count))
+
 		view.selected = [
 			get_supreme_commander(game.attacker),
 			get_supreme_commander(game.defender)
@@ -1926,6 +1936,7 @@ states.combat_defend = {
 states.combat_attack_reserve = {
 	prompt() {
 		prompt("Attack: Choose value. " + game.count)
+
 		view.selected = [
 			get_supreme_commander(game.attacker),
 			get_supreme_commander(game.defender)
@@ -1942,6 +1953,7 @@ states.combat_attack_reserve = {
 states.combat_defend_reserve = {
 	prompt() {
 		prompt("Defend: Choose value." + (-game.count))
+
 		view.selected = [
 			get_supreme_commander(game.attacker),
 			get_supreme_commander(game.defender)
@@ -2086,7 +2098,7 @@ function search_retreat_possible_dfs(result, seen, here, range) {
 		if (has_any_piece(next))
 			continue
 		if (range === 1) {
-			set_add(result, next)
+			map_set(result, next, seen.slice())
 		} else {
 			seen.push(next)
 			search_retreat_possible_dfs(result, seen, next, range - 1)
@@ -2113,9 +2125,12 @@ function search_retreat(loser, winner, range) {
 	}
 
 	let result = []
-	for (let s of possible)
-		if (map_get(distance, s, -1) === max)
+	map_for_each(possible, (s, path) => {
+		if (map_get(distance, s, -1) === max) {
 			result.push(s)
+			result.push(path)
+		}
+	})
 	return result
 }
 
@@ -2123,12 +2138,12 @@ states.retreat = {
 	prompt() {
 		prompt("Retreat loser " + Math.abs(game.count))
 		view.selected = game.selected
+		view.retreat = game.retreat
 		if (game.retreat.length === 0) {
 			prompt("Eliminate loser.")
 			gen_action_piece(game.selected[0])
 		} else {
-			for (let to of game.retreat)
-				gen_action_space(to)
+			map_for_each_key(game.retreat, gen_action_space)
 		}
 	},
 	space(to) {
@@ -2794,6 +2809,11 @@ exports.view = function (state, player) {
 		retro: game.retro,
 	}
 
+	if (game.attacker !== undefined && game.defender !== undefined) {
+		view.attacker = game.attacker
+		view.defender = game.defender
+	}
+
 	if (game.state === "game_over") {
 		view.prompt = game.victory
 	} else if (game.active !== player) {
@@ -3136,4 +3156,9 @@ function map_set(map, key, value) {
 function map_for_each_key(map, f) {
 	for (let i = 0; i < map.length; i += 2)
 		f(map[i])
+}
+
+function map_for_each(map, f) {
+	for (let i = 0; i < map.length; i += 2)
+		f(map[i], map[i+1])
 }

@@ -2,6 +2,8 @@
 
 // TODO: sort selected generals above deselected generals when detaching?
 
+const svgNS = "http://www.w3.org/2000/svg"
+
 function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
 }
@@ -118,6 +120,7 @@ function to_value(c) {
 
 const ui = {
 	header: document.querySelector("header"),
+	roads_element: document.getElementById("roads"),
 	spaces_element: document.getElementById("spaces"),
 	pieces_element: document.getElementById("pieces"),
 	markers_element: document.getElementById("markers"),
@@ -142,6 +145,7 @@ const ui = {
 		document.getElementById("hand_france"),
 	],
 	cities: [],
+	roads: [],
 	action_register: [],
 }
 
@@ -153,9 +157,12 @@ function register_action(target, action, id) {
 }
 
 function on_click_action(evt, target) {
-	if (evt.button === 0)
-		if (send_action(target.my_action, target.my_id))
+	if (evt.button === 0) {
+		if (send_action(target.my_action, target.my_id)) {
+			hide_move_path()
 			evt.stopPropagation()
+		}
+	}
 }
 
 function process_actions() {
@@ -169,24 +176,39 @@ function is_action(action, arg) {
 	return !!(view.actions && view.actions[action] && set_has(view.actions[action], arg))
 }
 
-function make_road(type, x, y, dx, dy) {
-	let e = document.createElement("div")
-	e.className = type
-	e.style.left = x + "px"
-	e.style.top = y + "px"
-	let a = Math.atan2(dy, dx)
-	let s = (Math.hypot(dx, dy) - 15) / 20
-	e.style.transform =
-		"rotate(" + a + "rad)" +
-		"scale(" + s + ", 1)"
-	// TODO: rotate to align
-	ui.spaces_element.appendChild(e)
+function make_road(c1, c2, type) {
+	let e = document.createElementNS(svgNS, "line")
+	e.setAttribute("class", type)
+	let x1 = data.cities.x[c1]
+	let y1 = data.cities.y[c1]
+	let x2 = data.cities.x[c2]
+	let y2 = data.cities.y[c2]
+
+	let v = Math.hypot(x2 - x1, y2 - y1)
+	let dx = (x2 - x1) / v
+	let dy = (y2 - y1) / v
+	let r = 18
+	x1 += r * dx
+	y1 += r * dy
+	x2 -= r * dx
+	y2 -= r * dy
+
+	e.setAttribute("x1", x1)
+	e.setAttribute("y1", y1)
+	e.setAttribute("x2", x2)
+	e.setAttribute("y2", y2)
+	e.setAttribute("visibility", "hidden")
+	ui.roads[c1][c2] = e
+	ui.roads[c2][c1] = e
+	ui.roads_element.appendChild(e)
 }
 
 function create_piece(action, id, style) {
 	let e = document.createElement("div")
 	e.className = style
 	register_action(e, action, id)
+	e.onmouseenter = on_focus_piece
+	e.onmouseleave = on_blur_piece
 	return e
 }
 
@@ -281,9 +303,6 @@ function on_init() {
 		create_piece("piece", 34, "piece cube france"),
 	]
 
-	for (let e of ui.pieces)
-		ui.pieces_element.appendChild(e)
-
 	ui.troops = []
 	for (let i = 0; i < 24; ++i)
 		ui.troops[i] = create_marker("hide")
@@ -334,24 +353,18 @@ function on_init() {
 	for (let fc = 0; fc <= 18; ++fc)
 		ui.fate[fc] = make_fate_card(fc)
 
-	if (0) {
+	if (1) {
+		for (let a = 0; a <= last_city; ++a)
+			ui.roads[a] = []
 		for (let a = 0; a <= last_city; ++a) {
 			for (let b of cities.major_roads[a]) {
 				if (a < b) {
-					let dx = cities.x[a] - cities.x[b]
-					let dy = cities.y[a] - cities.y[b]
-					let x = (cities.x[a] + cities.x[b]) / 2
-					let y = (cities.y[a] + cities.y[b]) / 2
-					make_road("major_road", x - 10, y - 3, dx, dy)
+					make_road(a, b, "major_road")
 				}
 			}
 			for (let b of cities.roads[a]) {
 				if (a < b) {
-					let dx = cities.x[a] - cities.x[b]
-					let dy = cities.y[a] - cities.y[b]
-					let x = (cities.x[a] + cities.x[b]) / 2
-					let y = (cities.y[a] + cities.y[b]) / 2
-					make_road("road", x - 10, y - 1, dx, dy)
+					make_road(a, b, "road")
 				}
 			}
 		}
@@ -390,6 +403,9 @@ function on_init() {
 		}
 
 		register_action(e, "space", a)
+
+		e.onmouseenter = on_focus_city
+		e.onmouseleave = on_blur_city
 
 		//e.classList.add("hide")
 		e.style.left = x + "px"
@@ -441,6 +457,119 @@ function on_init() {
 	}
 
 	update_favicon()
+}
+
+/* SHOW PATH FOR MOVES */
+
+function on_focus_city(evt) {
+	document.getElementById("status").textContent = evt.target.my_name
+	if (view) {
+		if (view.move_minor)
+			show_move_path(evt.target.my_id)
+		if (view.retreat)
+			show_retreat_path(evt.target.my_id)
+	}
+}
+
+function on_blur_city() {
+	document.getElementById("status").textContent = ""
+	hide_move_path()
+}
+
+function on_focus_piece(evt) {
+	document.getElementById("status").textContent = evt.target.my_name
+	if (view && view.move_minor)
+		show_move_path(view.pos[evt.target.my_id])
+}
+
+function on_blur_piece() {
+	document.getElementById("status").textContent = ""
+	hide_move_path()
+}
+
+var _move_path = []
+var _battle_road = null
+
+function hide_move_path() {
+	if (_move_path) {
+		for (let i = 1; i < _move_path.length; ++i) {
+			let x = _move_path[i-1]
+			let y = _move_path[i]
+			ui.roads[x][y].setAttribute("visibility", "hidden")
+		}
+		_move_path = null
+	}
+}
+
+function show_move_path(x) {
+	hide_move_path()
+
+	if (map_get(view.move_major, x, -1) >= 0) {
+		_move_path = []
+		while (x >= 0) {
+			_move_path.push(x)
+			x = map_get(view.move_major, x, -1)
+		}
+	}
+
+	else
+
+	if (map_get(view.move_minor, x, -1) >= 0) {
+		_move_path = []
+		while (x >= 0) {
+			_move_path.push(x)
+			x = map_get(view.move_minor, x, -1)
+		}
+	}
+
+	if (_move_path) {
+		for (let i = 1; i < _move_path.length; ++i) {
+			let x = _move_path[i-1]
+			let y = _move_path[i]
+			ui.roads[x][y].setAttribute("visibility", "visible")
+		}
+	}
+}
+
+function show_retreat_path(x) {
+	hide_move_path()
+	_move_path = map_get(view.retreat, x, null)
+	if (_move_path) {
+		_move_path = _move_path.slice()
+		_move_path.push(x)
+		for (let i = 1; i < _move_path.length; ++i) {
+			let x = _move_path[i-1]
+			let y = _move_path[i]
+			ui.roads[x][y].setAttribute("visibility", "visible")
+		}
+	}
+}
+
+function show_battle_path() {
+	_battle_road = ui.roads[view.attacker][view.defender]
+	_battle_road.setAttribute("visibility", "visible")
+}
+
+function hide_battle_path() {
+	if (_battle_road) {
+		_battle_road.setAttribute("visibility", "hidden")
+		_battle_road = null
+	}
+}
+
+function update_path() {
+	hide_move_path()
+	hide_battle_path()
+	if (view.move_major) {
+		ui.roads_element.setAttribute("class", "move")
+	} else if (view.retreat) {
+		ui.roads_element.setAttribute("class", "retreat")
+	} else if (view.attacker !== undefined) {
+		ui.roads_element.setAttribute("class", "battle")
+		show_battle_path()
+	} else {
+		ui.roads_element.setAttribute("class", null)
+	}
 }
 
 /* UPDATE UI */
@@ -609,6 +738,8 @@ function on_update() {
 		layout_general(g, view.pos[g])
 	for (let t = 24; t <= 34; ++t)
 		layout_train(t, view.pos[t])
+
+	update_path()
 
 	let back = [ 0, 0, 0, 0 ]
 
@@ -795,3 +926,18 @@ function set_add_all(set, other) {
 		set_add(set, item)
 }
 
+function map_get(map, key, missing) {
+	let a = 0
+	let b = (map.length >> 1) - 1
+	while (a <= b) {
+		let m = (a + b) >> 1
+		let x = map[m<<1]
+		if (key < x)
+			b = m - 1
+		else if (key > x)
+			a = m + 1
+		else
+			return map[(m<<1)+1]
+	}
+	return missing
+}

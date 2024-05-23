@@ -104,7 +104,6 @@ body {
 	transition-duration: 700ms;
 	transition-timing-function: ease;
 	background-repeat: no-repeat;
-	//background-position: center;
 }
 
 TWOD.piece.cylinder {
@@ -253,9 +252,10 @@ TWOD.piece.cylinder {
 	background-color: #fff4;
 }
 
-/*
-	TODO: only show colors for enemy powers?
-*/
+.space.objective.action {
+	background-color: #fff4;
+}
+
 .space.objective.action.prussia { background-color: #00547880; }
 .space.objective.action.hanover { background-color: #91c9ed80; }
 .space.objective.action.russia { background-color: #147d3680; }
@@ -264,20 +264,15 @@ TWOD.piece.cylinder {
 .space.objective.action.imperial { background-color: #fbe30080; }
 .space.objective.action.france { background-color: #ed1c2380; }
 
-.major_road {
-	position: absolute;
-	box-sizing: border-box;
-	background-color: black;
-	width: 20px;
-	height: 6px;
-}
+@media (pointer: fine) {
 
-.road {
-	position: absolute;
-	box-sizing: border-box;
-	background-color: dimgray;
-	width: 20px;
-	height: 4px;
+.move line { stroke: white; }
+.battle line { stroke: #c00; }
+.retreat line { stroke: #800; opacity: 33%; }
+line { stroke-linecap: round; }
+line.road { stroke-width: 6px; }
+line.major_road { stroke-width: 8px; }
+
 }
 
 .marker.conquest.austria { background-image: url(images/conquest_austria.2x.png) }
@@ -302,8 +297,6 @@ TWOD.piece.cylinder {
 .piece.cube.russia { background-image: url(images/cube_russia.svg) }
 .piece.cube.sweden { background-image: url(images/cube_sweden.svg) }
 
-/* 3D
-*/
 .piece.cylinder.austria_1 { background-image: url(images/cylinder_austria_1.svg) }
 .piece.cylinder.austria_2 { background-image: url(images/cylinder_austria_2.svg) }
 .piece.cylinder.austria_3 { background-image: url(images/cylinder_austria_3.svg) }
@@ -336,33 +329,6 @@ TWOD.piece.cylinder {
 .piece.cylinder.prussia.oos { background-image: url(images/cylinder_prussia_oos.svg) }
 .piece.cylinder.russia.oos { background-image: url(images/cylinder_russia_oos.svg) }
 .piece.cylinder.sweden.oos { background-image: url(images/cylinder_sweden_oos.svg) }
-
-/* 2D
-.piece.cylinder.austria_1 { background-image: url(images/A1.png) }
-.piece.cylinder.austria_2 { background-image: url(images/A2.png) }
-.piece.cylinder.austria_3 { background-image: url(images/A3.png) }
-.piece.cylinder.austria_4 { background-image: url(images/A4.png) }
-.piece.cylinder.austria_5 { background-image: url(images/A5.png) }
-.piece.cylinder.france_1 { background-image: url(images/F1.png) }
-.piece.cylinder.france_2 { background-image: url(images/F2.png) }
-.piece.cylinder.france_3 { background-image: url(images/F3.png) }
-.piece.cylinder.hanover_1 { background-image: url(images/H1.png) }
-.piece.cylinder.hanover_2 { background-image: url(images/H2.png) }
-.piece.cylinder.imperial_1 { background-image: url(images/I1.png) }
-.piece.cylinder.prussia_1 { background-image: url(images/P1.png) }
-.piece.cylinder.prussia_2 { background-image: url(images/P2.png) }
-.piece.cylinder.prussia_3 { background-image: url(images/P3.png) }
-.piece.cylinder.prussia_4 { background-image: url(images/P4.png) }
-.piece.cylinder.prussia_5 { background-image: url(images/P5.png) }
-.piece.cylinder.prussia_6 { background-image: url(images/P6.png) }
-.piece.cylinder.prussia_7 { background-image: url(images/P7.png) }
-.piece.cylinder.prussia_8 { background-image: url(images/P8.png) }
-.piece.cylinder.russia_1 { background-image: url(images/R1.png) }
-.piece.cylinder.russia_2 { background-image: url(images/R2.png) }
-.piece.cylinder.russia_3 { background-image: url(images/R3.png) }
-.piece.cylinder.russia_4 { background-image: url(images/R4.png) }
-.piece.cylinder.sweden_1 { background-image: url(images/S1.png) }
-*/
 
 .card {
 	width: 220px;
