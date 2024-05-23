@@ -423,7 +423,7 @@ function has_power_dropped_out(pow) {
 	if (game.scenario === 1)
 		return pow !== P_PRUSSIA && pow !== P_HANOVER && pow !== P_FRANCE
 	if (game.scenario === 2)
-		return pow !== P_PRUSSIA && pow !== P_HANOVER && pow !== P_AUSTRIA && pow !== P_IMPERIAL
+		return pow !== P_PRUSSIA && pow !== P_AUSTRIA && pow !== P_IMPERIAL
 	switch (pow) {
 		case P_RUSSIA: return has_russia_dropped_out()
 		case P_SWEDEN: return has_sweden_dropped_out()
@@ -871,10 +871,10 @@ function goto_tactical_cards() {
 }
 
 function should_power_discard_tc() {
-	if (game.power === P_FRANCE)
-		return true
+	if (game.power === P_FRANCE && !set_has(FC_AMERICA) && !set_has(FC_INDIA))
+		return true // game.draw.length === 4
 	if (game.scenario === 1 && game.power === P_PRUSSIA)
-		return true
+		return true // game.draw.length === 2
 	return false
 }
 
