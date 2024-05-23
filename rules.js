@@ -787,14 +787,14 @@ function check_victory_4() {
 /* TACTICAL CARDS */
 
 function find_largest_discard(u) {
-	for (let i = 0; i < 4; ++i)
-		if (u[i] <= u[0] && u[i] <= u[1] && u[i] <= u[2] && u[i] <= u[3])
+	for (let i = 0; i < 5; ++i)
+		if (u[i] <= u[0] && u[i] <= u[1] && u[i] <= u[2] && u[i] <= u[3] && u <= u[4])
 			return i
 	throw "IMPOSSIBLE"
 }
 
 function next_tactics_deck() {
-	let held = [ 0, 0, 0, 0 ]
+	let held = [ 0, 0, 0, 0, 0 ]
 
 	// count cards in hands
 	for (let pow of all_powers) {
@@ -806,7 +806,7 @@ function next_tactics_deck() {
 			held[to_deck(c)]++
 
 	// find next unused deck
-	for (let i = 1; i < 4; ++i) {
+	for (let i = 1; i < 5; ++i) {
 		if (held[i] === 0) {
 			game.deck = make_tactics_deck(i)
 			shuffle_bigint(game.deck)
@@ -819,6 +819,7 @@ function next_tactics_deck() {
 	log("Deck 2: " + make_tactics_discard(1).map(x=>"C"+x).join(" "))
 	log("Deck 3: " + make_tactics_discard(2).map(x=>"C"+x).join(" "))
 	log("Deck 4: " + make_tactics_discard(3).map(x=>"C"+x).join(" "))
+	log("Deck 5: " + make_tactics_discard(4).map(x=>"C"+x).join(" "))
 
 	// find two largest discard piles
 	let a = find_largest_discard(held)

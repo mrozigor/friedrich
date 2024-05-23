@@ -317,12 +317,14 @@ function on_init() {
 	make_tc_deck(1)
 	make_tc_deck(2)
 	make_tc_deck(3)
+	make_tc_deck(4)
 
 	ui.tc_back = [
 		make_tc_deck_back("deck_1"),
 		make_tc_deck_back("deck_2"),
 		make_tc_deck_back("deck_3"),
 		make_tc_deck_back("deck_4"),
+		make_tc_deck_back("deck_5"),
 	]
 
 	ui.tcbreak = document.createElement("div")
