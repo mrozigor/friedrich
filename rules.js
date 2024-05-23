@@ -873,9 +873,9 @@ function goto_tactical_cards() {
 
 function should_power_discard_tc() {
 	if (game.power === P_FRANCE && !set_has(FC_AMERICA) && !set_has(FC_INDIA))
-		return true // game.draw.length === 4
+		return game.draw.length === 4
 	if (game.scenario === 1 && game.power === P_PRUSSIA)
-		return true // game.draw.length === 2
+		return game.draw.length === 2
 	return false
 }
 
