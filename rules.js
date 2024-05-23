@@ -2053,7 +2053,7 @@ function goto_retreat() {
 	}
 
 	// remove eliminated generals
-	for (let i = game.selected.length - 1; i >= 0 && hits > 0; --i) {
+	for (let i = game.selected.length - 1; i >= 0; --i) {
 		let p = game.selected[i]
 		if (game.troops[p] === 0) {
 			log("P" + p + " eliminated.")
