@@ -1043,15 +1043,14 @@ states.movement = {
 		game.count = 0
 		game.major = 1
 		if (is_supply_train(p))
-			game.state = "move_supply_train"
+			resume_move_supply_train()
 		else
-			game.state = "move_general"
+			resume_move_general()
 	},
 	end_movement() {
 		push_undo()
 		goto_recruit()
 	},
-
 }
 
 function has_any_piece(to) {
@@ -1063,6 +1062,13 @@ function has_any_piece(to) {
 
 function has_friendly_supply_train(to) {
 	for (let p of all_friendly_trains[game.power])
+		if (game.pos[p] === to)
+			return true
+	return false
+}
+
+function has_enemy_supply_train(to) {
+	for (let p of all_enemy_trains[game.power])
 		if (game.pos[p] === to)
 			return true
 	return false
@@ -1087,12 +1093,27 @@ function has_any_other_general(to) {
 	return false
 }
 
+function has_own_general(to) {
+	for (let p of all_power_generals[game.power])
+		if (game.pos[p] === to)
+			return true
+	return false
+}
+
 function count_pieces(to) {
 	let n = 0
 	for (let s of game.pos)
 		if (s === to)
 			++n
 	return n
+}
+
+function can_move_train_to(to) {
+	return !has_any_piece(to)
+}
+
+function can_continue_train_from(from) {
+	return true
 }
 
 function can_move_general_to(to) {
@@ -1105,7 +1126,207 @@ function can_move_general_to(to) {
 	return true
 }
 
-states.move_supply_train = {
+function can_continue_general_from(from) {
+	if (has_enemy_supply_train(from))
+		return false
+	if (has_own_general(from))
+		return false
+	return true
+}
+
+function search_move(from, range, road_type, can_move_to, can_continue_from) {
+	let seen = [ from, -1 ]
+	let queue = [ from << 4 ]
+	while (queue.length > 0) {
+		let item = queue.shift()
+		let here = item >> 4
+		let dist = (item & 15) + 1
+		for (let next of data.cities[road_type][here]) {
+			if (map_has(seen, next))
+				continue
+			if (!can_move_to(next))
+				continue
+			if (dist <= range) {
+				map_set(seen, next, here)
+				if (can_continue_from(next))
+					queue.push((next << 4) | dist)
+			}
+		}
+	}
+	return seen
+}
+
+function resume_move_supply_train() {
+	if (game.count === 2 + game.major) {
+		game.state = "movement"
+		delete game.move_major
+		delete game.move_minor
+	} else {
+		let here = game.pos[game.selected[0]]
+		game.state = "move_supply_train"
+		if (game.major && game.count < 3)
+			game.move_major = search_move(here, 3 - game.count, "major_roads", can_move_train_to, can_continue_train_from)
+		else
+			game.move_major = []
+		if (game.count < 2)
+			game.move_minor = search_move(here, 2 - game.count, "adjacent", can_move_train_to, can_continue_train_from)
+		else
+			game.move_minor = []
+	}
+}
+
+function resume_move_general() {
+	if (game.count === 3 + game.major) {
+		game.state = "movement"
+		delete game.move_major
+		delete game.move_minor
+	} else {
+		let here = game.pos[game.selected[0]]
+		game.state = "move_general"
+		if (game.major && game.count < 4)
+			game.move_major = search_move(here, 4 - game.count, "major_roads", can_move_general_to, can_continue_general_from)
+		else
+			game.move_major = []
+		if (game.count < 3)
+			game.move_minor = search_move(here, 3 - game.count, "adjacent", can_move_general_to, can_continue_general_from)
+		else
+			game.move_minor = []
+	}
+}
+
+function move_general_to(to) {
+	let pow = game.power
+	let who = game.selected[0]
+	let from = game.pos[who]
+	let stop = false
+
+	for (let p of game.selected) {
+		set_add(game.moved, p)
+		game.pos[p] = to
+	}
+
+	// uniting stacks (turn all oos if one is oos)
+	let oos = false
+	for (let p of all_power_generals[game.power])
+		if (game.pos[p] === to && is_out_of_supply(p))
+			oos = true
+	if (oos)
+		for (let p of all_power_generals[game.power])
+			if (game.pos[p] === to)
+				set_out_of_supply(p)
+
+	// conquer space
+	if (is_conquest_space(pow, from) && !set_has(game.conquest, from)) {
+		if (is_protected_from_conquest(from)) {
+			set_add(game.retro, from)
+		} else {
+			log("Conquered S" + from)
+			set_add(game.conquest, from)
+		}
+	}
+
+	// re-conquer space
+	if (is_reconquest_space(pow, from) && set_has(game.conquest, from)) {
+		if (is_protected_from_reconquest(from)) {
+			set_add(game.retro, from)
+		} else {
+			log("Reconquered S" + from)
+			set_delete(game.conquest, from)
+		}
+	}
+
+	// eliminate supply train
+	for (let p of all_enemy_trains[pow]) {
+		if (game.pos[p] === to) {
+			log("Eliminate P" + p)
+			game.pos[p] = ELIMINATED
+			stop = true
+		}
+	}
+
+	// uniting stacks: flag all as moved and stop moving
+	for (let p of all_power_generals[pow]) {
+		if (game.pos[p] === to && !set_has(game.selected, p)) {
+			set_add(game.moved, p)
+			stop = true
+		}
+	}
+
+	return stop
+}
+
+states.move_supply_train_NEW = {
+	prompt() {
+		prompt("Move supply train.")
+		view.selected = game.selected
+
+		let who = game.selected[0]
+		let here = game.pos[who]
+
+		if (game.move_major)
+			map_for_each_key(game.move_major, s => { if (s !== here) gen_action_space(s) })
+		if (game.move_minor)
+			map_for_each_key(game.move_minor, s => { if (s !== here) gen_action_space(s) })
+
+		/*
+		if (game.count < 2 + game.major)
+			for (let next of data.cities.major_roads[here])
+				if (!has_any_piece(next))
+					gen_action_space(next)
+		if (game.count < 2)
+			for (let next of data.cities.roads[here])
+				if (!has_any_piece(next))
+					gen_action_space(next)
+		*/
+
+		if (game.count > 0) {
+			gen_action_piece(who)
+			view.actions.stop = 1
+		}
+	},
+	piece(_) {
+		this.stop()
+	},
+	stop() {
+		game.state = "movement"
+		delete game.move_major
+		delete game.move_minor
+	},
+	space(to) {
+		let who = game.selected[0]
+		let from = game.pos[who]
+
+		// TODO: path?
+
+		set_add(game.moved, who)
+		game.pos[who] = to
+
+		log("P" + who + " to S" + to)
+
+		let m = map_get(game.move_major, to, 0)
+		if (m > 0) {
+			while (m > 0) {
+				// TODO: reverse
+				log(">S" + m)
+				m = map_get(game.move_major, m)
+				++ game.count
+			}
+		} else {
+			m = map_get(game.move_minor, to, 0)
+			while (m > 0) {
+				// TODO: reverse
+				log(">S" + m)
+				m = map_get(game.move_minor, m)
+				++ game.count
+			}
+			game.major = 0
+		}
+
+		resume_move_supply_train()
+	},
+}
+
+states.move_supply_train_OLD = {
 	prompt() {
 		prompt("Move supply train.")
 		view.selected = game.selected
@@ -1132,6 +1353,8 @@ states.move_supply_train = {
 	},
 	stop() {
 		game.state = "movement"
+		delete game.move_major
+		delete game.move_minor
 	},
 	space(to) {
 		let who = game.selected[0]
@@ -1141,6 +1364,7 @@ states.move_supply_train = {
 
 		if (!set_has(data.cities.major_roads[here], to))
 			game.major = 0
+
 		set_add(game.moved, who)
 		game.pos[who] = to
 
@@ -1149,7 +1373,96 @@ states.move_supply_train = {
 	},
 }
 
-states.move_general = {
+states.move_general_NEW = {
+	prompt() {
+		prompt("Move general.")
+		view.selected = game.selected
+
+		let who = game.selected[0]
+		let here = game.pos[who]
+
+		if (game.count === 0) {
+			if (game.selected.length > 1)
+				view.actions.detach = 1
+			else
+				view.actions.detach = 0
+
+			let s_take = count_stacked_take()
+			let s_give = count_stacked_give()
+			let u_take = count_unstacked_take()
+			let u_give = count_unstacked_give()
+
+			if (s_take > 0 && u_give > 0)
+				view.actions.take = 1
+			if (s_give > 0 && u_take > 0)
+				view.actions.give = 1
+		} else {
+			gen_action_piece(who)
+			view.actions.stop = 1
+		}
+
+		if (game.move_major)
+			map_for_each_key(game.move_major, s => { if (s !== here) gen_action_space_or_piece(s) })
+		if (game.move_minor)
+			map_for_each_key(game.move_minor, s => { if (s !== here) gen_action_space_or_piece(s) })
+	},
+	take() {
+		game.state = "move_take"
+	},
+	give() {
+		game.state = "move_give"
+	},
+	detach() {
+		game.state = "move_detach"
+	},
+	piece(p) {
+		if (p === game.selected[0])
+			this.stop()
+		else
+			this.space(game.pos[p])
+	},
+	stop() {
+		for (let p of game.selected)
+			set_add(game.moved, p)
+		game.state = "movement"
+		delete game.move_major
+		delete game.move_minor
+	},
+	space(to) {
+		let who = game.selected[0]
+		let path = [ to ]
+
+		let m = map_get(game.move_major, to, -1)
+		if (m >= 0) {
+			while (m >= 0) {
+				path.unshift(m)
+				m = map_get(game.move_major, m, -1)
+				++game.count
+			}
+		} else {
+			m = map_get(game.move_minor, to, -1)
+			while (m >= 0) {
+				path.unshift(m)
+				m = map_get(game.move_minor, m, -1)
+				++game.count
+			}
+			game.major = 0
+		}
+
+		log("P" + who + " " + path.map(s => "S" + s).join(" > "))
+
+		let stop = false
+		for (let s of path)
+			stop ||= move_general_to(s)
+
+		if (stop)
+			this.stop()
+		else
+			resume_move_general()
+	},
+}
+
+states.move_general_OLD = {
 	prompt() {
 		prompt("Move general.")
 		view.selected = game.selected
@@ -1206,9 +1519,10 @@ states.move_general = {
 		for (let p of game.selected)
 			set_add(game.moved, p)
 		game.state = "movement"
+		delete game.move_major
+		delete game.move_minor
 	},
 	space(to) {
-		let pow = game.power
 		let who = game.selected[0]
 		let from = game.pos[who]
 
@@ -1217,62 +1531,15 @@ states.move_general = {
 		if (!set_has(data.cities.major_roads[from], to))
 			game.major = 0
 
-		// uniting stacks (flag all as moved)
-		for (let p of game.selected) {
-			set_add(game.moved, p)
-			game.pos[p] = to
-		}
-
-		// uniting stacks (turn all oos if one is oos)
-		let oos = false
-		for (let p of all_power_generals[game.power])
-			if (game.pos[p] === to && is_out_of_supply(p))
-				oos = true
-		if (oos)
-			for (let p of all_power_generals[game.power])
-				if (game.pos[p] === to)
-					set_out_of_supply(p)
-
-		if (is_conquest_space(pow, from) && !set_has(game.conquest, from)) {
-			if (is_protected_from_conquest(from)) {
-				set_add(game.retro, from)
-			} else {
-				log("Conquered S" + from)
-				set_add(game.conquest, from)
-			}
-		}
-
-		if (is_reconquest_space(pow, from) && set_has(game.conquest, from)) {
-			if (is_protected_from_reconquest(from)) {
-				set_add(game.retro, from)
-			} else {
-				log("Reconquered S" + from)
-				set_delete(game.conquest, from)
-			}
-		}
-
-		for (let p of all_enemy_trains[pow]) {
-			if (game.pos[p] === to) {
-				log("Eliminate P" + p)
-				game.pos[p] = ELIMINATED
-				game.state = "movement"
-				return
-			}
-		}
-
-		for (let p of all_power_generals[pow]) {
-			if (game.pos[p] === to && !set_has(game.selected, p)) {
-				set_add(game.moved, p)
-				game.state = "movement"
-				return
-			}
-		}
-
-		if (++game.count === 3 + game.major) {
+		if (move_general_to(to) || ++game.count === 3 + game.major)
 			game.state = "movement"
-		}
 	},
 }
+
+states.move_general = states.move_general_OLD
+states.move_supply_train = states.move_supply_train_OLD
+//states.move_general = states.move_general_NEW
+//states.move_supply_train = states.move_supply_train_NEW
 
 states.move_detach = {
 	prompt() {
@@ -2863,4 +3130,9 @@ function map_set(map, key, value) {
 		}
 	}
 	array_insert_pair(map, a<<1, key, value)
+}
+
+function map_for_each_key(map, f) {
+	for (let i = 0; i < map.length; i += 2)
+		f(map[i])
 }
