@@ -1645,10 +1645,17 @@ states.move_general_OLD = {
 		let here = game.pos[who]
 
 		if (game.count === 0) {
+			/*
 			if (game.selected.length > 1)
 				view.actions.detach = 1
 			else
 				view.actions.detach = 0
+			*/
+
+			// detach
+			if (game.selected.length > 1)
+				for (let p of game.selected)
+					gen_action_piece(p)
 
 			let s_take = count_stacked_take()
 			let s_give = count_stacked_give()
@@ -1684,10 +1691,14 @@ states.move_general_OLD = {
 		game.state = "move_detach"
 	},
 	piece(p) {
-		if (p === game.selected[0])
-			this.stop()
-		else
-			this.space(game.pos[p])
+		if (game.count === 0) {
+			set_delete(game.selected, p)
+		} else {
+			if (p === game.selected[0])
+				this.stop()
+			else
+				this.space(game.pos[p])
+		}
 	},
 	stop() {
 		for (let p of game.selected)
