@@ -530,6 +530,8 @@ function is_space_suit(s, ranges) {
 }
 
 function get_space_suit(s) {
+	if (s >= ELIMINATED)
+		return SPADES
 	if (is_space_suit(s, data.suit.spades))
 		return SPADES
 	if (is_space_suit(s, data.suit.clubs))
@@ -613,14 +615,22 @@ function goto_start_turn() {
 	if (++game.turn <= 5) {
 		log("# Turn " + game.turn)
 	} else {
-		log("# Card of Fate")
-
 		// remove non-stroke of fate card from last turn
 		for (let i = 1; i <= 12; ++i)
 			set_delete(game.fate, i)
 
 		let fc = game.clock.pop()
-		log("F" + fc)
+		let fs = get_space_suit(game.pos[game.vg])
+
+		if (fc > 12) {
+			log("# " + strokes_of_fate_name[fc-13])
+			log("$" + (fc - 13 + 48))
+			game.fx = 0
+		} else {
+			game.fx = (fc - 1) * 4 + fs
+			log("# Card of Fate " + fc + suit_name[fs])
+			log("$" + game.fx)
+		}
 
 		set_add(game.fate, fc)
 
@@ -2007,9 +2017,11 @@ function resolve_combat() {
 		log("Tie.")
 		next_combat()
 	} else if (game.count > 0) {
+		game.vg = get_supreme_commander(game.attacker)
 		game.selected = select_stack(game.defender)
 		goto_retreat()
 	} else {
+		game.vg = get_supreme_commander(game.defender)
 		game.selected = select_stack(game.attacker)
 		goto_retreat()
 	}
@@ -2401,6 +2413,15 @@ function end_supply() {
 
 /* STROKES OF FATE */
 
+const strokes_of_fate_name = [
+	"Poems",
+	"Lord Bute",
+	"Elisabeth",
+	"Sweden",
+	"India",
+	"America",
+]
+
 states.russia_quits_the_game_1 = {
 	prompt() {
 		prompt("Russia quits the game. Remove all Russian pieces.")
@@ -2513,6 +2534,135 @@ states.france_quits_the_game_2 = {
 		resume_start_turn()
 	},
 }
+
+/* CARDS OF FATE */
+
+// receive_troop
+// lose_troop
+// immediate oos 5-6 range
+
+// flip one stack oos
+// move two cities westwards
+// move one city (and unstack)
+
+// exchange TC with power
+// discard TC to draw TC
+// give TC take random TC
+
+const fate_effect_immediate = [
+	null,
+	"Any one Russian on-map general receives a new troop for free (if possible).",
+	"Austria and Russia may exchange one TC with each other.",
+	"Tottleben receives a new troop for free (if possible and if on-map).",
+	null,
+	null,
+	"Apraxin immediately loses one troop (but not if he has to be taken off-map).",
+	null,
+	null,
+	null,
+	null,
+	null,
+	null,
+	null,
+	"France may discard any one TC for a new one from the draw deck.",
+	null,
+	null,
+	null,
+	null,
+	null,
+	"Austria may move Laudon by one city immediately; Laudon may even unstack.",
+	"Daun receives one new troop (if possible and if on-map).",
+	null,
+	"Austria may flip any one Prussian general/stack in Austria or Saxony, and in doing so, set him out of supply.",
+	null,
+	null,
+	null,
+	null,
+	"Any one Prussian on-map general receives a new troop for free (if possible).",
+	null,
+	null,
+	null,
+	"All Russian generals 5 or 6 cities distant from their nearest supply train are immediately out of supply; flip them.",
+	null,
+	null,
+	"Prussia may draw randomly one TC from Austria, after first giving one TC of her choice to Austria.",
+	null,
+	"Any one Prussian general with 2 or more troops loses one troop immediately.",
+	null,
+	null,
+	null,
+	"Any one Hanoverian on-map general receives a new troop (if possible).",
+	null,
+	null,
+	null,
+	"If Ehrensvärd is 5 or 6 cities distant from his supply train, he is immediately out of supply; flip him.",
+	"If Hildburghausen has lost a battle this turn, Prussia may move him 2 cities westwards (if possible).",
+	null,
+]
+
+// immobilize
+// reduce move
+// no unstacking
+// no attack and no elim space
+// no attack and no elim general
+// no receive troops (friedrich)
+// no receive troops (if attacking)
+// 4 protect range
+
+// avoid battle
+// soubise and hildburg not attack with same tc-symbol
+// tc mod
+
+const fate_effect_passive = [
+	null,
+	null,
+	null,
+	null,
+	null,
+	"If Fermor starts his move in Küstrin (H6) or in an adjacent city, he may not move next turn.",
+	null,
+	"Next turn, Saltikov may move only 2 cities (3 on main roads).",
+	null,
+	"Next turn, if Prussia and France fight each other, they may not use TCs with values of 10 or more.",
+	"Next turn, Soubise and Hildburghausen may not attack with the same TC-symbol.",
+	"Next turn, no general may be attacked in the city of Halle (E4) and no supply train may be eliminated in the city of Halle.",
+	"Next turn, the first TC played by France is worth an additional point.",
+	null,
+	null,
+	"Next turn, Cumberland may not move into attack position; he may not eliminate a supply train.",
+	"Next turn, Soubise may not move into attack position; he may not eliminate a supply train.",
+	null,
+	"Next turn, Richelieu may move 2 cities only (3 on main roads).",
+	"If stacked, Chevert may not unstack next turn.",
+	null,
+	null,
+	null,
+	null,
+	"Next turn, Friedrich may not move into attack position and may not eliminate a supply train.",
+	null,
+	"Next turn, Friedrich may not receive any new troops.",
+	"If Friedrich is involved in combat next turn, Prussia must reach a positive score with the first TC(s) she plays (if possible).",
+	null,
+	"Next turn, any Prussians who are attacked by Daun may move to any empty adjacent city (before the combat is resolved); by doing so they avoid all combat.",
+	null,
+	"If Friedrich attacks next turn, his first TC is worth 5 additional points.",
+	null,
+	"Next turn, Friedrich may move 4 cities, even as a stack (5 on main roads).",
+	null,
+	null,
+	"Next turn, every Prussian general who receives new troops may not move into attack position.",
+	null,
+	"If Friedrich is attacked next turn, the first TC played by Prussia is worth nothing (0 points).",
+	null,
+	"Next turn, Prussia may play the 11 of spades (Seydlitz) once at double value.",
+	null,
+	"Next turn, Prinz Heinrich protects objectives up to 4 cities distant.",
+	null,
+	"Next turn, Daun may move only 2 cities (3 on main roads).",
+	null,
+	null,
+	null,
+]
 
 /* SETUP */
 
@@ -2682,6 +2832,8 @@ exports.setup = function (seed, scenario, options) {
 		step: 0,
 		clock: null,
 		fate: [],
+		vg: 0, // last victorious general for fate effect selection
+		fx: 0, // current card of fate effect
 		deck: null,
 		hand: [ [], [], [], [], [], [], [] ],
 

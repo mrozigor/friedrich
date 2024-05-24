@@ -64,6 +64,8 @@
 #log .h.imperial { background-color: var(--color-light-imperial); }
 #log .h.france { background-color: var(--color-light-france); }
 
+#log .q { font-style: italic; margin: 8px 0; }
+
 header.your_turn.prussia { background-color: var(--color-light-prussia); }
 header.your_turn.hanover { background-color: var(--color-light-hanover); }
 header.your_turn.russia { background-color: var(--color-light-russia); }

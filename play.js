@@ -1,5 +1,7 @@
 "use strict"
 
+// vim: set nowrap:
+
 // TODO: sort selected generals above deselected generals when detaching?
 
 const svgNS = "http://www.w3.org/2000/svg"
@@ -57,28 +59,6 @@ for (let s of data.type.objective_france) set_add(objective1[P_FRANCE], s)
 const power_class = [ "prussia", "hanover", "russia", "sweden", "austria", "imperial", "france" ]
 const power_name = [ "Prussia", "Hanover", "Russia", "Sweden", "Austria", "Imperial Army", "France" ]
 
-const cards_of_fate_name = [
-	"No Fate",
-	"Card of Fate 1",
-	"Card of Fate 2",
-	"Card of Fate 3",
-	"Card of Fate 4",
-	"Card of Fate 5",
-	"Card of Fate 6",
-	"Card of Fate 7",
-	"Card of Fate 8",
-	"Card of Fate 9",
-	"Card of Fate 10",
-	"Card of Fate 11",
-	"Card of Fate 12",
-	"Poems",
-	"Lord Bute",
-	"Elisabeth",
-	"Sweden",
-	"India",
-	"America",
-]
-
 const GENERAL_POWER = [ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 5, 6, 6, 6 ]
 const TRAIN_POWER = [ 0, 0, 1, 2, 2, 3, 4, 4, 5, 6, 6 ]
 
@@ -116,108 +96,129 @@ function to_value(c) {
 	return c & 15
 }
 
-/* CARD TEXT */
+/* CARD TEXTS */
 
 const fate_flavor_text = [
-    "Frederick chats with de Catt, “I cannot do without this Spanish snuff. It is a deeply rooted habit. I am befouling my face and my clothing. I look like a pig, don’t I?” De Catt, “I have to admit, Sire, that your face and your uniform are heavily coated with tobacco.” Frederick laughs. “Well, my dear, that is exactly what I call looking like a pig.”",
-    "Russia founds her first mortgage bank, her first university and the Academy of the Three Noblest Arts in Petersburg. The Tsarina is generous in other areas too.",
-    "Tsarina Elisabeth’s furious energy shores up the crumbling Austro-Russian alliance.",
-    "General Tottleben raids Berlin and demands 4 million Thalers of war contributions. However, when rumours of Frederick’s approach reach him, he beats a hasty retreat.",
-    "Rousseau publishes The Social Contract (Du contrat social), a fundamental philosophic text for modern democracy.",
-    "The Russians are roaming the Neumark, marauding and spreading devastation. Fermor gives the order to bombard Küstrin with red-hot cannonballs.",
-    "A number of supposedly fainthearted generals are court-martialed on Tsarina Elisabeth’s orders. Apraxin takes this as an instruction to act even more ruthlessly towards the local population, but it is the discipline of his own troops that deteriorates.",
-    "Following his triumph at Kunersdorf, Pjotr S. Saltikov laments, “One more victory like this and I will have to take the message to Petersburg myself, alone and with my general’s baton in my hand.” He refuses to occupy the undefended Berlin.",
-    "Portugal: Following the assassination attempt on Joseph I the conspiring aristocrats are executed.",
-    "The French Foreign Secretary Choiseul believes that the destruction of Prussia would not be wise. He starts peace negotiations with Frederick. They fail after only a few days.",
-    "Taken from a letter of Prince Soubise: “I believe our plan was excellent; but the enemy was not willing to give us enough time for its execution. The most important thing now is to save our nation’s honour and to lay the blame squarely on the Imperial Army.”",
-    "Death of Georg Friedrich Händel, the prolific composer of oratorios, operas, vocal and instrumental music. The combatants respect the funeral rites in his native city of Halle.",
-    "The Marquise de Pompadour, mistress of Louis XV and the de facto the ruler of France, dissuades the King from his thoughts of peace. “I prefer my lover to be a hero!” she argues.",
-    "Voltaire writes, “In these seven years of war allied with Austria, France has lost more money and more men than in all the wars against Austria in the last two hundred years.”",
-    "Frederick composes a verse: “This weakling on the throne / plaything of the Pompadour / with an evil love’s reward / marked for ever more.” Madame Pompadour swears revenge.",
-    "The Duke of Cumberland, nicknamed “the Bloody Butcher of Scotland”, falls under the spell of a Danish Pietist, who promises to stop the French army with the assistance of the Holy Ghost.",
-    "The Prince de Soubise is devastated when his favourite dog dies. He refuses to see anyone for three days.",
-    "Frederick to his sister, “If, in common life, three citizens took it into their heads to fall upon their neighbour, and burn his house about him, they very certainly, by sentence of tribunal, would be broken on the wheel. O tempora, o mores! Indeed, it would be better to live with tigers, leopards and foxes, than with the assassins, bandits and rascals who reign over this poor world.”",
-    "The 62-year-old Duc de Richelieu is a famous fellow, having bedded more than 600 ladies, outperforming even his King, Louis XV — And right now, the lovely Marquise de Nivernais is arriving . . .",
-    "Abbé Bernis writes, “France has no generals who can compete with Frederick the Great, and if she had, they wouldn’t be given supreme command.”",
-    "Gideon Ernst von Laudon had once wanted to serve in the Prussian army, but was turned down by Frederick. Perhaps the King did not like his red hair or the fact that he looked like a horse. Now Laudon turns out to be the most competent Austrian general and repeatedly manages to put the Prussians in great difficulty.",
-    "Daun wins a brilliant victory over Frederick. And Prince Henry toasts his brother’s defeat in champagne! Also, Maria Theresa acclaims her hero.",
-    "Death of the composer Johann Stamitz. In Berlin, Frederick the Great founds the Royal Prussian Porcelain Manufacture KPM.",
-    "Austrian hussars capture an important Prussian supply train, causing the Prussians to suffer a grave shortage of food and ammunition.",
-    "“There is not a trace of what I once was left to be found. I have become a grey old man who has lost half his teeth; a man with no cheer, bereft of spirit and lacking in imagination; in one word: a shadow.”",
-    "The new reader of Prussia’s King is introduced: Henri de Catt, a 33-year old Swiss. His most important task will be sitting through Frederick’s interminable monologues.",
-    "Frederick repeatedly speaks of suicide, composes a flood of poems and dreams of alliances with the Turks and the Tartars.",
-    "Frederick’s generals implore him to break off the battle; the enemy is bound to withdraw. But Frederick is stubborn. And that’s the way the catastrophe of Kunersdorf begins . . .",
-    "Frederick demands 300,000 Thalers in war contributions from the burghers of Leipzig, some of whom are held prisoner and fed only bread and water until the money is paid.",
-    "Leopold von Daun, dilatory as a matter of principle, faces the Prussians with four times their force. It takes 5 weeks of argument with the council of war in Vienna to come up with a plan of action . . .",
-    "Frederick writes to his sister Wilhelmine: “What an awful slaughter! What a bloodbath! An unthinking world calls it heroism, but close up, it is always horrid.”",
-    "With perfect use of the oblique battle formation, Frederick routs Charles of Lorraine (Karl von Lothringen) who outnumbers him two to one.",
-    "The grain supply has gone rotten in many Russian depots, causing widespread supply problems.",
-    "At Liegnitz, 80,000 Austrians surprisingly encircle Frederick’s 30,000 men. Improvising masterfully, the Prussian King manages to escape the trap.",
-    "Frederick writes, “Our troops were in complete confusion, I reassembled them three times, but finally we had to quit the field. My coat is riddled with bullets, two horses were killed under me — my misfortune is that I am still alive.”",
-    "Frederick orders Austrian coinage with decreased silver content to be minted and exchanged for genuine currency. Satisfied, he states, “My enemies are financing my war efforts.”",
-    "Prussia is recruiting new troops. “But they are so lousy”, Frederick scoffs, “that they can be shown to the enemy only from a distance.”",
-    "After one of his generals loses a battle Frederick writes, “It was my belief that this thing was destined to fail. It is not your fault that the cowards ran away so promptly.”",
-    "Keith is deeply worried about the exposed position of the Prussian camp. “If the Austrians leave us alone here, they deserve to be hanged!” Frederick retorts, “They are more afraid of us than of the gallows.” A fatal mistake; the Austrians attack that same night.",
-    "By unifying the collections of Cotton, Harley and Sloane, the British Museum in London is founded.",
-    "Frederick orders Seydlitz to engage the enemy at last! Seydlitz replies, “After the battle, my head is at His Majesty’s disposal. During the battle, however, I would like to be permitted to serve my King with good use of the same.” — Seydlitz will unleash his charge at the decisive moment.",
-    "The British occupy Cuba, which they hope to exchange for Spanish Florida. Also, fresh troops are sent to the Electorate of Hanover.",
-    "Of his brother Henry (Heinrich), Frederick states, “He is the only one of us who has not made a single mistake so far.”",
-    "Frederick: “One could assume that the Caucasus or the Cordillera is the homeland of the Austrian generals. Whenever they see a mountain, they climb it. They appear to be blindly in love with the rocks and the ravines.”",
-    "In Vienna caricatures are circulating that depict Leopold von Daun with a nightcap. His wife is pelted with horse manure on her daily drive through the city.",
-    "“Hottentots” is the only name Frederick has for the Swedes. Only a poorly equipped militia is sent to fight them.",
-    "Following a major defeat, the Runaway Army, as the Imperial Army is now called, only stops retreating on reaching the Harz.",
-    "Frederick writes of Maria Theresa, “I have to admit that this Lady is highly admirable because of her excellent morals. Only few women are her equal in this regard, most are whores. Maria Theresa abominates all whores; she has them thrown in prison, especially if she suspects them of desiring her husband."
+	"Frederick chats with de Catt, “I cannot do without this Spanish snuff. It is a deeply rooted habit. I am befouling my face and my clothing. I look like a pig, don’t I?” De Catt, “I have to admit, Sire, that your face and your uniform are heavily coated with tobacco.” Frederick laughs. “Well, my dear, that is exactly what I call looking like a pig.”",
+	"Russia founds her first mortgage bank, her first university and the Academy of the Three Noblest Arts in Petersburg. The Tsarina is generous in other areas too.",
+	"Tsarina Elisabeth’s furious energy shores up the crumbling Austro-Russian alliance.",
+	"General Tottleben raids Berlin and demands 4 million Thalers of war contributions. However, when rumours of Frederick’s approach reach him, he beats a hasty retreat.",
+	"Rousseau publishes The Social Contract (Du contrat social), a fundamental philosophic text for modern democracy.",
+	"The Russians are roaming the Neumark, marauding and spreading devastation. Fermor gives the order to bombard Küstrin with red-hot cannonballs.",
+	"A number of supposedly fainthearted generals are court-martialed on Tsarina Elisabeth’s orders. Apraxin takes this as an instruction to act even more ruthlessly towards the local population, but it is the discipline of his own troops that deteriorates.",
+	"Following his triumph at Kunersdorf, Pjotr S. Saltikov laments, “One more victory like this and I will have to take the message to Petersburg myself, alone and with my general’s baton in my hand.” He refuses to occupy the undefended Berlin.",
+	"Portugal: Following the assassination attempt on Joseph I the conspiring aristocrats are executed.",
+	"The French Foreign Secretary Choiseul believes that the destruction of Prussia would not be wise. He starts peace negotiations with Frederick. They fail after only a few days.",
+	"Taken from a letter of Prince Soubise: “I believe our plan was excellent; but the enemy was not willing to give us enough time for its execution. The most important thing now is to save our nation’s honour and to lay the blame squarely on the Imperial Army.”",
+	"Death of Georg Friedrich Händel, the prolific composer of oratorios, operas, vocal and instrumental music. The combatants respect the funeral rites in his native city of Halle.",
+	"The Marquise de Pompadour, mistress of Louis XV and the de facto the ruler of France, dissuades the King from his thoughts of peace. “I prefer my lover to be a hero!” she argues.",
+	"Voltaire writes, “In these seven years of war allied with Austria, France has lost more money and more men than in all the wars against Austria in the last two hundred years.”",
+	"Frederick composes a verse: “This weakling on the throne / plaything of the Pompadour / with an evil love’s reward / marked for ever more.” Madame Pompadour swears revenge.",
+	"The Duke of Cumberland, nicknamed “the Bloody Butcher of Scotland”, falls under the spell of a Danish Pietist, who promises to stop the French army with the assistance of the Holy Ghost.",
+	"The Prince de Soubise is devastated when his favourite dog dies. He refuses to see anyone for three days.",
+	"Frederick to his sister, “If, in common life, three citizens took it into their heads to fall upon their neighbour, and burn his house about him, they very certainly, by sentence of tribunal, would be broken on the wheel. O tempora, o mores! Indeed, it would be better to live with tigers, leopards and foxes, than with the assassins, bandits and rascals who reign over this poor world.”",
+	"The 62-year-old Duc de Richelieu is a famous fellow, having bedded more than 600 ladies, outperforming even his King, Louis XV — And right now, the lovely Marquise de Nivernais is arriving . . .",
+	"Abbé Bernis writes, “France has no generals who can compete with Frederick the Great, and if she had, they wouldn’t be given supreme command.”",
+	"Gideon Ernst von Laudon had once wanted to serve in the Prussian army, but was turned down by Frederick. Perhaps the King did not like his red hair or the fact that he looked like a horse. Now Laudon turns out to be the most competent Austrian general and repeatedly manages to put the Prussians in great difficulty.",
+	"Daun wins a brilliant victory over Frederick. And Prince Henry toasts his brother’s defeat in champagne! Also, Maria Theresa acclaims her hero.",
+	"Death of the composer Johann Stamitz. In Berlin, Frederick the Great founds the Royal Prussian Porcelain Manufacture KPM.",
+	"Austrian hussars capture an important Prussian supply train, causing the Prussians to suffer a grave shortage of food and ammunition.",
+	"“There is not a trace of what I once was left to be found. I have become a grey old man who has lost half his teeth; a man with no cheer, bereft of spirit and lacking in imagination; in one word: a shadow.”",
+	"The new reader of Prussia’s King is introduced: Henri de Catt, a 33-year old Swiss. His most important task will be sitting through Frederick’s interminable monologues.",
+	"Frederick repeatedly speaks of suicide, composes a flood of poems and dreams of alliances with the Turks and the Tartars.",
+	"Frederick’s generals implore him to break off the battle; the enemy is bound to withdraw. But Frederick is stubborn. And that’s the way the catastrophe of Kunersdorf begins . . .",
+	"Frederick demands 300,000 Thalers in war contributions from the burghers of Leipzig, some of whom are held prisoner and fed only bread and water until the money is paid.",
+	"Leopold von Daun, dilatory as a matter of principle, faces the Prussians with four times their force. It takes 5 weeks of argument with the council of war in Vienna to come up with a plan of action . . .",
+	"Frederick writes to his sister Wilhelmine: “What an awful slaughter! What a bloodbath! An unthinking world calls it heroism, but close up, it is always horrid.”",
+	"With perfect use of the oblique battle formation, Frederick routs Charles of Lorraine (Karl von Lothringen) who outnumbers him two to one.",
+	"The grain supply has gone rotten in many Russian depots, causing widespread supply problems.",
+	"At Liegnitz, 80,000 Austrians surprisingly encircle Frederick’s 30,000 men. Improvising masterfully, the Prussian King manages to escape the trap.",
+	"Frederick writes, “Our troops were in complete confusion, I reassembled them three times, but finally we had to quit the field. My coat is riddled with bullets, two horses were killed under me — my misfortune is that I am still alive.”",
+	"Frederick orders Austrian coinage with decreased silver content to be minted and exchanged for genuine currency. Satisfied, he states, “My enemies are financing my war efforts.”",
+	"Prussia is recruiting new troops. “But they are so lousy”, Frederick scoffs, “that they can be shown to the enemy only from a distance.”",
+	"After one of his generals loses a battle Frederick writes, “It was my belief that this thing was destined to fail. It is not your fault that the cowards ran away so promptly.”",
+	"Keith is deeply worried about the exposed position of the Prussian camp. “If the Austrians leave us alone here, they deserve to be hanged!” Frederick retorts, “They are more afraid of us than of the gallows.” A fatal mistake; the Austrians attack that same night.",
+	"By unifying the collections of Cotton, Harley and Sloane, the British Museum in London is founded.",
+	"Frederick orders Seydlitz to engage the enemy at last! Seydlitz replies, “After the battle, my head is at His Majesty’s disposal. During the battle, however, I would like to be permitted to serve my King with good use of the same.” — Seydlitz will unleash his charge at the decisive moment.",
+	"The British occupy Cuba, which they hope to exchange for Spanish Florida. Also, fresh troops are sent to the Electorate of Hanover.",
+	"Of his brother Henry (Heinrich), Frederick states, “He is the only one of us who has not made a single mistake so far.”",
+	"Frederick: “One could assume that the Caucasus or the Cordillera is the homeland of the Austrian generals. Whenever they see a mountain, they climb it. They appear to be blindly in love with the rocks and the ravines.”",
+	"In Vienna caricatures are circulating that depict Leopold von Daun with a nightcap. His wife is pelted with horse manure on her daily drive through the city.",
+	"“Hottentots” is the only name Frederick has for the Swedes. Only a poorly equipped militia is sent to fight them.",
+	"Following a major defeat, the Runaway Army, as the Imperial Army is now called, only stops retreating on reaching the Harz.",
+	"Frederick writes of Maria Theresa, “I have to admit that this Lady is highly admirable because of her excellent morals. Only few women are her equal in this regard, most are whores. Maria Theresa abominates all whores; she has them thrown in prison, especially if she suspects them of desiring her husband.”",
+
+	"Voltaire, Frederick’s two-faced friend, manages to print Frederick’s poems, which contain negative comments about the King of England. London society is outraged and the House of Commons votes unanimously for a reduction of subsidies.",
+	"William Pitt, the main advocate of the alliance with Prussia, has lost influence. His successor Lord Bute intends to make peace with France. To achieve this, he is willing to make certain concessions: Prussia should agree to give up Upper Silesia and the County of Glatz. To support his policy, he reduces the subsidies.",
+	"Death of the Tsarina. Her successor, Peter III, is an ardent admirer of Frederick. He begs for the Prussian Black-Eagle-Medal and declares that it is more of an honour to be a Prussian General than a Russian Tsar. He then signs the peace treaty. Three months later he is assassinated and his wife, Catherine the Great, accedes to the throne. Nevertheless, the peace is kept.",
+	"Adolf Frederick, King of Sweden, initiates peace negotiations with Frederick the Great, who is in a mood for ridicule: “Peace? Am I then at war with Sweden? I am not, am I?” The Swedish envoys assure him that indeed he is, and so a peace treaty is signed.",
+	"Robert Clive’s fantastic victory at Plassey means the complete loss of India for France. Moreover the state is on the verge of bankruptcy. Louis XV overrules Madame Pompadour and reduces spending on the war and subsidies.",
+	"In the war for the colonies France loses a wide range of possessions along the Ohio and Mississippi rivers, and in Quebec. Tax income decreases drastically. The Duc de Choiseul advises that military expenditure and subsidies be reduced.",
 ]
 
 const fate_effect_text = [
-    "No effect.",
-    "Any one Russian on-map general receives a new troop for free (if possible).",
-    "Austria and Russia may exchange one TC with each other.",
-    "Tottleben receives a new troop for free (if possible and if on-map).",
-    "No effect.",
-    "If Fermor starts his move in Küstrin (H6) or in an adjacent city, he may not move next turn.",
-    "Apraxin immediately loses one troop (but not if he has to be taken off-map).",
-    "Next turn, Saltikov may move only 2 cities (3 on main roads).",
-    "No effect.",
-    "Next turn, if Prussia and France fight each other, they may not use TCs with values of 10 or more.",
-    "Next turn, Soubise and Hildburghausen may not attack with the same TC-symbol.",
-    "Next turn, no general may be attacked in the city of Halle (E4) and no supply train may be eliminated in the city of Halle.",
-    "Next turn, the first TC played by France is worth an additional point.",
-    "No effect.",
-    "France may discard any one TC for a new one from the draw deck.",
-    "Next turn, Cumberland may not move into attack position; he may not eliminate a supply train.",
-    "Next turn, Soubise may not move into attack position; he may not eliminate a supply train.",
-    "No effect.",
-    "Next turn, Richelieu may move 2 cities only (3 on main roads).",
-    "If stacked, Chevert may not unstack next turn.",
-    "Austria may move Laudon by one city immediately; Laudon may even unstack.",
-    "Daun receives one new troop (if possible and if on-map).",
-    "No effect.",
-    "Austria may flip any one Prussian general/stack in Austria or Saxony, and in doing so, set him out of supply.",
-    "Next turn, Friedrich may not move into attack position and may not eliminate a supply train.",
-    "No effect.",
-    "Next turn, Friedrich may not receive any new troops.",
-    "If Friedrich is involved in combat next turn, Prussia must reach a positive score with the first TC(s) she plays (if possible).",
-    "Any one Prussian on-map general receives a new troop for free (if possible).",
-    "Next turn, any Prussians who are attacked by Daun may move to any empty adjacent city (before the combat is resolved); by doing so they avoid all combat.",
-    "No effect.",
-    "If Friedrich attacks next turn, his first TC is worth 5 additional points.",
-    "All Russian generals 5 or 6 cities distant from their nearest supply train are immediately out of supply; flip them.",
-    "Next turn, Friedrich may move 4 cities, even as a stack (5 on main roads).",
-    "No effect.",
-    "Prussia may draw randomly one TC from Austria, after first giving one TC of her choice to Austria.",
-    "Next turn, every Prussian general who receives new troops may not move into attack position.",
-    "Any one Prussian general with 2 or more troops loses one troop immediately.",
-    "If Friedrich is attacked next turn, the first TC played by Prussia is worth nothing (0 points).",
-    "No effect.",
-    "Next turn, Prussia may play the 11 of spades (Seydlitz) once at double value.",
-    "Any one Hanoverian on-map general receives a new troop (if possible).",
-    "Next turn, Prinz Heinrich protects objectives up to 4 cities distant.",
-    "No effect.",
-    "Next turn, Daun may move only 2 cities (3 on main roads).",
-    "If Ehrensvärd is 5 or 6 cities distant from his supply train, he is immediately out of supply; flip him.",
-    "If Hildburghausen has lost a battle this turn, Prussia may move him 2 cities westwards (if possible).",
-    "No effect."
+	"No effect.",
+	"Any one Russian on-map general receives a new troop for free (if possible).",
+	"Austria and Russia may exchange one TC with each other.",
+	"Tottleben receives a new troop for free (if possible and if on-map).",
+	"No effect.",
+	"If Fermor starts his move in Küstrin (H6) or in an adjacent city, he may not move next turn.",
+	"Apraxin immediately loses one troop (but not if he has to be taken off-map).",
+	"Next turn, Saltikov may move only 2 cities (3 on main roads).",
+	"No effect.",
+	"Next turn, if Prussia and France fight each other, they may not use TCs with values of 10 or more.",
+	"Next turn, Soubise and Hildburghausen may not attack with the same TC-symbol.",
+	"Next turn, no general may be attacked in the city of Halle (E4) and no supply train may be eliminated in the city of Halle.",
+	"Next turn, the first TC played by France is worth an additional point.",
+	"No effect.",
+	"France may discard any one TC for a new one from the draw deck.",
+	"Next turn, Cumberland may not move into attack position; he may not eliminate a supply train.",
+	"Next turn, Soubise may not move into attack position; he may not eliminate a supply train.",
+	"No effect.",
+	"Next turn, Richelieu may move 2 cities only (3 on main roads).",
+	"If stacked, Chevert may not unstack next turn.",
+	"Austria may move Laudon by one city immediately; Laudon may even unstack.",
+	"Daun receives one new troop (if possible and if on-map).",
+	"No effect.",
+	"Austria may flip any one Prussian general/stack in Austria or Saxony, and in doing so, set him out of supply.",
+	"Next turn, Friedrich may not move into attack position and may not eliminate a supply train.",
+	"No effect.",
+	"Next turn, Friedrich may not receive any new troops.",
+	"If Friedrich is involved in combat next turn, Prussia must reach a positive score with the first TC(s) she plays (if possible).",
+	"Any one Prussian on-map general receives a new troop for free (if possible).",
+	"Next turn, any Prussians who are attacked by Daun may move to any empty adjacent city (before the combat is resolved); by doing so they avoid all combat.",
+	"No effect.",
+	"If Friedrich attacks next turn, his first TC is worth 5 additional points.",
+	"All Russian generals 5 or 6 cities distant from their nearest supply train are immediately out of supply; flip them.",
+	"Next turn, Friedrich may move 4 cities, even as a stack (5 on main roads).",
+	"No effect.",
+	"Prussia may draw randomly one TC from Austria, after first giving one TC of her choice to Austria.",
+	"Next turn, every Prussian general who receives new troops may not move into attack position.",
+	"Any one Prussian general with 2 or more troops loses one troop immediately.",
+	"If Friedrich is attacked next turn, the first TC played by Prussia is worth nothing (0 points).",
+	"No effect.",
+	"Next turn, Prussia may play the 11 of spades (Seydlitz) once at double value.",
+	"Any one Hanoverian on-map general receives a new troop (if possible).",
+	"Next turn, Prinz Heinrich protects objectives up to 4 cities distant.",
+	"No effect.",
+	"Next turn, Daun may move only 2 cities (3 on main roads).",
+	"If Ehrensvärd is 5 or 6 cities distant from his supply train, he is immediately out of supply; flip him.",
+	"If Hildburghausen has lost a battle this turn, Prussia may move him 2 cities westwards (if possible).",
+	"No effect.",
+
+	// "From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
+	// "From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
+	// "Russia quits the game! Also, Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map. For Sweden eased victory conditions come into effect. If Sweden has already quit the game, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
+	// "Sweden quits the game! Also, Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map. If Russia has already quit the game as well, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
+	// "From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game! Cumberland is removed permanently from the game. Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
+	// "From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game. Cumberland is removed permanently from the game. Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
+
+	"From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
+	"From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
+	"Russia quits the game! For Sweden eased victory conditions come into effect. If Sweden has already quit the game, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
+	"Sweden quits the game! If Russia has already quit the game as well, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
+	"From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game! Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
+	"From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game! Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
 ]
 
 /* BUILD UI */
@@ -911,6 +912,8 @@ function on_update() {
 	process_actions()
 }
 
+/* LOG */
+
 const piece_name = [
 	"P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8",
 	"H1", "H2",
@@ -945,11 +948,6 @@ function sub_tc(match, p1) {
 	return value + suit_name[suit]
 }
 
-function sub_fate(match, p1) {
-	let x = p1 | 0
-	return cards_of_fate_name[x]
-}
-
 function on_log(text) {
 	let p = document.createElement("div")
 
@@ -963,13 +961,16 @@ function on_log(text) {
 	text = text.replace(/>/g, "&gt;")
 
 	text = text.replace(/S(\d+)/g, sub_space)
-	text = text.replace(/F(\d+)/g, sub_fate)
 	text = text.replace(/C(\d+)/g, sub_tc)
 	text = text.replace(/P(\d+)/g, sub_piece)
 
 	if (text.match(/^# /)) {
 		p.className = "h"
 		text = text.substring(2)
+	}
+	else if (text.match(/^\$(\d+)/)) {
+		let fx = parseInt(text.substring(1))
+		text = `<p class="q">${fate_flavor_text[fx]}<p>${fate_effect_text[fx]}`
 	}
 	else if (text.match(/^=\d/)) {
 		p.className = "h " + power_class[text[1]]
