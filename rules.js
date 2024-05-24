@@ -1945,8 +1945,12 @@ function prompt_combat(value, extra = null) {
 		prompt(format_combat(value) + ".")
 }
 
-function inactive_combat() {
+function inactive_attack() {
 	return "play TC for " + format_combat(game.count)
+}
+
+function inactive_defend() {
+	return "play TC for " + format_combat(-game.count)
 }
 
 function goto_combat() {
@@ -2083,7 +2087,7 @@ function gen_play_card(suit) {
 }
 
 states.combat_attack = {
-	inactive: inactive_combat,
+	inactive: inactive_attack,
 	prompt() {
 		prompt_combat(game.count)
 		view.selected = [ get_supreme_commander(game.attacker) ]
@@ -2113,7 +2117,7 @@ states.combat_attack = {
 }
 
 states.combat_defend = {
-	inactive: inactive_combat,
+	inactive: inactive_defend,
 	prompt() {
 		prompt_combat(-game.count)
 
@@ -2144,7 +2148,7 @@ states.combat_defend = {
 }
 
 states.combat_attack_reserve = {
-	inactive: inactive_combat,
+	inactive: inactive_attack,
 	prompt() {
 		prompt_combat(game.count, "Choose value.")
 		view.selected = [ get_supreme_commander(game.attacker)]
@@ -2158,7 +2162,7 @@ states.combat_attack_reserve = {
 }
 
 states.combat_defend_reserve = {
-	inactive: inactive_combat,
+	inactive: inactive_defend,
 	prompt() {
 		prompt_combat(-game.count, "Choose value.")
 		view.selected = [ get_supreme_commander(game.defender) ]
@@ -2172,7 +2176,7 @@ states.combat_defend_reserve = {
 }
 
 states.combat_attack_swap = {
-	inactive: inactive_combat,
+	inactive: inactive_attack,
 	prompt() {
 		prompt_combat(game.count)
 		view.selected = [ get_supreme_commander(game.attacker) ]
@@ -2186,7 +2190,7 @@ states.combat_attack_swap = {
 }
 
 states.combat_defend_swap = {
-	inactive: inactive_combat,
+	inactive: inactive_defend,
 	prompt() {
 		prompt_combat(-game.count)
 		view.selected = [ get_supreme_commander(game.defender) ]
