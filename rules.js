@@ -158,7 +158,7 @@ const all_power_re_entry_cities = [
 	data.sectors.hearts_south_of_koblenz,
 ]
 
-const piece_name = [
+const piece_abbr = [
 	"P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8",
 	"H1", "H2",
 	"R1", "R2", "R3", "R4",
@@ -167,6 +167,23 @@ const piece_name = [
 	"IA1",
 	"F1", "F2", "F3",
 	"PT1", "PT2", "HT", "RT1", "RT2", "ST", "AT1", "AT2", "IAT", "FT1", "FT2",
+]
+
+const piece_name = [
+	"Friedrich", "Winterfeldt", "Heinrich", "Schwerin", "Keith", "Seydlitz", "Dohna", "Lehwaldt",
+	"Ferdinand", "Cumberland",
+	"Saltikov", "Fermor", "Apraxin", "Tottleben",
+	"Ehrensvärd",
+	"Daun", "Browne", "Karl", "Laudon", "Lacy",
+	"Hildburghausen",
+	"Richelieu", "Soubise", "Chevert",
+	"Prussian Train", "Prussian Train",
+	"Hanoverian Train",
+	"Russian Train", "Russian Train",
+	"Swedish Train",
+	"Austrian Train", "Austrian Train",
+	"Imperial Army Train",
+	"French Train", "French Train",
 ]
 
 const all_power_generals = [
@@ -1374,8 +1391,10 @@ function move_general_to(to) {
 }
 
 function move_general_immediately(to) {
-	let who = game.selected[0]
-	let from = game.pos[who]
+	for (let p of game.selected) {
+		log("P" + p + " to S" + to)
+		game.pos[p] = to
+	}
 
 	// uniting stacks (turn all oos if one is oos)
 	let oos = false
@@ -1398,7 +1417,7 @@ function move_general_immediately(to) {
 
 states.move_supply_train_NEW = {
 	prompt() {
-		prompt("Move " + format_selected() + format_move(2))
+		prompt("Move supply train" + format_move(2))
 		view.selected = game.selected
 
 		let who = game.selected[0]
@@ -1467,7 +1486,7 @@ states.move_supply_train_NEW = {
 
 states.move_supply_train_OLD = {
 	prompt() {
-		prompt("Move " + format_selected() + format_move(2))
+		prompt("Move supply train" + format_move(2))
 		view.selected = game.selected
 
 		let who = game.selected[0]
@@ -3067,7 +3086,6 @@ states.austria_may_move_laudon_by_one_city_immediately = {
 	},
 	space(s) {
 		push_undo()
-		log("P" + GEN_LAUDON + " to S" + s)
 		// no conquest, but may capture supply trains?
 		move_general_immediately(s)
 		game.state = "laudon_done"
