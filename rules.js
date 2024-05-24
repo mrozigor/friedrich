@@ -2070,7 +2070,6 @@ function set_active_winner() {
 function goto_retreat() {
 	let hits = Math.abs(game.count)
 
-	let winner = get_winner()
 	let loser = get_loser()
 
 	// no more fighting for the loser
@@ -2079,7 +2078,6 @@ function goto_retreat() {
 			array_remove_pair(game.combat, i)
 
 	log("P" + get_supreme_commander(loser) + " lost " + hits + " troops.")
-	log(game.selected.map(x=>"P"+x).join(" "))
 
 	// apply hits
 	for (let i = game.selected.length - 1; i >= 0 && hits > 0; --i) {
