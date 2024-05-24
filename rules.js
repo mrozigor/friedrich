@@ -294,6 +294,30 @@ function format_selected() {
 	return game.selected.map(p => piece_name[p]).join(" and ")
 }
 
+/* CARDS OF FATE (PASSIVE) */
+
+const NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KÜSTRIN_H6_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE = 5
+const NEXT_TURN_SALTIKOV_MAY_MOVE_ONLY_2_CITIES = 7
+const NEXT_TURN_IF_PRUSSIA_AND_FRANCE_FIGHT_EACH_OTHER_THEY_MAY_NOT_USE_TCS_WITH_VALUES_OF_10_OR_MORE = 9
+const NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL = 10
+const NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE_E4_AND_NO_SUPPLY_TRAIN_MAY_BE_ELIMINATED_IN_THE_CITY_OF_HALLE = 11
+const NEXT_TURN_THE_FIRST_TC_PLAYED_BY_FRANCE_IS_WORTH_AN_ADDITIONAL_POINT = 12
+const NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 15
+const NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 16
+const NEXT_TURN_RICHELIEU_MAY_MOVE_2_CITIES_ONLY = 18
+const NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK = 19
+const NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 24
+const NEXT_TURN_FRIEDRICH_MAY_NOT_RECEIVE_ANY_NEW_TROOPS = 26
+const NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE_WITH_THE_FIRST_TCS_SHE_PLAYS_IF_POSSIBLE = 27
+const NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY = 29
+const NEXT_TURN_IF_FRIEDRICH_ATTACKS_HIS_FIRST_TC_IS_WORTH_5_ADDITIONAL_POINTS = 31
+const NEXT_TURN_FRIEDRICH_MAY_MOVE_4_CITIES_EVEN_AS_A_STACK = 33
+const NEXT_TURN_EVERY_PRUSSIAN_GENERAL_WHO_RECEIVES_NEW_TROOPS_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 36
+const NEXT_TURN_IF_FRIEDRICH_IS_ATTACKED_THE_FIRST_TC_PLAYED_BY_PRUSSIA_IS_WORTH_NOTHING_0_POINTS = 38
+const NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_SEYDLITZ_ONCE_AT_DOUBLE_VALUE = 40
+const NEXT_TURN_PRINZ_HEINRICH_PROTECTS_OBJECTIVES_UP_TO_4_CITIES_DISTANT = 42
+const NEXT_TURN_DAUN_MAY_MOVE_ONLY_2_CITIES = 44
+
 /* OBJECTIVES */
 
 const all_objectives = []
@@ -2916,6 +2940,7 @@ states.flip_any_one_prussian_general_or_stack_in_austria_or_saxony = {
 function flip_stack_out_of_supply(p) {
 	for (let x of all_power_generals[game.power]) {
 		if (game.pos[x] === game.pos[p]) {
+			log("P" + x + " out of supply")
 			set_out_of_supply(x)
 			set_delete(game.selected, x)
 		}
@@ -3093,83 +3118,6 @@ states.prussia_may_move_hildburghausen_2_cities_westwards = {
 		resume_start_turn()
 	},
 }
-
-/* CARDS OF FATE (PASSIVE) */
-
-// immobilize
-// reduce move
-// no unstacking
-// no attack and no elim space
-// no attack and no elim general
-// no receive troops (friedrich)
-// no receive troops (if attacking)
-// 4 protect range
-
-// avoid battle
-// soubise and hildburg not attack with same tc-symbol
-// tc mod
-
-const fate_effect_passive = [
-	null,
-	null,
-	null,
-	null,
-
-	null,
-	"If Fermor starts his move in Küstrin (H6) or in an adjacent city, he may not move next turn.",
-	null,
-	"Next turn, Saltikov may move only 2 cities (3 on main roads).",
-
-	null,
-	"Next turn, if Prussia and France fight each other, they may not use TCs with values of 10 or more.",
-	"Next turn, Soubise and Hildburghausen may not attack with the same TC-symbol.",
-	"Next turn, no general may be attacked in the city of Halle (E4) and no supply train may be eliminated in the city of Halle.",
-
-	"Next turn, the first TC played by France is worth an additional point.",
-	null,
-	null,
-	"Next turn, Cumberland may not move into attack position; he may not eliminate a supply train.",
-
-	"Next turn, Soubise may not move into attack position; he may not eliminate a supply train.",
-	null,
-	"Next turn, Richelieu may move 2 cities only (3 on main roads).",
-	"If stacked, Chevert may not unstack next turn.",
-
-	null,
-	null,
-	null,
-	null,
-
-	"Next turn, Friedrich may not move into attack position and may not eliminate a supply train.",
-	null,
-	"Next turn, Friedrich may not receive any new troops.",
-	"If Friedrich is involved in combat next turn, Prussia must reach a positive score with the first TC(s) she plays (if possible).",
-
-	null,
-	"Next turn, any Prussians who are attacked by Daun may move to any empty adjacent city (before the combat is resolved); by doing so they avoid all combat.",
-	null,
-	"If Friedrich attacks next turn, his first TC is worth 5 additional points.",
-
-	null,
-	"Next turn, Friedrich may move 4 cities, even as a stack (5 on main roads).",
-	null,
-	null,
-
-	"Next turn, every Prussian general who receives new troops may not move into attack position.",
-	null,
-	"If Friedrich is attacked next turn, the first TC played by Prussia is worth nothing (0 points).",
-	null,
-
-	"Next turn, Prussia may play the 11 of spades (Seydlitz) once at double value.",
-	null,
-	"Next turn, Prinz Heinrich protects objectives up to 4 cities distant.",
-	null,
-
-	"Next turn, Daun may move only 2 cities (3 on main roads).",
-	null,
-	null,
-	null,
-]
 
 /* SETUP */
 
