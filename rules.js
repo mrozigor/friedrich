@@ -147,6 +147,7 @@ const all_power_depots = [
 ]
 
 const MUNSTER_Y = data.cities.y[find_city("Munster")]
+const HALLE = find_city("Halle")
 
 const all_power_re_entry_cities = [
 	data.sectors.spades_berlin,
@@ -169,32 +170,6 @@ const piece_abbr = [
 	"PT1", "PT2", "HT", "RT1", "RT2", "ST", "AT1", "AT2", "IAT", "FT1", "FT2",
 ]
 
-const piece_name = [
-	"Friedrich", "Winterfeldt", "Heinrich", "Schwerin", "Keith", "Seydlitz", "Dohna", "Lehwaldt",
-	"Ferdinand", "Cumberland",
-	"Saltikov", "Fermor", "Apraxin", "Tottleben",
-	"Ehrensvärd",
-	"Daun", "Browne", "Karl", "Laudon", "Lacy",
-	"Hildburghausen",
-	"Richelieu", "Soubise", "Chevert",
-
-	"supply train", "supply train",
-	"supply train",
-	"supply train", "supply train",
-	"supply train",
-	"supply train", "supply train",
-	"supply train",
-	"supply train", "supply train",
-
-	//"Prussian supply train", "Prussian supply train",
-	//"Hanoverian supply train",
-	//"Russian supply train", "Russian supply train",
-	//"Swedish supply train",
-	//"Austrian supply train", "Austrian supply train",
-	//"Imperial Army supply train",
-	//"French supply train", "French supply train",
-]
-
 const all_power_generals = [
 	/* P */ [ 0, 1, 2, 3, 4, 5, 6, 7 ],
 	/* H */ [ 8, 9 ],
@@ -205,15 +180,47 @@ const all_power_generals = [
 	/* F */ [ 21, 22, 23 ],
 ]
 
+const piece_name = [
+	"Friedrich", "Winterfeldt", "Heinrich", "Schwerin", "Keith", "Seydlitz", "Dohna", "Lehwaldt",
+	"Ferdinand", "Cumberland",
+	"Saltikov", "Fermor", "Apraxin", "Tottleben",
+	"Ehrensvärd",
+	"Daun", "Browne", "Karl", "Laudon", "Lacy",
+	"Hildburghausen",
+	"Richelieu", "Soubise", "Chevert",
+	"supply train", "supply train",
+	"supply train",
+	"supply train", "supply train",
+	"supply train",
+	"supply train", "supply train",
+	"supply train",
+	"supply train", "supply train",
+]
+
 const GEN_FRIEDRICH = 0
+const GEN_WINTERFELDT = 1
+const GEN_HEINRICH = 2
+const GEN_SCHWERIN = 3
+const GEN_KEITH = 4
 const GEN_SEYDLITZ = 5
+const GEN_DOHNA = 6
+const GEN_LEHWALDT = 7
+const GEN_FERDINAND = 8
 const GEN_CUMBERLAND = 9
+const GEN_SALTIKOV = 10
+const GEN_FERMOR = 11
 const GEN_APRAXIN = 12
 const GEN_TOTTLEBEN = 13
 const GEN_EHRENSVAERD = 14
 const GEN_DAUN = 15
+const GEN_BROWNE = 16
+const GEN_KARL = 17
 const GEN_LAUDON = 18
+const GEN_LACY = 19
 const GEN_HILDBURGHAUSEN = 20
+const GEN_RICHELIEU = 21
+const GEN_SOUBISE = 22
+const GEN_CHEVERT = 23
 
 const all_power_generals_rev = all_power_generals.map(list => list.slice().reverse())
 
@@ -226,6 +233,8 @@ const all_power_trains = [
 	/* I */ [ 32 ],
 	/* F */ [ 33, 34 ],
 ]
+
+const TRAIN_IA = 32
 
 function is_general(p) {
 	return p < 24
@@ -331,26 +340,33 @@ function format_stack(s) {
 /* CARDS OF FATE (PASSIVE) */
 
 const NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KÜSTRIN_H6_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE = 5
+
 const NEXT_TURN_SALTIKOV_MAY_MOVE_ONLY_2_CITIES = 7
-const NEXT_TURN_IF_PRUSSIA_AND_FRANCE_FIGHT_EACH_OTHER_THEY_MAY_NOT_USE_TCS_WITH_VALUES_OF_10_OR_MORE = 9
+const NEXT_TURN_RICHELIEU_MAY_MOVE_2_CITIES_ONLY = 18
+const NEXT_TURN_DAUN_MAY_MOVE_ONLY_2_CITIES = 44
+const NEXT_TURN_FRIEDRICH_MAY_MOVE_4_CITIES_EVEN_AS_A_STACK = 33
+
+const NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK = 19
+const NEXT_TURN_FRIEDRICH_MAY_NOT_RECEIVE_ANY_NEW_TROOPS = 26
+const NEXT_TURN_EVERY_PRUSSIAN_GENERAL_WHO_RECEIVES_NEW_TROOPS_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 36
+
 const NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL = 10
-const NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE_E4_AND_NO_SUPPLY_TRAIN_MAY_BE_ELIMINATED_IN_THE_CITY_OF_HALLE = 11
-const NEXT_TURN_THE_FIRST_TC_PLAYED_BY_FRANCE_IS_WORTH_AN_ADDITIONAL_POINT = 12
+const NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE = 11
 const NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 15
 const NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 16
-const NEXT_TURN_RICHELIEU_MAY_MOVE_2_CITIES_ONLY = 18
-const NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK = 19
 const NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 24
-const NEXT_TURN_FRIEDRICH_MAY_NOT_RECEIVE_ANY_NEW_TROOPS = 26
+
+const NEXT_TURN_PRINZ_HEINRICH_PROTECTS_OBJECTIVES_UP_TO_4_CITIES_DISTANT = 42
+
+const NEXT_TURN_IF_PRUSSIA_AND_FRANCE_FIGHT_EACH_OTHER_THEY_MAY_NOT_USE_TCS_WITH_VALUES_OF_10_OR_MORE = 9
+const NEXT_TURN_THE_FIRST_TC_PLAYED_BY_FRANCE_IS_WORTH_AN_ADDITIONAL_POINT = 12
 const NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE_WITH_THE_FIRST_TCS_SHE_PLAYS_IF_POSSIBLE = 27
-const NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY = 29
 const NEXT_TURN_IF_FRIEDRICH_ATTACKS_HIS_FIRST_TC_IS_WORTH_5_ADDITIONAL_POINTS = 31
-const NEXT_TURN_FRIEDRICH_MAY_MOVE_4_CITIES_EVEN_AS_A_STACK = 33
-const NEXT_TURN_EVERY_PRUSSIAN_GENERAL_WHO_RECEIVES_NEW_TROOPS_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 36
 const NEXT_TURN_IF_FRIEDRICH_IS_ATTACKED_THE_FIRST_TC_PLAYED_BY_PRUSSIA_IS_WORTH_NOTHING_0_POINTS = 38
 const NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_SEYDLITZ_ONCE_AT_DOUBLE_VALUE = 40
-const NEXT_TURN_PRINZ_HEINRICH_PROTECTS_OBJECTIVES_UP_TO_4_CITIES_DISTANT = 42
-const NEXT_TURN_DAUN_MAY_MOVE_ONLY_2_CITIES = 44
+
+const NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY = 29
+
 
 /* OBJECTIVES */
 
@@ -366,8 +382,11 @@ set_add_all(all_objectives, data.type.objective_prussia)
 set_add_all(all_objectives, data.type.objective_russia)
 
 const protect_range = []
-for (let s of all_objectives)
+const protect_range_4 = []
+for (let s of all_objectives) {
 	make_protect_range(protect_range[s] = [], s, s, 3)
+	make_protect_range(protect_range_4[s] = [], s, s, 4)
+}
 
 function make_protect_range(result, start, here, range) {
 	for (let next of data.cities.adjacent[here]) {
@@ -421,18 +440,21 @@ function is_reconquest_space(pow, s) {
 	return set_has(protect[pow], s)
 }
 
+function is_space_protected_by_piece(s, p) {
+	if (game.fx === NEXT_TURN_PRINZ_HEINRICH_PROTECTS_OBJECTIVES_UP_TO_4_CITIES_DISTANT)
+		if (p === GEN_HEINRICH)
+			return set_has(protect_range_4[s], game.pos[p])
+	return set_has(protect_range[s], game.pos[p])
+}
+
 function is_protected_from_conquest(s) {
 	for (let pow of all_powers) {
 		if (set_has(protect[pow], s)) {
-			let range = protect_range[s]
 			for (let p of all_power_generals[pow])
-				if (set_has(range, game.pos[p]))
+				if (is_space_protected_by_piece(s, p))
 					return true
-			if (pow === P_IMPERIAL) {
-				for (let p of all_power_trains[pow])
-					if (set_has(range, game.pos[p]))
-						return true
-			}
+			if (pow === P_IMPERIAL && is_space_protected_by_piece(s, TRAIN_IA))
+				return true
 		}
 	}
 	return false
@@ -441,15 +463,11 @@ function is_protected_from_conquest(s) {
 function is_protected_from_reconquest(s) {
 	for (let pow of all_powers) {
 		if (set_has(full_objective[pow], s)) {
-			let range = protect_range[s]
 			for (let p of all_power_generals[pow])
-				if (set_has(range, game.pos[p]))
+				if (is_space_protected_by_piece(s, p))
 					return true
-			if (pow === P_IMPERIAL) {
-				for (let p of all_power_trains[pow])
-					if (set_has(range, game.pos[p]))
-						return true
-			}
+			if (pow === P_IMPERIAL && is_space_protected_by_piece(s, TRAIN_IA))
+				return true
 		}
 	}
 	return false
@@ -682,6 +700,13 @@ function has_enemy_supply_train(to) {
 	return false
 }
 
+function has_enemy_general(to) {
+	for (let p of all_enemy_generals[game.power])
+		if (game.pos[p] === to)
+			return true
+	return false
+}
+
 function has_enemy_piece(to) {
 	for (let p of all_enemy_generals[game.power])
 		if (game.pos[p] === to)
@@ -876,6 +901,8 @@ function end_action_stage() {
 }
 
 function goto_end_of_turn() {
+	delete game.ia_attack
+
 	if (game.scenario === 1 || game.scenario === 2) {
 		log("Imaginary player draws 5 TC.")
 		for (let i = 0; i < 5; ++i)
@@ -1193,6 +1220,18 @@ function give_troops(total) {
 
 /* MOVEMENT */
 
+function movement_range() {
+	if (game.fx === NEXT_TURN_SALTIKOV_MAY_MOVE_ONLY_2_CITIES && set_has(game.selected, GEN_SALTIKOV))
+		return 2
+	if (game.fx === NEXT_TURN_DAUN_MAY_MOVE_ONLY_2_CITIES && set_has(game.selected, GEN_DAUN))
+		return 2
+	if (game.fx === NEXT_TURN_RICHELIEU_MAY_MOVE_2_CITIES_ONLY && set_has(game.selected, GEN_RICHELIEU))
+		return 2
+	if (game.fx === NEXT_TURN_FRIEDRICH_MAY_MOVE_4_CITIES_EVEN_AS_A_STACK && set_has(game.selected, GEN_FRIEDRICH))
+		return 4
+	return 3
+}
+
 function goto_movement() {
 	game.state = "movement"
 	set_clear(game.moved)
@@ -1264,6 +1303,60 @@ function format_move(max) {
 	return ` up to ${n} cities.`
 }
 
+function may_unstack() {
+	// TODO: 3-piece stack?
+	if (game.fx === NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK)
+		return !set_has(game.selected, GEN_CHEVERT)
+	return true
+}
+
+// TODO: also force moving if in such a position and can move away
+function forbid_stopping_at(from) {
+	switch (game.fx) {
+		case NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL:
+			return set_has(game.selected, GEN_SOUBISE) && game.ia_attack === get_space_suit(from) && is_attack_position(from)
+		case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
+			return set_has(data.cities.adjacent[HALLE], from) && has_enemy_general(HALLE)
+		case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return set_has(game.selected, GEN_CUMBERLAND) && is_attack_position(from)
+		case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return set_has(game.selected, GEN_SOUBISE) && is_attack_position(from)
+		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return set_has(game.selected, GEN_FRIEDRICH) && is_attack_position(from)
+	}
+	return false
+}
+
+function forbid_attack(from, to) {
+	switch (game.fx) {
+		case NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL:
+			return set_has(game.selected, GEN_SOUBISE) && game.ia_attack === get_space_suit(from)
+		case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
+			return to === HALLE
+		case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return set_has(game.selected, GEN_CUMBERLAND)
+		case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return set_has(game.selected, GEN_SOUBISE)
+		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return set_has(game.selected, GEN_FRIEDRICH)
+	}
+	return false
+}
+
+function forbid_capture(s) {
+	switch (game.fx) {
+		case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return set_has(game.selected, GEN_CUMBERLAND)
+		case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return set_has(game.selected, GEN_SOUBISE)
+		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return set_has(game.selected, GEN_FRIEDRICH)
+		case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
+			return s === HALLE
+	}
+	return false
+}
+
 function can_move_train_to(to) {
 	return !has_any_piece(to)
 }
@@ -1277,8 +1370,21 @@ function can_move_general_to(to) {
 		return false
 	if (has_any_other_general(to))
 		return false
+	if (has_enemy_supply_train(to) && forbid_capture(to))
+		return false
 	if (game.selected.length + count_pieces(to) > 3)
 		return false
+
+	if (forbid_stopping_at(to)) {
+		let from = game.pos[game.selected[0]]
+		if (!can_continue_general_from(to))
+			return false
+		// TODO: search_move does not take this into account!
+		if (game.major && set_has(data.cities.major_roads[from], to))
+			return game.count < movement_range()
+		return game.count < movement_range() - 1
+	}
+
 	return true
 }
 
@@ -1330,19 +1436,22 @@ function resume_move_supply_train() {
 }
 
 function resume_move_general() {
-	if (game.count === 3 + game.major) {
+	let range = movement_range()
+	if (game.count === range + game.major) {
 		end_move_piece()
 	} else {
 		let here = game.pos[game.selected[0]]
 		game.state = "move_general"
-		if (game.major && game.count < 4)
-			game.move_major = search_move(here, 4 - game.count, "major_roads", can_move_general_to, can_continue_general_from)
+		/* NEW
+		if (game.major && game.count < range+1)
+			game.move_major = search_move(here, range+1 - game.count, "major_roads", can_move_general_to, can_continue_general_from)
 		else
 			game.move_major = []
-		if (game.count < 3)
-			game.move_minor = search_move(here, 3 - game.count, "adjacent", can_move_general_to, can_continue_general_from)
+		if (game.count < range)
+			game.move_minor = search_move(here, range - game.count, "adjacent", can_move_general_to, can_continue_general_from)
 		else
 			game.move_minor = []
+		*/
 	}
 }
 
@@ -1548,17 +1657,19 @@ states.move_supply_train_OLD = {
 
 states.move_general_NEW = {
 	prompt() {
-		prompt("Move " + format_selected() + format_move(3))
+		prompt("Move " + format_selected() + format_move(movement_range()))
 		view.selected = game.selected
 
 		let who = game.selected[0]
 		let here = game.pos[who]
 
 		if (game.count === 0) {
-			if (game.selected.length > 1)
-				view.actions.detach = 1
-			else
-				view.actions.detach = 0
+			if (may_unstack()) {
+				if (game.selected.length > 1)
+					view.actions.detach = 1
+				else
+					view.actions.detach = 0
+			}
 
 			let s_take = count_stacked_take()
 			let s_give = count_stacked_give()
@@ -1569,8 +1680,12 @@ states.move_general_NEW = {
 			if (s_give > 0 && u_take > 0)
 				view.actions.give = 1
 		} else {
-			gen_action_piece(who)
-			view.actions.stop = 1
+			if (forbid_stopping_at(here)) {
+				view.actions.stop = 0
+			} else {
+				gen_action_piece(who)
+				view.actions.stop = 1
+			}
 		}
 
 		view.move_major = game.move_major
@@ -1638,24 +1753,24 @@ states.move_general_NEW = {
 
 states.move_general_OLD = {
 	prompt() {
-		prompt("Move " + format_selected() + format_move(3))
+		prompt("Move " + format_selected() + format_move(movement_range()))
 		view.selected = game.selected
 
 		let who = game.selected[0]
 		let here = game.pos[who]
 
 		if (game.count === 0) {
-			/*
-			if (game.selected.length > 1)
-				view.actions.detach = 1
-			else
-				view.actions.detach = 0
-			*/
-
-			// detach
-			if (game.selected.length > 1)
-				for (let p of game.selected)
-					gen_action_piece(p)
+			if (may_unstack()) {
+				/*
+				if (game.selected.length > 1)
+					view.actions.detach = 1
+				else
+					view.actions.detach = 0
+				*/
+				if (game.selected.length > 1)
+					for (let p of game.selected)
+						gen_action_piece(p)
+			}
 
 			let s_take = count_stacked_take()
 			let s_give = count_stacked_give()
@@ -1667,16 +1782,20 @@ states.move_general_OLD = {
 			if (s_give > 0 && u_take > 0)
 				view.actions.give = 1
 		} else {
-			gen_action_piece(who)
-			view.actions.stop = 1
+			if (forbid_stopping_at(here)) {
+				view.actions.stop = 0
+			} else {
+				gen_action_piece(who)
+				view.actions.stop = 1
+			}
 		}
 
-		if (game.count < 3 + game.major)
+		if (game.count < movement_range() + game.major)
 			for (let next of data.cities.major_roads[here])
 				if (can_move_general_to(next))
 					gen_action_space_or_piece(next)
 
-		if (game.count < 3)
+		if (game.count < movement_range())
 			for (let next of data.cities.roads[here])
 				if (can_move_general_to(next))
 					gen_action_space_or_piece(next)
@@ -1692,7 +1811,10 @@ states.move_general_OLD = {
 	},
 	piece(p) {
 		if (game.count === 0) {
-			set_delete(game.selected, p)
+			if (set_has(game.selected, p))
+				set_delete(game.selected, p)
+			else
+				this.space(game.pos[p])
 		} else {
 			if (p === game.selected[0])
 				this.stop()
@@ -1714,7 +1836,7 @@ states.move_general_OLD = {
 		if (!set_has(data.cities.major_roads[from], to))
 			game.major = 0
 
-		if (move_general_to(to) || ++game.count === 3 + game.major)
+		if (move_general_to(to) || ++game.count === movement_range() + game.major)
 			end_move_piece()
 	},
 }
@@ -1791,6 +1913,7 @@ function troop_cost() {
 
 function has_available_depot() {
 	for (let s of all_power_depots[game.power])
+		// TODO: also allied other player's pieces?
 		if (!has_enemy_piece(s))
 			return true
 	return false
@@ -1837,6 +1960,13 @@ function has_re_entry_space(p) {
 	return false
 }
 
+function is_attack_position(s) {
+	for (let p of all_enemy_generals[game.power])
+		if (set_has(data.cities.adjacent[s], game.pos[p]))
+			return true
+	return false
+}
+
 states.recruit = {
 	prompt() {
 		let cost = troop_cost()
@@ -1858,8 +1988,16 @@ states.recruit = {
 		if (game.count >= cost) {
 			if (av_troops > 0) {
 				for (let p of all_power_generals[game.power]) {
-					if (game.troops[p] > 0 && game.troops[p] < 8)
-						gen_action_supreme_commander(game.pos[p])
+					if (game.troops[p] > 0 && game.troops[p] < 8) {
+						let s = game.pos[p]
+						if (game.fx === NEXT_TURN_FRIEDRICH_MAY_NOT_RECEIVE_ANY_NEW_TROOPS)
+							if (get_supreme_commander(s) === GEN_FRIEDRICH)
+								continue
+						if (game.fx === NEXT_TURN_EVERY_PRUSSIAN_GENERAL_WHO_RECEIVES_NEW_TROOPS_MAY_NOT_MOVE_INTO_ATTACK_POSITION)
+							if (game.power === P_PRUSSIA && is_attack_position(s))
+								continue
+						gen_action_supreme_commander(s)
+					}
 					else if (game.pos[p] === ELIMINATED && has_re_entry_space(p))
 						gen_action_piece(p)
 				}
@@ -1982,8 +2120,10 @@ function goto_combat() {
 	for (let a of from) {
 		for (let b of to) {
 			if (set_has(data.cities.adjacent[a], b)) {
-				game.combat.push(a)
-				game.combat.push(b)
+				if (!forbid_attack(a, b)) {
+					game.combat.push(a)
+					game.combat.push(b)
+				}
 			}
 		}
 	}
@@ -2223,6 +2363,9 @@ function select_stack(s) {
 }
 
 function resolve_combat() {
+	if (game.fx === NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL)
+		if (get_supreme_commander(game.attacker) === GEN_HILDBURGHAUSEN)
+			game.ia_attack = get_space_suit(game.attacker)
 	if (game.count === 0) {
 		log("Tie.")
 		next_combat()
