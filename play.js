@@ -702,7 +702,7 @@ function layout_general_offset_elim(g, s) {
 	let n = 0
 	let p = get_cylinder_power(g)
 	for (let i of all_power_generals[p])
-		if (i > g) // && view.pos[i] === s)
+		if (i > g && view.pos[i] === s)
 			++n
 	return n
 }
