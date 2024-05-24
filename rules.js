@@ -153,6 +153,17 @@ const all_power_re_entry_cities = [
 	data.sectors.hearts_south_of_koblenz,
 ]
 
+const piece_name = [
+	"P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8",
+	"H1", "H2",
+	"R1", "R2", "R3", "R4",
+	"S1",
+	"A1", "A2", "A3", "A4", "A5",
+	"IA1",
+	"F1", "F2", "F3",
+	"PT1", "PT2", "HT", "RT1", "RT2", "ST", "AT1", "AT2", "IAT", "FT1", "FT2",
+]
+
 const all_power_generals = [
 	/* P */ [ 0, 1, 2, 3, 4, 5, 6, 7 ],
 	/* H */ [ 8, 9 ],
@@ -260,6 +271,16 @@ function to_value(c) {
 
 function is_reserve(c) {
 	return to_suit(c) === RESERVE
+}
+
+function format_cards(list) {
+	return list.map(c => to_value(c) + suit_name[to_suit(c)]).join(", ")
+}
+
+function format_selected() {
+	if (game.selected.length === 0)
+		return "nobody"
+	return game.selected.map(p => piece_name[p]).join(" and ")
 }
 
 /* OBJECTIVES */
@@ -562,6 +583,61 @@ function count_unused_generals() {
 	let n = 0
 	for (let p of all_power_generals[game.power])
 		if (game.pos[p] !== REMOVED && game.troops[p] === 0)
+			++n
+	return n
+}
+
+function has_any_piece(to) {
+	for (let s of game.pos)
+		if (s === to)
+			return true
+	return false
+}
+
+function has_friendly_supply_train(to) {
+	for (let p of all_friendly_trains[game.power])
+		if (game.pos[p] === to)
+			return true
+	return false
+}
+
+function has_enemy_supply_train(to) {
+	for (let p of all_enemy_trains[game.power])
+		if (game.pos[p] === to)
+			return true
+	return false
+}
+
+function has_enemy_piece(to) {
+	for (let p of all_enemy_generals[game.power])
+		if (game.pos[p] === to)
+			return true
+	for (let p of all_enemy_trains[game.power])
+		if (game.pos[p] === to)
+			return true
+	return false
+}
+
+function has_any_other_general(to) {
+	for (let other of all_powers)
+		if (other !== game.power)
+			for (let p of all_power_generals[other])
+				if (game.pos[p] === to)
+					return true
+	return false
+}
+
+function has_own_general(to) {
+	for (let p of all_power_generals[game.power])
+		if (game.pos[p] === to)
+			return true
+	return false
+}
+
+function count_pieces(to) {
+	let n = 0
+	for (let s of game.pos)
+		if (s === to)
 			++n
 	return n
 }
@@ -893,10 +969,6 @@ function should_power_discard_tc() {
 	return false
 }
 
-function format_cards(list) {
-	return list.map(c => to_value(c) + suit_name[to_suit(c)]).join(", ")
-}
-
 states.tactical_cards_discard = {
 	prompt() {
 		view.draw = game.draw
@@ -1035,17 +1107,25 @@ function is_supreme_commander(p) {
 
 states.movement = {
 	prompt() {
-		prompt("Move your generals and supply trains.")
-
-		let pow = game.power
-
-		for (let p of all_power_generals[pow])
-			if (!set_has(game.moved, p) && is_supreme_commander(p) && game.pos[p] < ELIMINATED)
+		let done = true
+		for (let p of all_power_generals[game.power]) {
+			if (!set_has(game.moved, p) && is_supreme_commander(p) && game.pos[p] < ELIMINATED) {
 				gen_action_piece(p)
+				done = false
+			}
+		}
 
-		for (let p of all_power_trains[pow])
-			if (!set_has(game.moved, p) && game.pos[p] < ELIMINATED)
+		for (let p of all_power_trains[game.power]) {
+			if (!set_has(game.moved, p) && game.pos[p] < ELIMINATED) {
 				gen_action_piece(p)
+				done = false
+			}
+		}
+
+		if (done)
+			prompt("Movement done.")
+		else
+			prompt("Move your generals and supply trains.")
 
 		view.actions.end_movement = 1
 	},
@@ -1059,7 +1139,12 @@ states.movement = {
 				game.selected.push(other)
 
 		game.count = 0
-		game.major = 1
+
+		if (data.cities.major_roads[here].length > 0)
+			game.major = 1
+		else
+			game.major = 0
+
 		if (is_supply_train(p))
 			resume_move_supply_train()
 		else
@@ -1071,59 +1156,11 @@ states.movement = {
 	},
 }
 
-function has_any_piece(to) {
-	for (let s of game.pos)
-		if (s === to)
-			return true
-	return false
-}
-
-function has_friendly_supply_train(to) {
-	for (let p of all_friendly_trains[game.power])
-		if (game.pos[p] === to)
-			return true
-	return false
-}
-
-function has_enemy_supply_train(to) {
-	for (let p of all_enemy_trains[game.power])
-		if (game.pos[p] === to)
-			return true
-	return false
-}
-
-function has_enemy_piece(to) {
-	for (let p of all_enemy_generals[game.power])
-		if (game.pos[p] === to)
-			return true
-	for (let p of all_enemy_trains[game.power])
-		if (game.pos[p] === to)
-			return true
-	return false
-}
-
-function has_any_other_general(to) {
-	for (let other of all_powers)
-		if (other !== game.power)
-			for (let p of all_power_generals[other])
-				if (game.pos[p] === to)
-					return true
-	return false
-}
-
-function has_own_general(to) {
-	for (let p of all_power_generals[game.power])
-		if (game.pos[p] === to)
-			return true
-	return false
-}
-
-function count_pieces(to) {
-	let n = 0
-	for (let s of game.pos)
-		if (s === to)
-			++n
-	return n
+function format_move(max) {
+	let n = max - game.count
+	if (game.major)
+		return ` up to ${n} + 1 cities.`
+	return ` up to ${n} cities.`
 }
 
 function can_move_train_to(to) {
@@ -1275,7 +1312,7 @@ function move_general_to(to) {
 
 states.move_supply_train_NEW = {
 	prompt() {
-		prompt("Move supply train.")
+		prompt("Move " + format_selected() + format_move(2))
 		view.selected = game.selected
 
 		let who = game.selected[0]
@@ -1346,7 +1383,7 @@ states.move_supply_train_NEW = {
 
 states.move_supply_train_OLD = {
 	prompt() {
-		prompt("Move supply train.")
+		prompt("Move " + format_selected() + format_move(2))
 		view.selected = game.selected
 
 		let who = game.selected[0]
@@ -1393,7 +1430,7 @@ states.move_supply_train_OLD = {
 
 states.move_general_NEW = {
 	prompt() {
-		prompt("Move general.")
+		prompt("Move " + format_selected() + format_move(3))
 		view.selected = game.selected
 
 		let who = game.selected[0]
@@ -1486,7 +1523,7 @@ states.move_general_NEW = {
 
 states.move_general_OLD = {
 	prompt() {
-		prompt("Move general.")
+		prompt("Move " + format_selected() + format_move(3))
 		view.selected = game.selected
 
 		let who = game.selected[0]
@@ -1565,7 +1602,7 @@ states.move_supply_train = states.move_supply_train_OLD
 
 states.move_detach = {
 	prompt() {
-		prompt("Detach general.")
+		prompt("Move " + format_selected() + ". Detach general from stack.")
 		for (let p of game.selected)
 			gen_action_piece(p)
 	},
@@ -1577,7 +1614,7 @@ states.move_detach = {
 
 states.move_take = {
 	prompt() {
-		prompt("Take troops from detached generals.")
+		prompt("Transfer troops to " + format_selected() + ".")
 		let take = count_stacked_take()
 		let give = count_unstacked_give()
 		let n = Math.min(take, give)
@@ -1593,7 +1630,7 @@ states.move_take = {
 
 states.move_give = {
 	prompt() {
-		prompt("Give troops to detached generals.")
+		prompt("Transfer troops from " + format_selected() + ".")
 		let take = count_unstacked_take()
 		let give = count_stacked_give()
 		let n = Math.min(take, give)
@@ -1728,7 +1765,7 @@ function can_re_enter_supply_train(s) {
 
 states.re_enter = {
 	prompt() {
-		prompt("Re-enter piece.")
+		prompt("Re-enter " + format_selected() + ".")
 		let p = game.selected[0]
 		let can_re_enter_at = is_general(p) ? can_re_enter_general : can_re_enter_supply_train
 
@@ -2145,7 +2182,7 @@ states.retreat_eliminate_hits = {
 
 states.retreat_eliminate_trapped = {
 	prompt() {
-		prompt("Eliminate generals without a retreat path.")
+		prompt("Eliminate " + format_selected() + " without a retreat path.")
 		for (let p of game.selected)
 			gen_action_piece(p)
 	},
@@ -2225,7 +2262,7 @@ function search_retreat(loser, winner, range) {
 
 states.retreat = {
 	prompt() {
-		prompt("Retreat loser " + Math.abs(game.count))
+		prompt("Retreat " + format_selected() + " " + Math.abs(game.count) + " cities.")
 		view.selected = game.selected
 		view.retreat = game.retreat
 		map_for_each_key(game.retreat, gen_action_space)
@@ -2358,7 +2395,7 @@ function goto_supply() {
 
 states.supply = {
 	prompt() {
-		prompt("Supply")
+		prompt("Supply.")
 		for (let p of all_power_generals[game.power]) {
 			if (game.pos[p] >= ELIMINATED)
 				continue
