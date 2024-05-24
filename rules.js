@@ -1120,7 +1120,7 @@ function can_move_train_to(to) {
 	return !has_any_piece(to)
 }
 
-function can_continue_train_from(from) {
+function can_continue_train_from(_) {
 	return true
 }
 
@@ -1305,9 +1305,6 @@ states.move_supply_train_NEW = {
 	},
 	space(to) {
 		let who = game.selected[0]
-		let from = game.pos[who]
-
-		// TODO: path?
 
 		set_add(game.moved, who)
 		game.pos[who] = to
@@ -1910,6 +1907,7 @@ states.combat_attack = {
 		}
 	},
 	pass() {
+		clear_undo()
 		resolve_combat()
 	},
 }
@@ -1939,6 +1937,7 @@ states.combat_defend = {
 		}
 	},
 	pass() {
+		clear_undo()
 		resolve_combat()
 	},
 }
@@ -2008,17 +2007,16 @@ function resolve_combat() {
 		log("Tie.")
 		next_combat()
 	} else if (game.count > 0) {
-		set_active_attacker()
 		game.selected = select_stack(game.defender)
 		goto_retreat()
 	} else {
-		set_active_defender()
 		game.selected = select_stack(game.attacker)
 		goto_retreat()
 	}
 }
 
 function next_combat() {
+	clear_undo()
 	log_br()
 	set_active_current_power()
 	game.count = 0
@@ -2048,6 +2046,13 @@ function get_winner() {
 
 function get_loser() {
 	return game.count < 0 ? game.attacker : game.defender
+}
+
+function set_active_winner() {
+	if (game.count > 0)
+		set_active_attacker()
+	else
+		set_active_defender()
 }
 
 function goto_retreat() {
@@ -2081,22 +2086,67 @@ function goto_retreat() {
 		}
 	}
 
-	// remove eliminated generals
-	for (let i = game.selected.length - 1; i >= 0; --i) {
-		let p = game.selected[i]
+	resume_retreat()
+}
+
+function resume_retreat() {
+	// eliminate generals with no more hits
+	for (let p of game.selected) {
 		if (game.troops[p] === 0) {
-			log("P" + p + " eliminated.")
-			game.pos[p] = ELIMINATED
-			array_remove(game.selected, i)
+			game.state = "retreat_eliminate_hits"
+			return
 		}
 	}
 
+	// retreat remaining generals
 	if (game.selected.length > 0) {
-		game.retreat = search_retreat(loser, winner, Math.abs(game.count))
-		game.state = "retreat"
-	} else {
-		next_combat()
+		game.retreat = search_retreat(get_loser(), get_winner(), Math.abs(game.count))
+		if (game.retreat.length > 0) {
+			// victor chooses retreat destination
+			set_active_winner()
+			game.state = "retreat"
+		} else {
+			// eliminate if there are no retreat possibilities
+			delete game.retreat
+			game.state = "retreat_eliminate_trapped"
+		}
+		return
 	}
+
+	// no retreat if generals wiped out
+	next_combat()
+}
+
+states.retreat_eliminate_hits = {
+	prompt() {
+		prompt("Eliminate generals without troops.")
+		// remove eliminated generals
+		for (let p of game.selected)
+			if (game.troops[p] === 0)
+				gen_action_piece(p)
+	},
+	piece(p) {
+		log("P" + p + " eliminated.")
+		game.pos[p] = ELIMINATED
+		set_delete(game.selected, p)
+		resume_retreat()
+	},
+}
+
+states.retreat_eliminate_trapped = {
+	prompt() {
+		prompt("Eliminate generals without a retreat path.")
+		for (let p of game.selected)
+			gen_action_piece(p)
+	},
+	piece(_) {
+		log("Trapped.")
+		for (let p of game.selected) {
+			game.pos[p] = ELIMINATED
+			game.troops[p] = 0
+		}
+		next_combat()
+	},
 }
 
 // search distances from winner within retreat range
@@ -2168,12 +2218,7 @@ states.retreat = {
 		prompt("Retreat loser " + Math.abs(game.count))
 		view.selected = game.selected
 		view.retreat = game.retreat
-		if (game.retreat.length === 0) {
-			prompt("Eliminate loser.")
-			gen_action_piece(game.selected[0])
-		} else {
-			map_for_each_key(game.retreat, gen_action_space)
-		}
+		map_for_each_key(game.retreat, gen_action_space)
 	},
 	space(to) {
 		push_undo()
@@ -2182,19 +2227,7 @@ states.retreat = {
 			game.pos[p] = to
 		}
 		delete game.retreat
-		game.state = "retreat_done"
-		// next_combat()
-	},
-	piece(_) {
-		push_undo()
-		log("Eliminated.")
-		for (let p of game.selected) {
-			game.pos[p] = ELIMINATED
-			game.troops[p] = 0
-		}
-		delete game.retreat
-		game.state = "retreat_done"
-		// next_combat()
+		next_combat()
 	},
 }
 
@@ -2601,7 +2634,7 @@ function make_seeded_fate_deck() {
 	let aside = []
 	for (let i = 0; i < 4; ++i)
 		aside.push(deck.pop())
-	
+
 	deck.push(FC_ELISABETH)
 	deck.push(FC_POEMS)
 	deck.push(FC_AMERICA)
