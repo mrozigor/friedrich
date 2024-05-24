@@ -1260,7 +1260,7 @@ states.movement = {
 function format_move(max) {
 	let n = max - game.count
 	if (game.major)
-		return ` up to ${n} + 1 cities.`
+		return ` up to ${n} cities (${n+1} on main roads).`
 	return ` up to ${n} cities.`
 }
 
