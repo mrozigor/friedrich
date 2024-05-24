@@ -115,7 +115,12 @@ function max_power_troops(pow) {
 		return 3
 	if (game.scenario === 2 && pow === P_PRUSSIA)
 		return 24
-	return max_power_troops_4[pow]
+	let max = max_power_troops_4[pow]
+	let n = 0
+	for (let p of all_power_generals[pow])
+		if (game.pos[p] < REMOVED)
+			n += 8
+	return Math.min(n, max)
 }
 
 const all_powers = [ 0, 1, 2, 3, 4, 5, 6 ]
