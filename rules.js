@@ -177,6 +177,12 @@ const all_power_generals = [
 const GEN_FRIEDRICH = 0
 const GEN_SEYDLITZ = 5
 const GEN_CUMBERLAND = 9
+const GEN_APRAXIN = 12
+const GEN_TOTTLEBEN = 13
+const GEN_EHRENSVAERD = 14
+const GEN_DAUN = 15
+const GEN_LAUDON = 18
+const GEN_HILDBURGHAUSEN = 20
 
 const all_power_generals_rev = all_power_generals.map(list => list.slice().reverse())
 
@@ -517,6 +523,11 @@ function player_from_power(pow) {
 	return role
 }
 
+function set_active_to_power(power) {
+	game.power = power
+	game.active = current_player()
+}
+
 function current_player() {
 	return player_from_power(game.power)
 }
@@ -642,6 +653,24 @@ function count_pieces(to) {
 	return n
 }
 
+function add_one_troop(p) {
+	for (let x of all_power_generals[game.power]) {
+		if (game.pos[x] === game.pos[p] && game.troops[x] < 8) {
+			game.troops[x] ++
+			break
+		}
+	}
+}
+
+function remove_one_troop(p) {
+	for (let x of all_power_generals_rev[game.power]) {
+		if (game.pos[x] === game.pos[p] && game.troops[x] > 1) {
+			game.troops[x] --
+			break
+		}
+	}
+}
+
 function retire_general(p) {
 	log("P" + p + " retired.")
 
@@ -676,9 +705,8 @@ const POWER_FROM_ACTION_STEP = [
 	P_FRANCE,
 ]
 
-function set_active_current_power() {
-	game.power = POWER_FROM_ACTION_STEP[game.step]
-	game.active = current_player()
+function set_active_to_current_action_step() {
+	set_active_to_power(POWER_FROM_ACTION_STEP[game.step])
 }
 
 function goto_start_turn() {
@@ -697,7 +725,10 @@ function goto_start_turn() {
 			set_delete(game.fate, i)
 
 		let fc = game.clock.pop()
-		let fs = get_space_suit(game.pos[game.vg])
+
+		let fs = SPADES
+		if (game.scenario >= 3)
+			fs = get_space_suit(game.pos[game.vg])
 
 		if (fc > 12) {
 			log("# " + strokes_of_fate_name[fc-13])
@@ -715,6 +746,11 @@ function goto_start_turn() {
 		if (check_victory())
 			return
 
+		if (fate_effect_immediate[game.fx]) {
+			fate_effect_immediate[game.fx]()
+			return
+		}
+
 		// dropped out powers are virtual in 2p scenarios
 		if (game.scenario === 1 || game.scenario === 2) {
 			resume_start_turn()
@@ -722,22 +758,19 @@ function goto_start_turn() {
 		}
 
 		if (fc === FC_ELISABETH) {
-			game.power = P_PRUSSIA
-			game.active = current_player()
+			set_active_to_power(P_PRUSSIA)
 			game.state = "russia_quits_the_game_1"
 			return
 		}
 
 		if (fc === FC_SWEDEN) {
-			game.power = P_PRUSSIA
-			game.active = current_player()
+			set_active_to_power(P_PRUSSIA)
 			game.state = "sweden_quits_the_game_1"
 			return
 		}
 
 		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))) {
-			game.power = P_HANOVER
-			game.active = current_player()
+			set_active_to_power(P_HANOVER)
 			game.state = "france_quits_the_game_1"
 			return
 		}
@@ -751,11 +784,13 @@ function resume_start_turn() {
 	// MARIA: politics
 	// MARIA: hussars
 
+	delete game.ia_lost
+
 	goto_action_stage()
 }
 
 function goto_action_stage() {
-	set_active_current_power()
+	set_active_to_current_action_step()
 
 	clear_undo()
 
@@ -879,9 +914,9 @@ function check_victory_4() {
 
 function find_largest_discard(u) {
 	for (let i = 0; i < 5; ++i)
-		if (u[i] <= u[0] && u[i] <= u[1] && u[i] <= u[2] && u[i] <= u[3] && u <= u[4])
+		if (u[i] <= u[0] && u[i] <= u[1] && u[i] <= u[2] && u[i] <= u[3] && u[i] <= u[4])
 			return i
-	throw "IMPOSSIBLE"
+	throw "OUT OF CARDS"
 }
 
 function next_tactics_deck() {
@@ -1214,9 +1249,7 @@ function search_move(from, range, road_type, can_move_to, can_continue_from) {
 
 function resume_move_supply_train() {
 	if (game.count === 2 + game.major) {
-		game.state = "movement"
-		delete game.move_major
-		delete game.move_minor
+		end_move_piece()
 	} else {
 		let here = game.pos[game.selected[0]]
 		game.state = "move_supply_train"
@@ -1233,9 +1266,7 @@ function resume_move_supply_train() {
 
 function resume_move_general() {
 	if (game.count === 3 + game.major) {
-		game.state = "movement"
-		delete game.move_major
-		delete game.move_minor
+		end_move_piece()
 	} else {
 		let here = game.pos[game.selected[0]]
 		game.state = "move_general"
@@ -1311,6 +1342,29 @@ function move_general_to(to) {
 	return stop
 }
 
+function move_general_immediately(to) {
+	let who = game.selected[0]
+	let from = game.pos[who]
+
+	// uniting stacks (turn all oos if one is oos)
+	let oos = false
+	for (let p of all_power_generals[game.power])
+		if (game.pos[p] === to && is_out_of_supply(p))
+			oos = true
+	if (oos)
+		for (let p of all_power_generals[game.power])
+			if (game.pos[p] === to)
+				set_out_of_supply(p)
+
+	// eliminate supply train
+	for (let p of all_enemy_trains[game.power]) {
+		if (game.pos[p] === to) {
+			log("Eliminate P" + p)
+			game.pos[p] = ELIMINATED
+		}
+	}
+}
+
 states.move_supply_train_NEW = {
 	prompt() {
 		prompt("Move " + format_selected() + format_move(2))
@@ -1347,9 +1401,7 @@ states.move_supply_train_NEW = {
 		this.stop()
 	},
 	stop() {
-		game.state = "movement"
-		delete game.move_major
-		delete game.move_minor
+		end_move_piece()
 	},
 	space(to) {
 		let who = game.selected[0]
@@ -1408,9 +1460,7 @@ states.move_supply_train_OLD = {
 		this.stop()
 	},
 	stop() {
-		game.state = "movement"
-		delete game.move_major
-		delete game.move_minor
+		end_move_piece()
 	},
 	space(to) {
 		let who = game.selected[0]
@@ -1425,7 +1475,7 @@ states.move_supply_train_OLD = {
 		game.pos[who] = to
 
 		if (++game.count === 2 + game.major)
-			game.state = "movement"
+			end_move_piece()
 	},
 }
 
@@ -1447,7 +1497,6 @@ states.move_general_NEW = {
 			let s_give = count_stacked_give()
 			let u_take = count_unstacked_take()
 			let u_give = count_unstacked_give()
-
 			if (s_take > 0 && u_give > 0)
 				view.actions.take = 1
 			if (s_give > 0 && u_take > 0)
@@ -1483,9 +1532,7 @@ states.move_general_NEW = {
 	stop() {
 		for (let p of game.selected)
 			set_add(game.moved, p)
-		game.state = "movement"
-		delete game.move_major
-		delete game.move_minor
+		end_move_piece()
 	},
 	space(to) {
 		let who = game.selected[0]
@@ -1578,9 +1625,7 @@ states.move_general_OLD = {
 	stop() {
 		for (let p of game.selected)
 			set_add(game.moved, p)
-		game.state = "movement"
-		delete game.move_major
-		delete game.move_minor
+		end_move_piece()
 	},
 	space(to) {
 		let who = game.selected[0]
@@ -1592,7 +1637,7 @@ states.move_general_OLD = {
 			game.major = 0
 
 		if (move_general_to(to) || ++game.count === 3 + game.major)
-			game.state = "movement"
+			end_move_piece()
 	},
 }
 
@@ -1625,7 +1670,10 @@ states.move_take = {
 	},
 	value(v) {
 		take_troops(v)
-		game.state = "move_general"
+		if (game.state === "laudon_take")
+			game.state = "austria_may_move_laudon_by_one_city_immediately"
+		else
+			game.state = "move_general"
 	},
 }
 
@@ -1641,8 +1689,17 @@ states.move_give = {
 	},
 	value(v) {
 		give_troops(v)
-		game.state = "move_general"
+		if (game.state === "laudon_give")
+			game.state = "austria_may_move_laudon_by_one_city_immediately"
+		else
+			game.state = "move_general"
 	},
+}
+
+function end_move_piece() {
+	delete game.move_major
+	delete game.move_minor
+	game.state = "movement"
 }
 
 /* RECRUITMENT */
@@ -1691,6 +1748,16 @@ states.re_enter_choose_city = {
 	},
 }
 
+function has_re_entry_space(p) {
+	let can_re_enter_at = is_general(p) ? can_re_enter_general : can_re_enter_supply_train
+	if (game.re_enter !== undefined)
+		return can_re_enter_at(game.re_enter)
+	for (let s of all_power_depots[game.power])
+		if (can_re_enter_at(s))
+			return true
+	return false
+}
+
 states.recruit = {
 	prompt() {
 		let cost = troop_cost()
@@ -1710,14 +1777,20 @@ states.recruit = {
 		}
 
 		if (game.count >= cost) {
-			if (av_troops > 0)
-				for (let p of all_power_generals[game.power])
-					if (game.troops[p] < 8)
+			if (av_troops > 0) {
+				for (let p of all_power_generals[game.power]) {
+					if (game.troops[p] > 0 && game.troops[p] < 8)
 						gen_action_supreme_commander(game.pos[p])
-			if (av_trains > 0)
-				for (let p of all_power_trains[game.power])
-					if (game.pos[p] === ELIMINATED)
+					else if (game.pos[p] === ELIMINATED && has_re_entry_space(p))
 						gen_action_piece(p)
+				}
+			}
+			if (av_trains > 0) {
+				for (let p of all_power_trains[game.power]) {
+					if (game.pos[p] === ELIMINATED && has_re_entry_space(p))
+						gen_action_piece(p)
+				}
+			}
 		}
 
 		// don't force buying a T
@@ -1737,12 +1810,7 @@ states.recruit = {
 			game.selected = [ p ]
 			game.state = "re_enter"
 		} else {
-			for (let x of all_power_generals[game.power]) {
-				if (game.pos[x] === game.pos[p] && game.troops[x] < 8) {
-					game.troops[x] ++
-					break
-				}
-			}
+			add_one_troop(p)
 		}
 	},
 	end_recruit() {
@@ -1756,8 +1824,14 @@ function end_recruit() {
 	goto_combat()
 }
 
-function can_re_enter_general(s) {
-	return can_move_general_to(s)
+function can_re_enter_general(to) {
+	if (has_friendly_supply_train(to))
+		return false
+	if (has_any_other_general(to))
+		return false
+	if (1 + count_pieces(to) > 3)
+		return false
+	return true
 }
 
 function can_re_enter_supply_train(s) {
@@ -1859,13 +1933,11 @@ states.combat_target = {
 }
 
 function set_active_attacker() {
-	game.power = get_stack_power(game.attacker)
-	game.active = current_player()
+	set_active_to_power(get_stack_power(game.attacker))
 }
 
 function set_active_defender() {
-	game.power = get_stack_power(game.defender)
-	game.active = current_player()
+	set_active_to_power(get_stack_power(game.defender))
 }
 
 function goto_combat_play() {
@@ -2055,10 +2127,14 @@ function resolve_combat() {
 		log("Tie.")
 		next_combat()
 	} else if (game.count > 0) {
+		if (get_supreme_commander(game.defender) == GEN_HILDBURGHAUSEN)
+			game.ia_lost = 1
 		game.vg = get_supreme_commander(game.attacker)
 		game.selected = select_stack(game.defender)
 		goto_retreat()
 	} else {
+		if (get_supreme_commander(game.attacker) == GEN_HILDBURGHAUSEN)
+			game.ia_lost = 1
 		game.vg = get_supreme_commander(game.defender)
 		game.selected = select_stack(game.attacker)
 		goto_retreat()
@@ -2068,7 +2144,7 @@ function resolve_combat() {
 function next_combat() {
 	clear_undo()
 	log_br()
-	set_active_current_power()
+	set_active_to_current_action_step()
 	game.count = 0
 	delete game.attacker
 	delete game.defender
@@ -2571,70 +2647,461 @@ states.france_quits_the_game_2 = {
 	},
 }
 
-/* CARDS OF FATE */
-
-// receive_troop
-// lose_troop
-// immediate oos 5-6 range
-
-// flip one stack oos
-// move two cities westwards
-// move one city (and unstack)
-
-// exchange TC with power
-// discard TC to draw TC
-// give TC take random TC
+/* CARDS OF FATE (IMMEDIATE) */
 
 const fate_effect_immediate = [
 	null,
-	"Any one Russian on-map general receives a new troop for free (if possible).",
-	"Austria and Russia may exchange one TC with each other.",
-	"Tottleben receives a new troop for free (if possible and if on-map).",
+	any_one_russian_on_map_general_receives_a_new_troop_for_free,
+	austria_and_russia_may_exchange_one_tc_with_each_other,
+	tottleben_receives_a_new_troop_for_free,
+
 	null,
 	null,
-	"Apraxin immediately loses one troop (but not if he has to be taken off-map).",
+	apraxin_immediately_loses_one_troop,
 	null,
-	null,
-	null,
-	null,
-	null,
-	null,
-	null,
-	"France may discard any one TC for a new one from the draw deck.",
+
 	null,
 	null,
 	null,
 	null,
-	null,
-	"Austria may move Laudon by one city immediately; Laudon may even unstack.",
-	"Daun receives one new troop (if possible and if on-map).",
-	null,
-	"Austria may flip any one Prussian general/stack in Austria or Saxony, and in doing so, set him out of supply.",
+
 	null,
 	null,
+	france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck,
 	null,
-	null,
-	"Any one Prussian on-map general receives a new troop for free (if possible).",
+
 	null,
 	null,
 	null,
-	"All Russian generals 5 or 6 cities distant from their nearest supply train are immediately out of supply; flip them.",
 	null,
+
+	austria_may_move_laudon_by_one_city_immediately,
+	daun_receives_one_new_troop,
 	null,
-	"Prussia may draw randomly one TC from Austria, after first giving one TC of her choice to Austria.",
-	null,
-	"Any one Prussian general with 2 or more troops loses one troop immediately.",
-	null,
-	null,
-	null,
-	"Any one Hanoverian on-map general receives a new troop (if possible).",
+	austria_may_flip_any_one_prussian_general_or_stack_in_austria_or_saxony,
+
 	null,
 	null,
 	null,
-	"If Ehrensvärd is 5 or 6 cities distant from his supply train, he is immediately out of supply; flip him.",
-	"If Hildburghausen has lost a battle this turn, Prussia may move him 2 cities westwards (if possible).",
+	null,
+
+	any_one_prussian_on_map_general_receives_a_new_troop_for_free,
+	null,
+	null,
+	null,
+
+	all_russian_generals_5_or_6_cities_distant_from_their_nearest_supply_train_are_immediately_out_of_supply,
+	null,
+	null,
+	prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria,
+
+	null,
+	any_one_prussian_general_with_2_or_more_troops_loses_one_troop_immediately,
+	null,
+	null,
+
+	null,
+	any_one_hanoverian_on_map_general_receives_a_new_troop,
+	null,
+	null,
+
+	null,
+	if_ehrensvärd_is_5_or_6_cities_distant_from_his_supply_train_he_is_immediately_out_of_supply,
+	if_hildburghausen_has_lost_a_battle_this_turn_prussia_may_move_him_2_cities_westwards,
 	null,
 ]
+
+function any_one_russian_on_map_general_receives_a_new_troop_for_free() {
+	goto_receive_a_new_troop(P_RUSSIA, all_power_generals[P_RUSSIA])
+}
+
+function tottleben_receives_a_new_troop_for_free() {
+	goto_receive_a_new_troop(P_RUSSIA, [ GEN_TOTTLEBEN ])
+}
+
+function daun_receives_one_new_troop() {
+	goto_receive_a_new_troop(P_AUSTRIA, [ GEN_DAUN ])
+}
+
+function any_one_prussian_on_map_general_receives_a_new_troop_for_free() {
+	goto_receive_a_new_troop(P_PRUSSIA, all_power_generals[P_PRUSSIA])
+}
+
+function any_one_hanoverian_on_map_general_receives_a_new_troop() {
+	goto_receive_a_new_troop(P_HANOVER, all_power_generals[P_HANOVER])
+}
+
+function apraxin_immediately_loses_one_troop() {
+	goto_lose_one_troop(P_RUSSIA, [ GEN_APRAXIN ])
+}
+
+function any_one_prussian_general_with_2_or_more_troops_loses_one_troop_immediately() {
+	goto_lose_one_troop(P_PRUSSIA, all_power_generals[P_PRUSSIA])
+}
+
+function all_russian_generals_5_or_6_cities_distant_from_their_nearest_supply_train_are_immediately_out_of_supply() {
+	goto_flip_5_or_6_from_nearest_train(P_RUSSIA, all_power_generals[P_RUSSIA])
+}
+
+function if_ehrensvärd_is_5_or_6_cities_distant_from_his_supply_train_he_is_immediately_out_of_supply() {
+	goto_flip_5_or_6_from_nearest_train(P_SWEDEN, [ GEN_EHRENSVAERD ])
+}
+
+function austria_may_flip_any_one_prussian_general_or_stack_in_austria_or_saxony() {
+	set_active_to_power(P_AUSTRIA)
+
+	game.selected = []
+	for (let p of all_power_generals[P_PRUSSIA])
+		if (!is_out_of_supply(p) && (set_has(data.country.Austria, p) || set_has(data.country.Saxony, p)))
+			game.selected.push(p)
+
+	if (game.selected.length > 0) {
+		game.state = "flip_any_one_prussian_general_or_stack_in_austria_or_saxony"
+	} else {
+		game.selected = null
+		resume_start_turn()
+	}
+}
+
+function austria_and_russia_may_exchange_one_tc_with_each_other() {
+	set_active_to_power(P_AUSTRIA)
+	if (!has_power_dropped_out(P_RUSSIA))
+		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_1"
+	else
+		resume_start_turn()
+}
+
+function france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck() {
+	set_active_to_power(P_FRANCE)
+	if (!has_power_dropped_out(P_FRANCE))
+		game.state = "france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck"
+	else
+		resume_start_turn()
+}
+
+function prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria() {
+	set_active_to_power(P_PRUSSIA)
+	game.state = "prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria"
+}
+
+function austria_may_move_laudon_by_one_city_immediately() {
+	set_active_to_power(P_AUSTRIA)
+	if (game.pos[GEN_LAUDON] < ELIMINATED) {
+		game.state = "austria_may_move_laudon_by_one_city_immediately"
+		game.selected = [ GEN_LAUDON ]
+	} else {
+		resume_start_turn()
+	}
+}
+
+function if_hildburghausen_has_lost_a_battle_this_turn_prussia_may_move_him_2_cities_westwards() {
+	set_active_to_power(P_PRUSSIA)
+	throw "STOP"
+	if (1 || game.ia_lost) // TODO
+		game.state = "prussia_may_move_hildburghausen_2_cities_westwards"
+	else
+		resume_start_turn()
+}
+
+function goto_receive_a_new_troop(power, list) {
+	set_active_to_power(power)
+
+	if (count_used_troops() === max_power_troops(power)) {
+		resume_start_turn()
+		return
+	}
+
+	game.selected = []
+	for (let p of list)
+		if (game.pos[p] < ELIMINATED && game.troops[p] < 8)
+			game.selected.push(p)
+
+	if (game.selected.length > 0) {
+		game.state = "receive_a_new_troop"
+	} else {
+		game.selected = null
+		resume_start_turn()
+	}
+}
+
+states.receive_a_new_troop = {
+	prompt() {
+		prompt("Receive a new troop for free.")
+		for (let p of game.selected)
+			gen_action_supreme_commander(game.pos[p])
+	},
+	piece(p) {
+		add_one_troop(p)
+		game.selected = null
+		resume_start_turn()
+	}
+}
+
+function goto_lose_one_troop(power, list) {
+	set_active_to_power(power)
+
+	game.selected = []
+	for (let p of list)
+		if (game.pos[p] < ELIMINATED && game.troops[p] > 1)
+			game.selected.push(p)
+
+	if (game.selected.length > 0) {
+		game.state = "lose_one_troop"
+	} else {
+		game.selected = null
+		resume_start_turn()
+	}
+}
+
+states.lose_one_troop = {
+	prompt() {
+		prompt("Lose one troop.")
+		for (let p of game.selected)
+			gen_action_supreme_commander(game.pos[p])
+	},
+	piece(p) {
+		remove_one_troop(p)
+		game.selected = null
+		resume_start_turn()
+	}
+}
+
+function goto_flip_5_or_6_from_nearest_train(power, list) {
+	set_active_to_power(power)
+
+	search_supply(4)
+
+	game.selected = []
+	for (let p of list)
+		if (game.pos[p] < ELIMINATED && !is_out_of_supply(p))
+			if (!set_has(game.supply, game.pos[p]))
+				game.selected.push(p)
+
+	delete game.supply
+
+	if (game.selected.length > 0) {
+		game.state = "flip_5_or_6_from_nearest_train"
+	} else {
+		game.selected = null
+		resume_start_turn()
+	}
+}
+
+states.flip_5_or_6_from_nearest_train = {
+	prompt() {
+		prompt("Flip " + format_selected() + " out of supply.")
+		for (let p of game.selected)
+			gen_action_supreme_commander(game.pos[p])
+	},
+	piece(p) {
+		flip_stack_out_of_supply(p)
+		if (game.selected.length === 0) {
+			game.selected = null
+			resume_start_turn()
+		}
+	}
+}
+
+states.flip_any_one_prussian_general_or_stack_in_austria_or_saxony = {
+	prompt() {
+		prompt("Flip any one Prussian general/stack in Austria or Saxony out of supply.")
+		for (let p of game.selected)
+			gen_action_supreme_commander(game.pos[p])
+	},
+	piece(p) {
+		flip_stack_out_of_supply(p)
+		game.selected = null
+		resume_start_turn()
+	}
+}
+
+function flip_stack_out_of_supply(p) {
+	for (let x of all_power_generals[game.power]) {
+		if (game.pos[x] === game.pos[p]) {
+			set_out_of_supply(x)
+			set_delete(game.selected, x)
+		}
+	}
+}
+
+states.austria_and_russia_may_exchange_one_tc_with_each_other_1 = {
+	prompt() {
+		prompt("You may exchange one TC with Russia.")
+		for (let c of game.hand[P_AUSTRIA])
+			gen_action_card(c)
+		view.actions.pass = 1
+	},
+	card(c) {
+		set_delete(game.hand[P_AUSTRIA], c)
+		game.exchange = c
+		set_active_to_power(P_RUSSIA)
+		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_2"
+	},
+	pass() {
+		resume_start_turn()
+	},
+}
+
+states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
+	prompt() {
+		prompt("You may exchange one TC with Austria.")
+		for (let c of game.hand[P_RUSSIA])
+			gen_action_card(c)
+		view.actions.pass = 1
+	},
+	card(c) {
+		set_add(game.hand[P_RUSSIA], game.exchange)
+		delete game.exchange
+
+		set_delete(game.hand[P_RUSSIA], c)
+		set_add(game.hand[P_AUSTRIA], c)
+
+		log("Austria and Russia exchanged TC.")
+		resume_start_turn()
+	},
+	pass() {
+		log("Austria and Russia did not exchange TC.")
+		set_add(game.hand[P_AUSTRIA], game.exchange)
+		delete game.exchange
+		resume_start_turn()
+	},
+}
+
+states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
+	prompt() {
+		prompt("You may discard one TC to draw a new one.")
+		for (let c of game.hand[P_FRANCE])
+			gen_action_card(c)
+		view.actions.pass = 1
+	},
+	card(c) {
+		log("France discarded one TC.")
+		log("France drew one TC.")
+		set_delete(game.hand[P_FRANCE], c)
+		c = draw_next_tc()
+		if (c >= 0)
+			set_add(game.hand[P_FRANCE], c)
+		resume_start_turn()
+	},
+	pass() {
+		resume_start_turn()
+	},
+}
+
+states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria = {
+	prompt() {
+		prompt("You may give Austria one TC to draw a random TC from her.")
+		for (let c of game.hand[P_PRUSSIA])
+			gen_action_card(c)
+		view.actions.pass = 1
+	},
+	card(c) {
+		log("Prussia gave one TC to Austria.")
+		log("Prussia took one random TC from Austria.")
+
+		set_delete(game.hand[P_PRUSSIA], c)
+		set_add(game.hand[P_AUSTRIA], c)
+
+		let x = random_bigint(game.hand[P_AUSTRIA].length)
+		c = game.hand[P_AUSTRIA][x]
+		set_delete(game.hand[P_AUSTRIA], c)
+		set_add(game.hand[P_PRUSSIA], c)
+
+		resume_start_turn()
+	},
+	pass() {
+		resume_start_turn()
+	},
+}
+
+states.austria_may_move_laudon_by_one_city_immediately = {
+	prompt() {
+		prompt("You may move Laudon by one city.")
+		view.selected = game.selected
+
+		let here = game.pos[GEN_LAUDON]
+		for (let next of data.cities.adjacent[here])
+			// TODO: may capture supply trains?
+			if (can_move_general_to(next))
+				gen_action_space(next)
+
+		let s_take = count_stacked_take()
+		let s_give = count_stacked_give()
+		let u_take = count_unstacked_take()
+		let u_give = count_unstacked_give()
+		if (s_take > 0 && u_give > 0)
+			view.actions.take = 1
+		if (s_give > 0 && u_take > 0)
+			view.actions.give = 1
+	},
+	take() {
+		push_undo()
+		game.state = "laudon_take"
+	},
+	give() {
+		push_undo()
+		game.state = "laudon_give"
+	},
+	space(s) {
+		push_undo()
+		log("P" + GEN_LAUDON + " to S" + s)
+		// no conquest, but may capture supply trains?
+		move_general_immediately(s)
+		game.state = "laudon_done"
+	},
+}
+
+states.laudon_take = states.move_take
+states.laudon_give = states.move_give
+
+states.laudon_done = {
+	prompt() {
+		prompt("You may move Laudon by one city.")
+		view.selected = game.selected
+		view.actions.done = 1
+	},
+	done() {
+		clear_undo()
+		game.selected = null
+		resume_start_turn()
+	},
+}
+
+function is_west_of(here, there) {
+	let dx = data.cities.x[there] - data.cities.x[here]
+	let dy = data.cities.y[there] - data.cities.y[here]
+	// west AND more west than north/south
+	return Math.abs(dx) >= Math.abs(dy) && dx < 0
+}
+
+states.prussia_may_move_hildburghausen_2_cities_westwards = {
+	prompt() {
+		prompt("You may move Hildburghausen two cities westwards.")
+		view.selected = game.selected
+		view.actions.pass = 1
+
+		// TODO: alternatively, city that is most westerly and 2 spaces away
+
+		let here = game.pos[GEN_HILDBURGHAUSEN]
+		for (let west1 of data.cities.adjacent[here])
+			if (is_west_of(here, west1) && !has_any_piece(west1))
+				for (let west2 of data.cities.adjacent[west1])
+					if (is_west_of(west1, west2) && !has_any_piece(west2))
+						gen_action_space(west2)
+	},
+	space(s) {
+		log("P" + GEN_HILDBURGHAUSEN + " to S" + to)
+		move_general_to(s)
+		game.selected = null
+		resume_start_turn()
+	},
+	pass() {
+		game.selected = null
+		resume_start_turn()
+	},
+}
+
+/* CARDS OF FATE (PASSIVE) */
 
 // immobilize
 // reduce move
@@ -2654,46 +3121,57 @@ const fate_effect_passive = [
 	null,
 	null,
 	null,
+
 	null,
 	"If Fermor starts his move in Küstrin (H6) or in an adjacent city, he may not move next turn.",
 	null,
 	"Next turn, Saltikov may move only 2 cities (3 on main roads).",
+
 	null,
 	"Next turn, if Prussia and France fight each other, they may not use TCs with values of 10 or more.",
 	"Next turn, Soubise and Hildburghausen may not attack with the same TC-symbol.",
 	"Next turn, no general may be attacked in the city of Halle (E4) and no supply train may be eliminated in the city of Halle.",
+
 	"Next turn, the first TC played by France is worth an additional point.",
 	null,
 	null,
 	"Next turn, Cumberland may not move into attack position; he may not eliminate a supply train.",
+
 	"Next turn, Soubise may not move into attack position; he may not eliminate a supply train.",
 	null,
 	"Next turn, Richelieu may move 2 cities only (3 on main roads).",
 	"If stacked, Chevert may not unstack next turn.",
+
 	null,
 	null,
 	null,
 	null,
+
 	"Next turn, Friedrich may not move into attack position and may not eliminate a supply train.",
 	null,
 	"Next turn, Friedrich may not receive any new troops.",
 	"If Friedrich is involved in combat next turn, Prussia must reach a positive score with the first TC(s) she plays (if possible).",
+
 	null,
 	"Next turn, any Prussians who are attacked by Daun may move to any empty adjacent city (before the combat is resolved); by doing so they avoid all combat.",
 	null,
 	"If Friedrich attacks next turn, his first TC is worth 5 additional points.",
+
 	null,
 	"Next turn, Friedrich may move 4 cities, even as a stack (5 on main roads).",
 	null,
 	null,
+
 	"Next turn, every Prussian general who receives new troops may not move into attack position.",
 	null,
 	"If Friedrich is attacked next turn, the first TC played by Prussia is worth nothing (0 points).",
 	null,
+
 	"Next turn, Prussia may play the 11 of spades (Seydlitz) once at double value.",
 	null,
 	"Next turn, Prinz Heinrich protects objectives up to 4 cities distant.",
 	null,
+
 	"Next turn, Daun may move only 2 cities (3 on main roads).",
 	null,
 	null,
