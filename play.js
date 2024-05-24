@@ -848,7 +848,7 @@ function on_update() {
 
 	update_path()
 
-	let back = [ 0, 0, 0, 0 ]
+	let back = [ 0, 0, 0, 0, 0 ]
 
 	for (let i = 0; i < 5; ++i)
 		ui.turns[i].classList.toggle("hide", (typeof view.fate === "object") || (i + 1 < view.fate))
