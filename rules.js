@@ -689,7 +689,8 @@ function goto_start_turn() {
 		return
 
 	if (++game.turn <= 5) {
-		log("# Turn " + game.turn)
+		log("# \u2014 " + game.turn + " \u2014")
+		log("$" + (game.turn - 1 + 48 + 6))
 	} else {
 		// remove non-stroke of fate card from last turn
 		for (let i = 1; i <= 12; ++i)

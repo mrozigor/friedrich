@@ -154,6 +154,12 @@ const fate_flavor_text = [
 	"Adolf Frederick, King of Sweden, initiates peace negotiations with Frederick the Great, who is in a mood for ridicule: “Peace? Am I then at war with Sweden? I am not, am I?” The Swedish envoys assure him that indeed he is, and so a peace treaty is signed.",
 	"Robert Clive’s fantastic victory at Plassey means the complete loss of India for France. Moreover the state is on the verge of bankruptcy. Louis XV overrules Madame Pompadour and reduces spending on the war and subsidies.",
 	"In the war for the colonies France loses a wide range of possessions along the Ohio and Mississippi rivers, and in Quebec. Tax income decreases drastically. The Duc de Choiseul advises that military expenditure and subsidies be reduced.",
+
+	"1756, August 29. Frederick is convinced that war cannot be avoided. So he strikes ﬁrst and invades Saxony with his armies under his personal command.",
+	"Escaping the Prussians, Minister Brühl has to leave behind 802 bathrobes, 28 coaches, 67 vinaigrettes and 1500 wigs.",
+	"Saxony has surrendered, and now Frederick demands an alliance! – “That never happened in world’s history before!” – Frederick: “I attach importance to being inventive.”",
+	"William Pitt convinces the British House of Commons that the battle for America will be won in Europe. After a standing ovation, Prussia is voted generous subsidies.",
+	"In the spring of 1757, Frederick starts an offensive into Bohemia before the attackers are able to complete the encirclement of Prussia. Siege is laid to Prague...",
 ]
 
 const fate_effect_text = [
@@ -219,6 +225,12 @@ const fate_effect_text = [
 	"Sweden quits the game! If Russia has already quit the game as well, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
 	"From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game! Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
 	"From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game! Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
+
+	null,
+	null,
+	null,
+	null,
+	null,
 ]
 
 /* BUILD UI */
@@ -968,7 +980,10 @@ function on_log(text) {
 
 	if (text.match(/^\$(\d+)/)) {
 		let fx = parseInt(text.substring(1))
-		text = `<p class="q">${fate_flavor_text[fx]}<p>${fate_effect_text[fx]}`
+		if (fx < 48 + 6)
+			text = `<p class="q">${fate_flavor_text[fx]}<p>${fate_effect_text[fx]}`
+		else
+			text = `<p class="q">${fate_flavor_text[fx]}`
 	}
 	else if (text.match(/^# /)) {
 		p.className = "h fate"
