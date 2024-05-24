@@ -177,13 +177,22 @@ const piece_name = [
 	"Daun", "Browne", "Karl", "Laudon", "Lacy",
 	"Hildburghausen",
 	"Richelieu", "Soubise", "Chevert",
-	"Prussian Train", "Prussian Train",
-	"Hanoverian Train",
-	"Russian Train", "Russian Train",
-	"Swedish Train",
-	"Austrian Train", "Austrian Train",
-	"Imperial Army Train",
-	"French Train", "French Train",
+
+	"supply train", "supply train",
+	"supply train",
+	"supply train", "supply train",
+	"supply train",
+	"supply train", "supply train",
+	"supply train",
+	"supply train", "supply train",
+
+	//"Prussian supply train", "Prussian supply train",
+	//"Hanoverian supply train",
+	//"Russian supply train", "Russian supply train",
+	//"Swedish supply train",
+	//"Austrian supply train", "Austrian supply train",
+	//"Imperial Army supply train",
+	//"French supply train", "French supply train",
 ]
 
 const all_power_generals = [
@@ -309,6 +318,14 @@ function format_selected() {
 	if (game.selected.length === 0)
 		return "nobody"
 	return game.selected.map(p => piece_name[p]).join(" and ")
+}
+
+function format_stack(s) {
+	let list = []
+	for (let p of all_pieces)
+		if (game.pos[p] === s)
+			list.push(p)
+	return suit_name[get_space_suit(s)] + " " + list.map(p => piece_name[p]).join(" and ")
 }
 
 /* CARDS OF FATE (PASSIVE) */
@@ -1917,6 +1934,21 @@ states.re_enter = {
 
 /* COMBAT */
 
+function format_combat(value) {
+	return format_stack(game.attacker) + " vs " + format_stack(game.defender) + " at " + value
+}
+
+function prompt_combat(value, extra = null) {
+	if (extra)
+		prompt(format_combat(value) + ". " + extra)
+	else
+		prompt(format_combat(value) + ".")
+}
+
+function inactive_combat() {
+	return "play TC for " + format_combat(game.count)
+}
+
 function goto_combat() {
 	set_clear(game.moved)
 
@@ -2022,8 +2054,6 @@ function goto_combat_play() {
 
 function resume_combat_attack() {
 	if (game.count >= 0) {
-		//set_active_defender()
-		//game.state = "combat_defend"
 		game.state = "combat_attack_swap"
 	} else {
 		game.state = "combat_attack"
@@ -2032,8 +2062,6 @@ function resume_combat_attack() {
 
 function resume_combat_defend() {
 	if (game.count <= 0) {
-		//set_active_attacker()
-		//game.state = "combat_attack"
 		game.state = "combat_defend_swap"
 	} else {
 		game.state = "combat_defend"
@@ -2055,8 +2083,9 @@ function gen_play_card(suit) {
 }
 
 states.combat_attack = {
+	inactive: inactive_combat,
 	prompt() {
-		prompt("Attack: " + game.count)
+		prompt_combat(game.count)
 		view.selected = [ get_supreme_commander(game.attacker) ]
 		let has_suit = gen_play_card(get_space_suit(game.attacker))
 		if (game.count === 0 && has_suit)
@@ -2084,8 +2113,9 @@ states.combat_attack = {
 }
 
 states.combat_defend = {
+	inactive: inactive_combat,
 	prompt() {
-		prompt("Defend: " + (-game.count))
+		prompt_combat(-game.count)
 
 		view.selected = [ get_supreme_commander(game.defender) ]
 		let has_suit = gen_play_card(get_space_suit(game.defender))
@@ -2114,8 +2144,9 @@ states.combat_defend = {
 }
 
 states.combat_attack_reserve = {
+	inactive: inactive_combat,
 	prompt() {
-		prompt("Attack: Choose value. " + game.count)
+		prompt_combat(game.count, "Choose value.")
 		view.selected = [ get_supreme_commander(game.attacker)]
 		view.actions.value = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
 	},
@@ -2127,8 +2158,9 @@ states.combat_attack_reserve = {
 }
 
 states.combat_defend_reserve = {
+	inactive: inactive_combat,
 	prompt() {
-		prompt("Defend: Choose value." + (-game.count))
+		prompt_combat(-game.count, "Choose value.")
 		view.selected = [ get_supreme_commander(game.defender) ]
 		view.actions.value = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
 	},
@@ -2140,8 +2172,9 @@ states.combat_defend_reserve = {
 }
 
 states.combat_attack_swap = {
+	inactive: inactive_combat,
 	prompt() {
-		prompt("Attack: " + game.count)
+		prompt_combat(game.count)
 		view.selected = [ get_supreme_commander(game.attacker) ]
 		view.actions.next = 1
 	},
@@ -2153,8 +2186,9 @@ states.combat_attack_swap = {
 }
 
 states.combat_defend_swap = {
+	inactive: inactive_combat,
 	prompt() {
-		prompt("Defend: " + (-game.count))
+		prompt_combat(-game.count)
 		view.selected = [ get_supreme_commander(game.defender) ]
 		view.actions.next = 1
 	},
@@ -3511,6 +3545,8 @@ exports.view = function (state, player) {
 		view.prompt = game.victory
 	} else if (game.active !== player) {
 		let inactive = states[game.state].inactive || game.state
+		if (typeof inactive === "function")
+			inactive = inactive()
 		view.prompt = `Waiting for ${POWER_NAME[game.power]} to ${inactive}.`
 	} else {
 		view.actions = {}
