@@ -780,11 +780,11 @@ function goto_start_turn() {
 }
 
 function resume_start_turn() {
+	game.selected = null
+	delete game.ia_lost
 
 	// MARIA: politics
 	// MARIA: hussars
-
-	delete game.ia_lost
 
 	goto_action_stage()
 }
@@ -804,6 +804,8 @@ function goto_action_stage() {
 }
 
 function end_action_stage() {
+	clear_undo()
+
 	if (++game.step === 7)
 		goto_end_of_turn()
 	else
@@ -1697,6 +1699,7 @@ states.move_give = {
 }
 
 function end_move_piece() {
+	game.selected = null
 	delete game.move_major
 	delete game.move_minor
 	game.state = "movement"
@@ -2758,7 +2761,6 @@ function austria_may_flip_any_one_prussian_general_or_stack_in_austria_or_saxony
 	if (game.selected.length > 0) {
 		game.state = "flip_any_one_prussian_general_or_stack_in_austria_or_saxony"
 	} else {
-		game.selected = null
 		resume_start_turn()
 	}
 }
@@ -2796,8 +2798,7 @@ function austria_may_move_laudon_by_one_city_immediately() {
 
 function if_hildburghausen_has_lost_a_battle_this_turn_prussia_may_move_him_2_cities_westwards() {
 	set_active_to_power(P_PRUSSIA)
-	throw "STOP"
-	if (1 || game.ia_lost) // TODO
+	if (game.ia_lost)
 		game.state = "prussia_may_move_hildburghausen_2_cities_westwards"
 	else
 		resume_start_turn()
@@ -2819,7 +2820,6 @@ function goto_receive_a_new_troop(power, list) {
 	if (game.selected.length > 0) {
 		game.state = "receive_a_new_troop"
 	} else {
-		game.selected = null
 		resume_start_turn()
 	}
 }
@@ -2832,7 +2832,6 @@ states.receive_a_new_troop = {
 	},
 	piece(p) {
 		add_one_troop(p)
-		game.selected = null
 		resume_start_turn()
 	}
 }
@@ -2848,7 +2847,6 @@ function goto_lose_one_troop(power, list) {
 	if (game.selected.length > 0) {
 		game.state = "lose_one_troop"
 	} else {
-		game.selected = null
 		resume_start_turn()
 	}
 }
@@ -2861,7 +2859,6 @@ states.lose_one_troop = {
 	},
 	piece(p) {
 		remove_one_troop(p)
-		game.selected = null
 		resume_start_turn()
 	}
 }
@@ -2882,7 +2879,6 @@ function goto_flip_5_or_6_from_nearest_train(power, list) {
 	if (game.selected.length > 0) {
 		game.state = "flip_5_or_6_from_nearest_train"
 	} else {
-		game.selected = null
 		resume_start_turn()
 	}
 }
@@ -2895,10 +2891,8 @@ states.flip_5_or_6_from_nearest_train = {
 	},
 	piece(p) {
 		flip_stack_out_of_supply(p)
-		if (game.selected.length === 0) {
-			game.selected = null
+		if (game.selected.length === 0)
 			resume_start_turn()
-		}
 	}
 }
 
@@ -2910,7 +2904,6 @@ states.flip_any_one_prussian_general_or_stack_in_austria_or_saxony = {
 	},
 	piece(p) {
 		flip_stack_out_of_supply(p)
-		game.selected = null
 		resume_start_turn()
 	}
 }
@@ -3062,7 +3055,6 @@ states.laudon_done = {
 	},
 	done() {
 		clear_undo()
-		game.selected = null
 		resume_start_turn()
 	},
 }
@@ -3070,8 +3062,8 @@ states.laudon_done = {
 function is_west_of(here, there) {
 	let dx = data.cities.x[there] - data.cities.x[here]
 	let dy = data.cities.y[there] - data.cities.y[here]
-	// west AND more west than north/south
-	return Math.abs(dx) >= Math.abs(dy) && dx < 0
+	// more west than north/south
+	return dx < 0 && Math.abs(dx) >= Math.abs(dy)
 }
 
 states.prussia_may_move_hildburghausen_2_cities_westwards = {
@@ -3080,23 +3072,19 @@ states.prussia_may_move_hildburghausen_2_cities_westwards = {
 		view.selected = game.selected
 		view.actions.pass = 1
 
-		// TODO: alternatively, city that is most westerly and 2 spaces away
-
 		let here = game.pos[GEN_HILDBURGHAUSEN]
-		for (let west1 of data.cities.adjacent[here])
-			if (is_west_of(here, west1) && !has_any_piece(west1))
-				for (let west2 of data.cities.adjacent[west1])
-					if (is_west_of(west1, west2) && !has_any_piece(west2))
-						gen_action_space(west2)
+		for (let a of data.cities.adjacent[here])
+			if (!has_any_piece(a))
+				for (let b of data.cities.adjacent[a])
+					if (is_west_of(here, b) && !has_any_piece(b))
+						gen_action_space(b)
 	},
 	space(s) {
-		log("P" + GEN_HILDBURGHAUSEN + " to S" + to)
-		move_general_to(s)
-		game.selected = null
+		log("P" + GEN_HILDBURGHAUSEN + " to S" + s)
+		game.pos[GEN_HILDBURGHAUSEN] = s
 		resume_start_turn()
 	},
 	pass() {
-		game.selected = null
 		resume_start_turn()
 	},
 }
