@@ -564,6 +564,8 @@ function on_init() {
 	update_favicon()
 }
 
+on_init()
+
 /* SHOW PATH FOR MOVES */
 
 function on_focus_city(evt) {
@@ -964,13 +966,13 @@ function on_log(text) {
 	text = text.replace(/C(\d+)/g, sub_tc)
 	text = text.replace(/P(\d+)/g, sub_piece)
 
-	if (text.match(/^# /)) {
-		p.className = "h"
-		text = text.substring(2)
-	}
-	else if (text.match(/^\$(\d+)/)) {
+	if (text.match(/^\$(\d+)/)) {
 		let fx = parseInt(text.substring(1))
 		text = `<p class="q">${fate_flavor_text[fx]}<p>${fate_effect_text[fx]}`
+	}
+	else if (text.match(/^# /)) {
+		p.className = "h fate"
+		text = text.substring(2)
 	}
 	else if (text.match(/^=\d/)) {
 		p.className = "h " + power_class[text[1]]
@@ -981,9 +983,7 @@ function on_log(text) {
 	return p
 }
 
-on_init()
-
-// === COMMON LIBRARY ===
+/* COMMON LIBRARY */
 
 function array_insert(array, index, item) {
 	for (let i = array.length; i > index; --i)

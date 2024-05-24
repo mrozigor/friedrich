@@ -2858,7 +2858,10 @@ exports.setup = function (seed, scenario, options) {
 
 	shuffle_bigint(game.deck)
 
-	log("# " + scenario)
+	if (game.scenario === 1)
+		log("# The War in the West")
+	if (game.scenario === 2)
+		log("# The Austrian Theatre")
 
 	if (game.scenario === 1)
 		setup_the_war_in_the_west()
