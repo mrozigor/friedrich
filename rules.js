@@ -696,11 +696,27 @@ function count_eliminated_trains() {
 	return n
 }
 
+function count_eliminated_generals() {
+	let n = 0
+	for (let p of all_power_generals[game.power])
+		if (game.pos[p] === ELIMINATED)
+			++n
+	return n
+}
+
 function count_used_troops() {
 	let current = 0
 	for (let p of all_power_generals[game.power])
 		current += game.troops[p]
 	return current
+}
+
+function count_unused_troops_on_map() {
+	let n = 0
+	for (let p of all_power_generals[game.power])
+		if (game.pos[p] < ELIMINATED)
+			n += 8 - game.troops[p]
+	return n
 }
 
 function count_unused_generals() {
@@ -1957,7 +1973,7 @@ function goto_recruit() {
 	game.count = 0
 
 	// TODO: reveal too much if we skip recruitment phase?
-	if (count_eliminated_trains() === 0 && count_used_troops() === max_power_troops(game.power)) {
+	if (!can_recruit_anything()) {
 		end_recruit()
 		return
 	}
@@ -2000,20 +2016,51 @@ function is_attack_position(s) {
 	return false
 }
 
+function can_recruit_anything() {
+	let unused_everywhere = max_power_troops(game.power) - count_used_troops()
+	let elim_trains = count_eliminated_trains()
+	let elim_generals = count_eliminated_generals()
+	let unused_on_map = count_unused_troops_on_map()
+	// can reinforce on-map generals
+	if (unused_everywhere > 0 && unused_on_map > 0)
+		return true
+	// can re-enter eliminated generals
+	if (unused_everywhere > 0 && elim_generals > 0 && has_re_entry_space())
+		return true
+	// can re-enter eliminated supply trains
+	if (elim_trains > 0 && has_re_entry_space())
+		return true
+	return false
+}
+
 states.recruit = {
 	prompt() {
 		let cost = troop_cost()
-		let buy_amount = (game.count / cost) | 0
 		let n_troops = count_used_troops()
 		let av_troops = max_power_troops(game.power) - n_troops
 		let av_trains = count_eliminated_trains()
+		let possible = can_recruit_anything()
 
-		if (av_trains === 0 && av_troops === 0)
-			prompt(`Nothing to recruit. ${n_troops}/${max_power_troops(game.power)} troops.`)
+		let str
+		if (av_trains > 0 && av_troops > 0)
+			str = `Recruit supply trains and up to ${av_troops} troops for ${cost} each`
+		else if (av_troops > 0)
+			str = `Recruit up to ${av_troops} troops for ${cost} each`
+		else if (av_trains > 0)
+			str = `Recruit supply trains for ${cost} each`
 		else
-			prompt(`Recruit supply trains and/or troops. ${n_troops}/${max_power_troops(game.power)} troops. ${game.count} points.`)
+			str = "Nothing to recruit"
 
-		if (buy_amount < av_troops + av_trains) {
+		if (game.count > 1)
+			str += " \u2014 " + game.count + " points."
+		else if (game.count === 1)
+			str += " \u2014 1 point."
+		else
+			str += "."
+
+		prompt(str)
+
+		if (game.count < cost && possible) {
 			for (let c of game.hand[game.power])
 				gen_action_card(c)
 		}
@@ -2043,8 +2090,7 @@ states.recruit = {
 			}
 		}
 
-		// don't force buying a T
-		if (buy_amount === 0 || av_troops === 0)
+		if (game.count < cost || !possible)
 			view.actions.end_recruit = 1
 	},
 	card(c) {
