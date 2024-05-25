@@ -3089,9 +3089,11 @@ function austria_may_flip_any_one_prussian_general_or_stack_in_austria_or_saxony
 	set_active_to_power(P_AUSTRIA)
 
 	game.selected = []
-	for (let p of all_power_generals[P_PRUSSIA])
-		if (!is_out_of_supply(p) && (set_has(data.country.Austria, p) || set_has(data.country.Saxony, p)))
+	for (let p of all_power_generals[P_PRUSSIA]) {
+		let s = game.pos[p]
+		if (!is_out_of_supply(p) && (set_has(data.country.Austria, s) || set_has(data.country.Saxony, s)))
 			game.selected.push(p)
+	}
 
 	if (game.selected.length > 0) {
 		game.state = "flip_any_one_prussian_general_or_stack_in_austria_or_saxony"
@@ -3244,8 +3246,9 @@ states.flip_any_one_prussian_general_or_stack_in_austria_or_saxony = {
 }
 
 function flip_stack_out_of_supply(p) {
-	for (let x of all_power_generals[game.power]) {
-		if (game.pos[x] === game.pos[p]) {
+	let s = game.pos[p]
+	for (let x of all_generals) {
+		if (game.pos[x] === s) {
 			log("P" + x + " out of supply")
 			set_out_of_supply(x)
 			set_delete(game.selected, x)
