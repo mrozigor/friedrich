@@ -1293,25 +1293,51 @@ function is_supreme_commander(p) {
 	return false
 }
 
+function can_train_move_anywhere(p) {
+	let from = game.pos[p]
+	for (let to of data.cities.adjacent[from])
+		if (can_move_train_to(to))
+			return true
+	return false
+}
+
+function can_general_move_anywhere(p) {
+	let from = game.pos[p]
+	for (let to of data.cities.adjacent[from])
+		if (can_move_general_in_theory(to))
+			return true
+	return false
+}
+
 states.movement = {
 	prompt() {
-		let done = true
+		let done_generals = true
+		let done_trains = true
+
 		for (let p of all_power_generals[game.power]) {
 			if (!set_has(game.moved, p) && is_supreme_commander(p) && game.pos[p] < ELIMINATED) {
-				gen_action_piece(p)
-				done = false
+				if (can_general_move_anywhere(p)) {
+					gen_action_piece(p)
+					done_generals = false
+				}
 			}
 		}
 
 		for (let p of all_power_trains[game.power]) {
 			if (!set_has(game.moved, p) && game.pos[p] < ELIMINATED) {
-				gen_action_piece(p)
-				done = false
+				if (can_train_move_anywhere(p)) {
+					gen_action_piece(p)
+					done_trains = false
+				}
 			}
 		}
 
-		if (done)
+		if (done_trains && done_generals)
 			prompt("Movement done.")
+		else if (done_generals && !done_trains)
+			prompt("Move your supply trains.")
+		else if (!done_generals && done_trains)
+			prompt("Move your generals.")
 		else
 			prompt("Move your generals and supply trains.")
 
@@ -1403,6 +1429,18 @@ function can_move_train_to(to) {
 }
 
 function can_continue_train_from(_) {
+	return true
+}
+
+function can_move_general_in_theory(to) {
+	if (has_friendly_supply_train(to))
+		return false
+	if (has_any_other_general(to))
+		return false
+	if (has_enemy_supply_train(to) && forbid_capture(to))
+		return false
+	if (count_pieces(to) >= 3)
+		return false
 	return true
 }
 
@@ -1839,6 +1877,7 @@ states.move_general_OLD = {
 				}
 			}
 		}
+
 		if (game.count < movement_range() + game.major)
 			for (let next of data.cities.major_roads[here])
 				if (can_move_general_to(next))
