@@ -1347,7 +1347,10 @@ states.movement = {
 		else
 			prompt("Move your generals and supply trains.")
 
-		view.actions.end_movement = 1
+		if (done_trains && done_generals)
+			view.actions.end_movement = 1
+		else
+			view.actions.confirm_end_movement = 1
 	},
 	piece(p) {
 		push_undo()
@@ -1374,6 +1377,9 @@ states.movement = {
 			resume_move_supply_train()
 		else
 			resume_move_general()
+	},
+	confirm_end_movement() {
+		this.end_movement()
 	},
 	end_movement() {
 		push_undo()
