@@ -3808,18 +3808,27 @@ function setup_the_austrian_theatre() {
 
 states.setup = {
 	prompt() {
-		prompt("Setup troops: " + count_used_troops() + " / " + max_power_troops(game.power))
-		let done = true
-		for (let p of all_power_generals[game.power]) {
-			if (game.pos[p] < ELIMINATED && game.troops[p] === 0) {
-				if (is_supreme_commander(p)) {
-					gen_action_piece(p)
-					done = false
+		let n_troops = max_power_troops(game.power) - count_used_troops()
+		if (n_troops === 0) {
+			prompt("Setup done.")
+			view.actions.end_setup = 1
+		} else {
+			let n_stacks = 0
+			for (let p of all_power_generals[game.power]) {
+				if (game.pos[p] < ELIMINATED && game.troops[p] === 0) {
+					if (is_supreme_commander(p)) {
+						gen_action_piece(p)
+						n_stacks ++
+					}
 				}
 			}
+			if (n_stacks > 1)
+				prompt("Add " + n_troops + " troops to " + n_stacks + " stacks.")
+			else if (n_troops > 1)
+				prompt("Add " + n_troops + " troops to last stack.")
+			else
+				prompt("Add 1 troop to last stack.")
 		}
-		if (done)
-			view.actions.end_setup = 1
 	},
 	piece(p) {
 		push_undo()
@@ -3834,7 +3843,7 @@ states.setup = {
 
 states.setup_general = {
 	prompt() {
-		prompt("Setup troops.")
+		prompt("Add troops to " + format_selected() + ".")
 		view.selected = game.selected
 
 		let n_selected = game.selected.length
