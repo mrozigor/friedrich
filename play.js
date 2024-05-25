@@ -233,6 +233,21 @@ const fate_effect_text = [
 	null,
 ]
 
+/* PANEL ORDER */
+
+const panel_order = [ P_PRUSSIA, P_HANOVER, P_RUSSIA, P_SWEDEN, P_AUSTRIA, P_IMPERIAL, P_FRANCE ]
+
+function sort_power_panel() {
+	let start = 0
+	if (view)
+		start = view.power
+	ui.power_panel_list.replaceChildren()
+	for (let i = 0; i < 7; ++i) {
+		let p = panel_order[(i + start) % 7]
+		ui.power_panel_list.appendChild(ui.power_panel[p])
+	}
+}
+
 /* BUILD UI */
 
 const ui = {
@@ -532,46 +547,7 @@ function on_init() {
 		ui.spaces_element.appendChild(e)
 	}
 
-	ui.power_panel_list.replaceChildren()
-	switch (params.role) {
-	default:
-	case "Friedrich":
-		ui.power_panel_list.appendChild(ui.power_panel[P_PRUSSIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_HANOVER])
-		ui.power_panel_list.appendChild(ui.power_panel[P_RUSSIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_SWEDEN])
-		ui.power_panel_list.appendChild(ui.power_panel[P_AUSTRIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_IMPERIAL])
-		ui.power_panel_list.appendChild(ui.power_panel[P_FRANCE])
-		break
-	case "Elisabeth":
-		ui.power_panel_list.appendChild(ui.power_panel[P_RUSSIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_SWEDEN])
-		ui.power_panel_list.appendChild(ui.power_panel[P_AUSTRIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_IMPERIAL])
-		ui.power_panel_list.appendChild(ui.power_panel[P_FRANCE])
-		ui.power_panel_list.appendChild(ui.power_panel[P_PRUSSIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_HANOVER])
-		break
-	case "Maria Theresa":
-		ui.power_panel_list.appendChild(ui.power_panel[P_AUSTRIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_IMPERIAL])
-		ui.power_panel_list.appendChild(ui.power_panel[P_FRANCE])
-		ui.power_panel_list.appendChild(ui.power_panel[P_PRUSSIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_HANOVER])
-		ui.power_panel_list.appendChild(ui.power_panel[P_RUSSIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_SWEDEN])
-		break
-	case "Pompadour":
-		ui.power_panel_list.appendChild(ui.power_panel[P_FRANCE])
-		ui.power_panel_list.appendChild(ui.power_panel[P_PRUSSIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_HANOVER])
-		ui.power_panel_list.appendChild(ui.power_panel[P_RUSSIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_SWEDEN])
-		ui.power_panel_list.appendChild(ui.power_panel[P_AUSTRIA])
-		ui.power_panel_list.appendChild(ui.power_panel[P_IMPERIAL])
-		break
-	}
+	sort_power_panel()
 
 	update_favicon()
 }
@@ -853,6 +829,8 @@ function on_update() {
 	ui.header.classList.toggle("imperial", view.power === P_IMPERIAL)
 	ui.header.classList.toggle("france", view.power === P_FRANCE)
 
+	sort_power_panel()
+
 	for (let g = 0; g <= 23; ++g)
 		layout_general(g, view.pos[g])
 	for (let t = 24; t <= 34; ++t)
@@ -922,7 +900,7 @@ function on_update() {
 	action_button("end_turn", "End turn")
 
 	action_button("undo", "Undo")
-	
+
 	process_actions()
 }
 
