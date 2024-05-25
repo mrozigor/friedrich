@@ -235,15 +235,15 @@ const fate_effect_text = [
 
 /* PANEL ORDER */
 
-const panel_order = [ P_PRUSSIA, P_HANOVER, P_RUSSIA, P_SWEDEN, P_AUSTRIA, P_IMPERIAL, P_FRANCE ]
+const panel_order = [ P_PRUSSIA, P_HANOVER, P_RUSSIA, P_SWEDEN, P_AUSTRIA, P_IMPERIAL, P_FRANCE, P_FRANCE+1 ]
 
 function sort_power_panel() {
 	let start = 0
 	if (view)
 		start = view.power
 	ui.power_panel_list.replaceChildren()
-	for (let i = 0; i < 7; ++i) {
-		let p = panel_order[(i + start) % 7]
+	for (let i = 0; i < 8; ++i) {
+		let p = panel_order[(i + start) % 8]
 		ui.power_panel_list.appendChild(ui.power_panel[p])
 	}
 }
@@ -266,6 +266,7 @@ const ui = {
 		document.getElementById("hand_austria_panel"),
 		document.getElementById("hand_imperial_panel"),
 		document.getElementById("hand_france_panel"),
+		document.getElementById("clock_of_fate_panel"),
 	],
 	hand: [
 		document.getElementById("hand_prussia"),
