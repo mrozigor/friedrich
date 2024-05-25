@@ -2177,7 +2177,7 @@ states.recruit = {
 
 		prompt(str)
 
-		if (game.count < cost && possible) {
+		if (possible && game.count / cost < av_troops + av_trains) {
 			for (let c of game.hand[game.power])
 				gen_action_card(c)
 		}
