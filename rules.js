@@ -1304,7 +1304,7 @@ function can_train_move_anywhere(p) {
 function can_general_move_anywhere(p) {
 	let from = game.pos[p]
 	for (let to of data.cities.adjacent[from])
-		if (can_move_general_in_theory(to))
+		if (can_move_general_in_theory(p, to))
 			return true
 	return false
 }
@@ -1315,9 +1315,9 @@ states.movement = {
 		let done_trains = true
 
 		for (let p of all_power_generals[game.power]) {
-			if (!set_has(game.moved, p) && is_supreme_commander(p) && game.pos[p] < ELIMINATED) {
+			if (!set_has(game.moved, p) && game.pos[p] < ELIMINATED) {
 				if (can_general_move_anywhere(p)) {
-					gen_action_piece(p)
+					gen_action_supreme_commander(game.pos[p])
 					done_generals = false
 				}
 			}
@@ -1424,6 +1424,20 @@ function forbid_capture(s) {
 	return false
 }
 
+function forbid_capture_by(p, s) {
+	switch (game.fx) {
+		case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return p === GEN_CUMBERLAND
+		case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return p === GEN_SOUBISE
+		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+			return p === GEN_FRIEDRICH
+		case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
+			return s === HALLE
+	}
+	return false
+}
+
 function can_move_train_to(to) {
 	return !has_any_piece(to)
 }
@@ -1432,12 +1446,12 @@ function can_continue_train_from(_) {
 	return true
 }
 
-function can_move_general_in_theory(to) {
+function can_move_general_in_theory(p, to) {
 	if (has_friendly_supply_train(to))
 		return false
 	if (has_any_other_general(to))
 		return false
-	if (has_enemy_supply_train(to) && forbid_capture(to))
+	if (has_enemy_supply_train(to) && forbid_capture_by(p, to))
 		return false
 	if (count_pieces(to) >= 3)
 		return false
@@ -3735,8 +3749,11 @@ exports.setup = function (seed, scenario, options) {
 
 	shuffle_bigint(game.deck)
 
-	if (scenario === "TEST")
-		game.clock = [ 1,2,3,4,5,6,7,8,9,10,11,12, 13,14,15,16,17,18 ]
+	if (scenario === "TEST") {
+		game.turn = 3
+		game.clock = [ 18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1 ]
+	}
+
 
 	if (game.scenario === 1)
 		log("# The War in the West")
