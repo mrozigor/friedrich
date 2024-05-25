@@ -5,6 +5,7 @@
 // TODO: sort selected generals above deselected generals when detaching?
 // TODO: show battle icon overlay (instead of roads)
 // TODO: remove roads and path highlighting code
+// TODO: tooltips
 
 const svgNS = "http://www.w3.org/2000/svg"
 

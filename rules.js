@@ -2493,7 +2493,7 @@ function gen_play_reserve() {
 		view.actions.value.push(10)
 	} else {
 		let bonus = fate_card_bonus()
-		for (let i = 0; i <= 10; ++i)
+		for (let i = 1; i <= 10; ++i)
 			view.actions.value.push(i + bonus)
 	}
 }
