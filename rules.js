@@ -1400,11 +1400,11 @@ function can_move_general_to(to) {
 	if (game.selected.length + count_pieces(to) > 3)
 		return false
 
+	// TODO: in search_move apply this as a post-process filter on the list of destinations
 	if (forbid_stopping_at(to)) {
 		let from = game.pos[game.selected[0]]
 		if (!can_continue_general_from(to))
 			return false
-		// TODO: search_move does not take this into account!
 		if (game.major && set_has(data.cities.major_roads[from], to))
 			return game.count < movement_range()
 		return game.count < movement_range() - 1
@@ -2233,19 +2233,38 @@ function goto_combat_play() {
 }
 
 function resume_combat_attack() {
-	if (game.count >= 0) {
+	if (game.count === 0 && !can_and_must_reach_positive_score(game.attacker))
 		game.state = "combat_attack_swap"
-	} else {
+	else if (game.count > 0)
+		game.state = "combat_attack_swap"
+	else
 		game.state = "combat_attack"
-	}
 }
 
 function resume_combat_defend() {
-	if (game.count <= 0) {
+	if (game.count === 0 && !can_and_must_reach_positive_score(game.defender))
 		game.state = "combat_defend_swap"
-	} else {
+	else if (game.count < 0)
+		game.state = "combat_defend_swap"
+	else
 		game.state = "combat_defend"
+}
+
+function can_and_must_reach_positive_score(from) {
+	if (must_reach_positive_score()) {
+		let target = Math.abs(game.count)
+		let suit = get_space_suit(from)
+		let n = 0
+		for (let c of game.hand[game.power]) {
+			let c_suit = to_suit(c)
+			if (c_suit === suit)
+				n += to_value(c)
+			else if (c_suit === RESERVE)
+				n += 10
+		}
+		return n - target > 0
 	}
+	return false
 }
 
 function gen_play_card(suit) {
@@ -2370,7 +2389,6 @@ states.combat_defend = {
 	inactive: inactive_defend,
 	prompt() {
 		prompt_combat(-game.count)
-
 		view.selected = [ get_supreme_commander(game.defender) ]
 		gen_play_card(get_space_suit(game.defender))
 	},
