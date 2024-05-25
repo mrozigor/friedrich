@@ -10,6 +10,7 @@ const SCENARIO_INDEX = {
 	"3P": 3,
 	"The War in the West": 1,
 	"The Austrian Theatre": 2,
+	"TEST": 4
 }
 
 const ROLE_NAME_1 = [
@@ -3622,6 +3623,9 @@ exports.setup = function (seed, scenario, options) {
 	game.deck = make_tactics_deck(0)
 
 	shuffle_bigint(game.deck)
+
+	if (scenario === "TEST")
+		game.clock = [ 1,2,3,4,5,6,7,8,9,10,11,12, 13,14,15,16,17,18 ]
 
 	if (game.scenario === 1)
 		log("# The War in the West")
