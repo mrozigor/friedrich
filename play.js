@@ -265,6 +265,7 @@ function sort_power_panel() {
 /* BUILD UI */
 
 const ui = {
+	prompt: document.getElementById("prompt"),
 	header: document.querySelector("header"),
 	roads_element: document.getElementById("roads"),
 	spaces_element: document.getElementById("spaces"),
@@ -835,7 +836,24 @@ function cmp_tc(a, b) {
 	return ax - bx
 }
 
+const colorize_S = '<span class="spades">$&</span>'
+const colorize_C = '<span class="clubs">$&</span>'
+const colorize_H = '<span class="hearts">$&</span>'
+const colorize_D = '<span class="diamonds">$&</span>'
+const colorize_R = '<span class="reserve">$&</span>'
+
+function colorize(text) {
+	text = text.replace(/\d+\u2660/g, colorize_S)
+	text = text.replace(/\d+\u2663/g, colorize_C)
+	text = text.replace(/\d+\u2665/g, colorize_H)
+	text = text.replace(/\d+\u2666/g, colorize_D)
+	text = text.replace(/\d+R/g, colorize_R)
+	return text
+}
+
 function on_update() {
+	ui.prompt.innerHTML = colorize(view.prompt)
+
 	ui.header.classList.toggle("prussia", view.power === P_PRUSSIA)
 	ui.header.classList.toggle("hanover", view.power === P_HANOVER)
 	ui.header.classList.toggle("russia", view.power === P_RUSSIA)

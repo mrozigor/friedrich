@@ -41,6 +41,12 @@
 	--color-role-russia: hsl(120, 50%, 70%);
 	--color-role-austria: hsl(0, 0%, 98%);
 	--color-role-france: hsl(0, 70%, 80%);
+
+	--color-spades: #004b70;
+	--color-clubs: #037a37;
+	--color-hearts: #ed1c23;
+	--color-diamonds: #c2253e;
+	--color-reserve: #0094c9;
 }
 
 #role_Frederick { background-color: var(--color-role-prussia) }
@@ -76,6 +82,11 @@ header.your_turn.austria { background-color: var(--color-light-austria); }
 header.your_turn.imperial { background-color: var(--color-light-imperial); }
 header.your_turn.france { background-color: var(--color-light-france); }
 
+span.suit.spades { color: var(--color-spades) }
+span.suit.clubs { color: var(--color-clubs) }
+span.suit.hearts { color: var(--color-hearts) }
+span.suit.diamonds { color: var(--color-diamonds) }
+span.suit.reserve { color: var(--color-reserve); font-weight: bold; }
 
 #mapwrap {
 	width: 2485px;
