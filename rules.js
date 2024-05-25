@@ -80,7 +80,7 @@ function find_city_list(names) {
 	return list
 }
 
-let suit_name = [ "\u2660", "\u2663", "\u2665", "\u2666", "\u2641" ]
+let suit_name = [ "\u2660", "\u2663", "\u2665", "\u2666", "R" ]
 
 const P_PRUSSIA = 0
 const P_HANOVER = 1
@@ -3420,6 +3420,13 @@ function if_hildburghausen_has_lost_a_battle_this_turn_prussia_may_move_him_2_ci
 		resume_start_turn()
 }
 
+function can_add_troop_to_stack(s) {
+	for (let p of all_generals)
+		if (game.pos[p] === s && game.troops[p] < 8)
+			return true
+	return false
+}
+
 function goto_receive_a_new_troop(power, list) {
 	set_active_to_power(power)
 
@@ -3430,7 +3437,7 @@ function goto_receive_a_new_troop(power, list) {
 
 	game.selected = []
 	for (let p of list)
-		if (game.pos[p] < ELIMINATED && game.troops[p] < 8)
+		if (game.pos[p] < ELIMINATED && can_add_troop_to_stack(game.pos[p]))
 			game.selected.push(p)
 
 	if (game.selected.length > 0) {
@@ -3452,12 +3459,19 @@ states.receive_a_new_troop = {
 	}
 }
 
+function can_remove_troop_from_stack(s) {
+	for (let p of all_generals)
+		if (game.pos[p] === s && game.troops[p] > 1)
+			return true
+	return false
+}
+
 function goto_lose_one_troop(power, list) {
 	set_active_to_power(power)
 
 	game.selected = []
 	for (let p of list)
-		if (game.pos[p] < ELIMINATED && game.troops[p] > 1)
+		if (game.pos[p] < ELIMINATED && can_remove_troop_from_stack(game.pos[p]))
 			game.selected.push(p)
 
 	if (game.selected.length > 0) {
