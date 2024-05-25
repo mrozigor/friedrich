@@ -148,6 +148,7 @@ const all_power_depots = [
 
 const MUNSTER_Y = data.cities.y[find_city("Munster")]
 const HALLE = find_city("Halle")
+const KUSTRIN = find_city("Küstrin")
 
 const all_power_re_entry_cities = [
 	data.sectors.spades_berlin,
@@ -392,7 +393,6 @@ function forbid_play_value_10_or_more() {
 function must_reach_positive_score() {
 	if (game.fx === NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE) {
 		if (game.power === P_PRUSSIA) {
-			throw "STOP +VE"
 			return (game.pos[GEN_FRIEDRICH] === game.attacker || game.pos[GEN_FRIEDRICH] === game.defender)
 		}
 	}
@@ -2306,7 +2306,7 @@ function fate_card_bonus(c) {
 		if (game.power === P_PRUSSIA && game.pos[GEN_FRIEDRICH] === game.defender)
 			return 0
 	if (game.fx === NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_ONCE_AT_DOUBLE_VALUE)
-		if (gaem.power === P_PRUSSIA && to_suit(c) === SPADES && to_value(c) === 11)
+		if (game.power === P_PRUSSIA && to_suit(c) === SPADES && to_value(c) === 11)
 			return 11
 	return 0
 }
