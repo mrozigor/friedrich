@@ -399,6 +399,61 @@ function must_reach_positive_score() {
 	return false
 }
 
+function has_empty_adjacent_city(here) {
+	for (let next of data.cities.adjacent[here])
+		if (!has_any_piece(next))
+			return true
+	return false
+}
+
+function are_prussians_attacked_by_daun() {
+	let from = game.pos[GEN_DAUN]
+	if (game.power === P_AUSTRIA && from < ELIMINATED) {
+		for (let p of all_power_generals[P_PRUSSIA])
+			if (set_has(data.cities.adjacent[from], game.pos[p]) && has_empty_adjacent_city(game.pos[p]))
+				return true
+	}
+	return false
+}
+
+states.prussians_who_are_attacked_by_daun_may_move = {
+	prompt() {
+		prompt("Any Prussians who are attacked by Daun may move to any empty adjacent city.")
+		let daun = game.pos[GEN_DAUN]
+		for (let p of all_power_generals[P_PRUSSIA])
+			if (set_has(data.cities.adjacent[daun], game.pos[p]))
+				gen_action_supreme_commander(game.pos[p])
+		view.actions.next = 1
+	},
+	piece(p) {
+		push_undo()
+		game.selected = select_stack(game.pos[p])
+		game.state = "move_to_any_empty_adjacent_city"
+	},
+	next() {
+		clear_undo()
+		set_active_to_power(P_AUSTRIA)
+		goto_combat_2()
+	},
+}
+
+states.move_to_any_empty_adjacent_city = {
+	prompt() {
+		prompt(format_selected() + " may move to any empty adjacent city.")
+		let here = game.pos[game.selected[0]]
+		for (let next of data.cities.adjacent[here])
+			if (!has_any_piece(next))
+				gen_action_space(next)
+	},
+	space(s) {
+		for (let p of game.selected) {
+			log("P" + p + " to S" + s)
+			game.pos[p] = s
+		}
+		game.state = "prussians_who_are_attacked_by_daun_may_move"
+	},
+}
+
 /* OBJECTIVES */
 
 const all_objectives = []
@@ -2246,6 +2301,18 @@ function inactive_defend() {
 function goto_combat() {
 	set_clear(game.moved)
 
+	if (game.fx === NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY) {
+		if (are_prussians_attacked_by_daun()) {
+			set_active_to_power(P_PRUSSIA)
+			game.state = "prussians_who_are_attacked_by_daun_may_move"
+			return
+		}
+	}
+
+	goto_combat_2()
+}
+
+function goto_combat_2() {
 	let from = []
 	let to = []
 
