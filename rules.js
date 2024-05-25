@@ -2921,13 +2921,31 @@ function has_supply_line(p) {
 	return false
 }
 
-function should_flip_generals() {
+function should_supply_restore() {
 	for (let p of all_power_generals[game.power]) {
 		if (game.pos[p] >= ELIMINATED)
 			continue
-		if (set_has(game.moved, p))
+		if (is_out_of_supply(p) && has_supply_line(p))
+			return true
+	}
+	return false
+}
+
+function should_supply_eliminate() {
+	for (let p of all_power_generals[game.power]) {
+		if (game.pos[p] >= ELIMINATED)
 			continue
-		if (is_out_of_supply(p) || !has_supply_line(p))
+		if (is_out_of_supply(p) && !has_supply_line(p))
+			return true
+	}
+	return false
+}
+
+function should_supply_flip() {
+	for (let p of all_power_generals[game.power]) {
+		if (game.pos[p] >= ELIMINATED)
+			continue
+		if (!is_out_of_supply(p) && !has_supply_line(p))
 			return true
 	}
 	return false
@@ -2936,21 +2954,44 @@ function should_flip_generals() {
 function goto_supply() {
 	set_clear(game.moved)
 	search_supply(6)
-	if (should_flip_generals())
-		game.state = "supply"
+	if (should_supply_restore())
+		resume_supply_restore()
+	else if (should_supply_eliminate())
+		resume_supply_eliminate()
+	else if (should_supply_flip())
+		resume_supply_flip()
 	else
 		end_supply()
 }
 
-states.supply = {
+function resume_supply_restore() {
+	if (should_supply_restore())
+		game.state = "supply_restore"
+	else
+		resume_supply_eliminate()
+}
+
+function resume_supply_eliminate() {
+	if (should_supply_eliminate())
+		game.state = "supply_eliminate"
+	else
+		resume_supply_flip()
+}
+
+function resume_supply_flip() {
+	if (should_supply_flip())
+		game.state = "supply_flip"
+	else
+		game.state = "supply_done"
+}
+
+states.supply_restore = {
 	prompt() {
-		prompt("Supply.")
+		prompt("Restore supply to generals with a supply line.")
 		for (let p of all_power_generals[game.power]) {
 			if (game.pos[p] >= ELIMINATED)
 				continue
-			if (set_has(game.moved, p))
-				continue
-			if (is_out_of_supply(p) || !has_supply_line(p))
+			if (is_out_of_supply(p) && has_supply_line(p))
 				gen_action_supreme_commander(game.pos[p])
 		}
 	},
@@ -2959,23 +3000,57 @@ states.supply = {
 		for (let p of all_power_generals[game.power]) {
 			if (game.pos[p] === s) {
 				set_add(game.moved, p)
-				if (is_out_of_supply(p)) {
-					set_in_supply(p)
-					if (!has_supply_line(p)) {
-						log("P" + p + " eliminated.")
-						game.pos[p] = ELIMINATED
-						game.troops[p] = 0
-					} else {
-						log("P" + p + " in supply.")
-					}
-				} else {
-					log("P" + p + " out of supply.")
-					set_out_of_supply(p)
-				}
+				set_in_supply(p)
+				log("P" + p + " restored supply.")
 			}
 		}
-		if (!should_flip_generals())
-			game.state = "supply_done"
+		resume_supply_restore()
+	},
+}
+
+states.supply_eliminate = {
+	prompt() {
+		prompt("Eliminate out of supply generals with no supply line.")
+		for (let p of all_power_generals[game.power]) {
+			if (game.pos[p] >= ELIMINATED)
+				continue
+			if (is_out_of_supply(p) && !has_supply_line(p))
+				gen_action_supreme_commander(game.pos[p])
+		}
+	},
+	piece(x) {
+		let s = game.pos[x]
+		for (let p of all_power_generals[game.power]) {
+			if (game.pos[p] === s) {
+				set_in_supply(p)
+				log("P" + p + " eliminated.")
+				game.pos[p] = ELIMINATED
+				game.troops[p] = 0
+			}
+		}
+		resume_supply_eliminate()
+	},
+}
+
+states.supply_flip = {
+	prompt() {
+		prompt("Flip generals with no supply line.")
+		for (let p of all_power_generals[game.power]) {
+			if (game.pos[p] >= ELIMINATED)
+				continue
+			if (!is_out_of_supply(p) && !has_supply_line(p))
+				gen_action_supreme_commander(game.pos[p])
+		}
+	},
+	piece(x) {
+		let s = game.pos[x]
+		for (let p of all_power_generals[game.power]) {
+			if (game.pos[p] === s) {
+				log("P" + p + " out of supply.")
+				set_out_of_supply(p)
+			}
+		}
+		resume_supply_flip()
 	},
 }
 
@@ -2990,7 +3065,6 @@ states.supply_done = {
 }
 
 function end_supply() {
-	set_clear(game.moved)
 	delete game.supply
 	end_action_stage()
 }
