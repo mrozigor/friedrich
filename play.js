@@ -89,7 +89,6 @@ const all_power_trains = [
 
 const RESERVE = 4
 let suit_class = [ "S", "C", "H", "D", "R" ]
-let suit_name = [ "\u2660", "\u2663", "\u2665", "\u2666", "R" ]
 
 function to_suit(c) {
 	return (c >> 4) & 7
@@ -836,18 +835,26 @@ function cmp_tc(a, b) {
 	return ax - bx
 }
 
-const colorize_S = '<span class="spades">$&</span>'
-const colorize_C = '<span class="clubs">$&</span>'
-const colorize_H = '<span class="hearts">$&</span>'
-const colorize_D = '<span class="diamonds">$&</span>'
-const colorize_R = '<span class="reserve">$&</span>'
+const colorize_S = '<span class="suit spades">\u2660</span>'
+const colorize_C = '<span class="suit clubs">\u2663</span>'
+const colorize_H = '<span class="suit hearts">\u2665</span>'
+const colorize_D = '<span class="suit diamonds">\u2666</span>'
+const colorize_R = '$1<span class="suit reserve">R</span>'
+
+const suit_text = [
+	'<span class="suit spades">\u2660</span>',
+	'<span class="suit clubs">\u2663</span>',
+	'<span class="suit hearts">\u2665</span>',
+	'<span class="suit diamonds">\u2666</span>',
+	'<span class="suit reserve">R</span>'
+]
 
 function colorize(text) {
-	text = text.replace(/\d+\u2660/g, colorize_S)
-	text = text.replace(/\d+\u2663/g, colorize_C)
-	text = text.replace(/\d+\u2665/g, colorize_H)
-	text = text.replace(/\d+\u2666/g, colorize_D)
-	text = text.replace(/\d+R/g, colorize_R)
+	text = text.replaceAll("\u2660", colorize_S)
+	text = text.replaceAll("\u2663", colorize_C)
+	text = text.replaceAll("\u2665", colorize_H)
+	text = text.replaceAll("\u2666", colorize_D)
+	text = text.replace(/(\d+)R/g, colorize_R)
 	return text
 }
 
@@ -910,7 +917,7 @@ function on_update() {
 		ui.markers_element.appendChild(ui.retro[s])
 
 	/* troops 1-8, reserve 1-10 with modifiers +1 and +5 */
-	for (let v = 16; v >= 1; --v)
+	for (let v = 16; v >= 0; --v)
 		action_button_with_argument("value", v, v)
 
 	action_button("take", "Take")
@@ -972,8 +979,8 @@ function sub_tc(match, p1) {
 	let suit = to_suit(x)
 	let value = to_value(x)
 	if (suit === RESERVE)
-		return suit_name[suit]
-	return value + suit_name[suit]
+		return suit_text[suit]
+	return value + suit_text[suit]
 }
 
 function on_log(text) {

@@ -2491,14 +2491,23 @@ function gen_play_reserve() {
 		for (let i = n + 1; i < 10; ++i)
 			view.actions.value.push(i)
 		view.actions.value.push(10)
+	} else if (fate_card_zero()) {
+		view.actions.value.push(0)
 	} else {
-		let bonus = fate_card_bonus()
+		let bonus = fate_card_bonus(0, 0)
 		let max = 10
 		if (forbid_play_value_10_or_more())
 			max = 9
 		for (let i = 1; i <= max; ++i)
 			view.actions.value.push(i + bonus)
 	}
+}
+
+function fate_card_zero() {
+	if (game.fx === NEXT_TURN_IF_FRIEDRICH_IS_ATTACKED_THE_FIRST_TC_PLAYED_BY_PRUSSIA_IS_WORTH_NOTHING_0_POINTS)
+		if (game.power === P_PRUSSIA && game.pos[GEN_FRIEDRICH] === game.defender)
+			return true
+	return false
 }
 
 function fate_card_bonus(c) {
@@ -2508,9 +2517,6 @@ function fate_card_bonus(c) {
 	if (game.fx === NEXT_TURN_IF_FRIEDRICH_ATTACKS_HIS_FIRST_TC_IS_WORTH_5_ADDITIONAL_POINTS)
 		if (game.power === P_PRUSSIA && game.pos[GEN_FRIEDRICH] === game.attacker)
 			return 5
-	if (game.fx === NEXT_TURN_IF_FRIEDRICH_IS_ATTACKED_THE_FIRST_TC_PLAYED_BY_PRUSSIA_IS_WORTH_NOTHING_0_POINTS)
-		if (game.power === P_PRUSSIA && game.pos[GEN_FRIEDRICH] === game.defender)
-			return 0
 	if (game.fx === NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_ONCE_AT_DOUBLE_VALUE)
 		if (game.power === P_PRUSSIA && to_suit(c) === SPADES && to_value(c) === 11)
 			return 11
@@ -2518,6 +2524,11 @@ function fate_card_bonus(c) {
 }
 
 function play_card(c, sign) {
+	if (fate_card_zero()) {
+		log(POWER_NAME[game.power] + " C" + c + " - " + to_value(c) + " = " + game.count)
+		clear_fate_effect()
+		return
+	}
 	let bonus = fate_card_bonus(c)
 	if (sign < 0)
 		game.count -= to_value(c) + bonus
@@ -2532,18 +2543,34 @@ function play_card(c, sign) {
 }
 
 function play_reserve(v, sign) {
-	// bonus is already baked into v!
+	if (fate_card_zero()) {
+		log(POWER_NAME[game.power] + " 0R = " + game.count)
+		clear_fate_effect()
+		return
+	}
 	let bonus = fate_card_bonus(0)
 	if (sign < 0)
 		game.count -= v
 	else
 		game.count += v
 	if (bonus > 0)
-		log(POWER_NAME[game.power] + " reserve " + (v-bonus) + " + " + bonus + " = " + (game.count))
+		log(POWER_NAME[game.power] + " " + (v-bonus) + "R +" + bonus + " = " + (game.count))
 	else
-		log(POWER_NAME[game.power] + " reserve " + (v) + " = " + (game.count))
+		log(POWER_NAME[game.power] + " " + (v) + "R = " + (game.count))
 	if (bonus > 0)
 		clear_fate_effect()
+}
+
+function play_combat_card(c, sign, resume, next_state) {
+	push_undo()
+	array_remove_item(game.hand[game.power], c)
+	let c_suit = to_suit(c)
+	if (c_suit === RESERVE) {
+		game.state = next_state
+	} else {
+		play_card(c, sign)
+		resume()
+	}
 }
 
 states.combat_attack = {
@@ -2554,16 +2581,7 @@ states.combat_attack = {
 		gen_play_card(get_space_suit(game.attacker))
 	},
 	card(c) {
-		push_undo()
-
-		array_remove_item(game.hand[game.power], c)
-		let c_suit = to_suit(c)
-		if (c_suit === RESERVE) {
-			game.state = "combat_attack_reserve"
-		} else {
-			play_card(c, +1)
-			resume_combat_attack()
-		}
+		play_combat_card(c, +1, resume_combat_attack, "combat_attack_reserve")
 	},
 	pass() {
 		clear_undo()
@@ -2579,16 +2597,7 @@ states.combat_defend = {
 		gen_play_card(get_space_suit(game.defender))
 	},
 	card(c) {
-		push_undo()
-
-		array_remove_item(game.hand[game.power], c)
-		let c_suit = to_suit(c)
-		if (c_suit === RESERVE) {
-			game.state = "combat_defend_reserve"
-		} else {
-			play_card(c, -1)
-			resume_combat_defend()
-		}
+		play_combat_card(c, -1, resume_combat_defend, "combat_defend_reserve")
 	},
 	pass() {
 		clear_undo()
