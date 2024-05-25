@@ -2280,7 +2280,7 @@ states.re_enter = {
 /* COMBAT */
 
 function format_combat(value) {
-	return format_stack(game.attacker) + " vs " + format_stack(game.defender) + " at " + value
+	return format_stack(game.attacker) + " vs " + format_stack(game.defender) + " score " + value
 }
 
 function prompt_combat(value, extra = null) {
@@ -2493,7 +2493,10 @@ function gen_play_reserve() {
 		view.actions.value.push(10)
 	} else {
 		let bonus = fate_card_bonus()
-		for (let i = 1; i <= 10; ++i)
+		let max = 10
+		if (forbid_play_value_10_or_more())
+			max = 9
+		for (let i = 1; i <= max; ++i)
 			view.actions.value.push(i + bonus)
 	}
 }
