@@ -393,9 +393,8 @@ function forbid_play_value_10_or_more() {
 
 function must_reach_positive_score() {
 	if (game.fx === NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE) {
-		if (game.power === P_PRUSSIA) {
+		if (game.power === P_PRUSSIA)
 			return (game.pos[GEN_FRIEDRICH] === game.attacker || game.pos[GEN_FRIEDRICH] === game.defender)
-		}
 	}
 	return false
 }
@@ -1283,6 +1282,13 @@ function movement_range() {
 function goto_movement() {
 	game.state = "movement"
 	set_clear(game.moved)
+
+	if (game.fx === NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KUSTRIN_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE) {
+		if (game.power === P_RUSSIA && set_has(data.cities.adjacent[KUSTRIN], game.pos[GEN_FERMOR])) {
+			// log("P" + GEN_FERMOR + " in S" + game.pos[GEN_FERMOR] + " may not move.")
+			set_add(game.moved, GEN_FERMOR)
+		}
+	}
 }
 
 function is_supreme_commander(p) {
@@ -1346,10 +1352,10 @@ states.movement = {
 	piece(p) {
 		push_undo()
 
-		game.selected = [ p ]
+		game.selected = []
 		let here = game.pos[p]
 		for (let other of all_power_generals[game.power])
-			if (other > p && game.pos[other] === here)
+			if (other >= p && game.pos[other] === here && !set_has(game.moved, other))
 				game.selected.push(other)
 
 		game.count = 0
@@ -1880,15 +1886,6 @@ states.move_general_OLD = {
 			} else {
 				gen_action_piece(who)
 				view.actions.stop = 1
-			}
-		}
-
-		if (game.count === 0) {
-			if (game.fx === NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KUSTRIN_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE) {
-				if (set_has(game.selected, GEN_FERMOR) && set_has(data.cities.adjacent[KUSTRIN], here)) {
-					prompt("Move " + format_selected() + ". Fermor may not move this turn.")
-					return
-				}
 			}
 		}
 
