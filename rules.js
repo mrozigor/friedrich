@@ -1352,11 +1352,16 @@ states.movement = {
 	piece(p) {
 		push_undo()
 
-		game.selected = []
 		let here = game.pos[p]
-		for (let other of all_power_generals[game.power])
-			if (other >= p && game.pos[other] === here && !set_has(game.moved, other))
-				game.selected.push(other)
+
+		if (is_general(p)) {
+			game.selected = []
+			for (let other of all_power_generals[game.power])
+				if (other >= p && game.pos[other] === here && !set_has(game.moved, other))
+					game.selected.push(other)
+		} else {
+			game.selected = [ p ]
+		}
 
 		game.count = 0
 
