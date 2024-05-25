@@ -341,7 +341,7 @@ function format_stack(s) {
 
 /* CARDS OF FATE (PASSIVE) */
 
-const NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KÜSTRIN_H6_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE = 5
+const NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KUSTRIN_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE = 5
 
 const NEXT_TURN_SALTIKOV_MAY_MOVE_ONLY_2_CITIES = 7
 const NEXT_TURN_RICHELIEU_MAY_MOVE_2_CITIES_ONLY = 18
@@ -1815,6 +1815,14 @@ states.move_general_OLD = {
 			}
 		}
 
+		if (game.count === 0) {
+			if (game.fx === NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KUSTRIN_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE) {
+				if (set_has(game.selected, GEN_FERMOR) && set_has(data.cities.adjacent[KUSTRIN], here)) {
+					prompt("Move " + format_selected() + ". Fermor may not move this turn.")
+					return
+				}
+			}
+		}
 		if (game.count < movement_range() + game.major)
 			for (let next of data.cities.major_roads[here])
 				if (can_move_general_to(next))
