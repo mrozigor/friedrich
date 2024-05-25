@@ -1350,7 +1350,8 @@ states.movement = {
 		if (done_trains && done_generals)
 			view.actions.end_movement = 1
 		else
-			view.actions.confirm_end_movement = 1
+			// TODO view.actions.confirm_end_movement = 1
+			view.actions.end_movement = 1
 	},
 	piece(p) {
 		push_undo()
