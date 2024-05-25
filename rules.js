@@ -359,14 +359,45 @@ const NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 24
 const NEXT_TURN_PRINZ_HEINRICH_PROTECTS_OBJECTIVES_UP_TO_4_CITIES_DISTANT = 42
 
 const NEXT_TURN_IF_PRUSSIA_AND_FRANCE_FIGHT_EACH_OTHER_THEY_MAY_NOT_USE_TCS_WITH_VALUES_OF_10_OR_MORE = 9
+const NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE = 27
+
 const NEXT_TURN_THE_FIRST_TC_PLAYED_BY_FRANCE_IS_WORTH_AN_ADDITIONAL_POINT = 12
-const NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE_WITH_THE_FIRST_TCS_SHE_PLAYS_IF_POSSIBLE = 27
 const NEXT_TURN_IF_FRIEDRICH_ATTACKS_HIS_FIRST_TC_IS_WORTH_5_ADDITIONAL_POINTS = 31
 const NEXT_TURN_IF_FRIEDRICH_IS_ATTACKED_THE_FIRST_TC_PLAYED_BY_PRUSSIA_IS_WORTH_NOTHING_0_POINTS = 38
-const NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_SEYDLITZ_ONCE_AT_DOUBLE_VALUE = 40
+const NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_ONCE_AT_DOUBLE_VALUE = 40
 
 const NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY = 29
 
+function clear_fate_effect() {
+	game.fx = 0
+}
+
+function may_unstack() {
+	// TODO: 3-piece stack?
+	if (game.fx === NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK)
+		return !set_has(game.selected, GEN_CHEVERT)
+	return true
+}
+
+function forbid_play_value_10_or_more() {
+	if (game.fx === NEXT_TURN_IF_PRUSSIA_AND_FRANCE_FIGHT_EACH_OTHER_THEY_MAY_NOT_USE_TCS_WITH_VALUES_OF_10_OR_MORE) {
+		let a = get_stack_power(game.attacker)
+		let d = get_stack_power(game.defender)
+		if ((a === P_PRUSSIA && d === P_FRANCE) || (a === P_FRANCE && d === P_PRUSSIA))
+			return true
+	}
+	return false
+}
+
+function must_reach_positive_score() {
+	if (game.fx === NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE) {
+		if (game.power === P_PRUSSIA) {
+			throw "STOP +VE"
+			return (game.pos[GEN_FRIEDRICH] === game.attacker || game.pos[GEN_FRIEDRICH] === game.defender)
+		}
+	}
+	return false
+}
 
 /* OBJECTIVES */
 
@@ -1303,13 +1334,6 @@ function format_move(max) {
 	return ` up to ${n} cities.`
 }
 
-function may_unstack() {
-	// TODO: 3-piece stack?
-	if (game.fx === NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK)
-		return !set_has(game.selected, GEN_CHEVERT)
-	return true
-}
-
 // TODO: also force moving if in such a position and can move away
 function forbid_stopping_at(from) {
 	switch (game.fx) {
@@ -1330,15 +1354,15 @@ function forbid_stopping_at(from) {
 function forbid_attack(from, to) {
 	switch (game.fx) {
 		case NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL:
-			return set_has(game.selected, GEN_SOUBISE) && game.ia_attack === get_space_suit(from)
+			return game.pos[GEN_SOUBISE] === from && game.ia_attack === get_space_suit(from)
 		case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
 			return to === HALLE
 		case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return set_has(game.selected, GEN_CUMBERLAND)
+			return game.pos[GEN_CUMBERLAND] === from
 		case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return set_has(game.selected, GEN_SOUBISE)
+			return game.pos[GEN_SOUBISE] === from
 		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return set_has(game.selected, GEN_FRIEDRICH)
+			return game.pos[GEN_FRIEDRICH] === from
 	}
 	return false
 }
@@ -1440,9 +1464,9 @@ function resume_move_general() {
 	if (game.count === range + game.major) {
 		end_move_piece()
 	} else {
-		let here = game.pos[game.selected[0]]
 		game.state = "move_general"
 		/* NEW
+		let here = game.pos[game.selected[0]]
 		if (game.major && game.count < range+1)
 			game.move_major = search_move(here, range+1 - game.count, "major_roads", can_move_general_to, can_continue_general_from)
 		else
@@ -2224,17 +2248,96 @@ function resume_combat_defend() {
 }
 
 function gen_play_card(suit) {
+	let score = Math.abs(game.count)
 	let has_suit = false
+	let has_card = false
+
 	for (let c of game.hand[game.power]) {
 		let c_suit = to_suit(c)
 		if (c_suit === suit) {
+			let v = to_value(c)
+
+			if (v >= 10 && forbid_play_value_10_or_more())
+				continue
+
 			has_suit = true
+			has_card = true
+			gen_action_card(c)
+		} else if (c_suit === RESERVE) {
+			has_card = true
 			gen_action_card(c)
 		}
-		else if (c_suit === RESERVE)
-			gen_action_card(c)
 	}
-	return has_suit
+
+	// cannot pass if at 0 (and can play)
+	if (score === 0 && has_suit)
+		view.actions.pass = 0
+
+	// cannot pass if must reach positive score (and can play)
+	else if (score > 0 && must_reach_positive_score() && has_card)
+		view.actions.pass = 0
+
+	else
+		view.actions.pass = 1
+}
+
+function gen_play_reserve() {
+	view.actions.value = []
+	if (must_reach_positive_score()) {
+		let n = Math.abs(game.count)
+		for (let i = n + 1; i < 10; ++i)
+			view.actions.value.push(i)
+		view.actions.value.push(10)
+	} else {
+		let bonus = fate_card_bonus()
+		for (let i = 0; i <= 10; ++i)
+			view.actions.value.push(i + bonus)
+	}
+}
+
+function fate_card_bonus(c) {
+	if (game.fx === NEXT_TURN_THE_FIRST_TC_PLAYED_BY_FRANCE_IS_WORTH_AN_ADDITIONAL_POINT)
+		if (game.power === P_FRANCE)
+			return 1
+	if (game.fx === NEXT_TURN_IF_FRIEDRICH_ATTACKS_HIS_FIRST_TC_IS_WORTH_5_ADDITIONAL_POINTS)
+		if (game.power === P_PRUSSIA && game.pos[GEN_FRIEDRICH] === game.attacker)
+			return 5
+	if (game.fx === NEXT_TURN_IF_FRIEDRICH_IS_ATTACKED_THE_FIRST_TC_PLAYED_BY_PRUSSIA_IS_WORTH_NOTHING_0_POINTS)
+		if (game.power === P_PRUSSIA && game.pos[GEN_FRIEDRICH] === game.defender)
+			return 0
+	if (game.fx === NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_ONCE_AT_DOUBLE_VALUE)
+		if (gaem.power === P_PRUSSIA && to_suit(c) === SPADES && to_value(c) === 11)
+			return 11
+	return 0
+}
+
+function play_card(c, sign) {
+	let bonus = fate_card_bonus(c)
+	if (sign < 0)
+		game.count -= to_value(c) + bonus
+	else
+		game.count += to_value(c) + bonus
+	if (bonus > 0)
+		log(POWER_NAME[game.power] + " C" + c + " + " + bonus + " = " + (game.count))
+	else
+		log(POWER_NAME[game.power] + " C" + c + " = " + (game.count))
+	if (bonus > 0)
+		clear_fate_effect()
+}
+
+function play_reserve(v, sign) {
+	// bonus is already baked into v!
+	let bonus = fate_card_bonus(0)
+	if (sign < 0)
+		game.count -= v
+	else
+		game.count += v
+	if (bonus > 0)
+		log(POWER_NAME[game.power] + " reserve " + (v-bonus) + " + " + bonus + " = " + (game.count))
+	else
+		log(POWER_NAME[game.power] + " reserve " + (v) + " = " + (game.count))
+	if (bonus > 0)
+		clear_fate_effect()
 }
 
 states.combat_attack = {
@@ -2242,11 +2345,7 @@ states.combat_attack = {
 	prompt() {
 		prompt_combat(game.count)
 		view.selected = [ get_supreme_commander(game.attacker) ]
-		let has_suit = gen_play_card(get_space_suit(game.attacker))
-		if (game.count === 0 && has_suit)
-			view.actions.pass = 0
-		else
-			view.actions.pass = 1
+		gen_play_card(get_space_suit(game.attacker))
 	},
 	card(c) {
 		push_undo()
@@ -2256,8 +2355,7 @@ states.combat_attack = {
 		if (c_suit === RESERVE) {
 			game.state = "combat_attack_reserve"
 		} else {
-			game.count += to_value(c)
-			log(POWER_NAME[game.power] + " C" + c + " = " + (game.count))
+			play_card(c, +1)
 			resume_combat_attack()
 		}
 	},
@@ -2273,11 +2371,7 @@ states.combat_defend = {
 		prompt_combat(-game.count)
 
 		view.selected = [ get_supreme_commander(game.defender) ]
-		let has_suit = gen_play_card(get_space_suit(game.defender))
-		if (game.count === 0 && has_suit)
-			view.actions.pass = 0
-		else
-			view.actions.pass = 1
+		gen_play_card(get_space_suit(game.defender))
 	},
 	card(c) {
 		push_undo()
@@ -2287,8 +2381,7 @@ states.combat_defend = {
 		if (c_suit === RESERVE) {
 			game.state = "combat_defend_reserve"
 		} else {
-			game.count -= to_value(c)
-			log(POWER_NAME[game.power] + " C" + c + " = " + (game.count))
+			play_card(c, -1)
 			resume_combat_defend()
 		}
 	},
@@ -2303,11 +2396,10 @@ states.combat_attack_reserve = {
 	prompt() {
 		prompt_combat(game.count, "Choose value.")
 		view.selected = [ get_supreme_commander(game.attacker)]
-		view.actions.value = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+		gen_play_reserve()
 	},
 	value(v) {
-		log(POWER_NAME[game.power] + " reserve " + v)
-		game.count += v
+		play_reserve(v, +1)
 		resume_combat_attack()
 	},
 }
@@ -2317,11 +2409,10 @@ states.combat_defend_reserve = {
 	prompt() {
 		prompt_combat(-game.count, "Choose value.")
 		view.selected = [ get_supreme_commander(game.defender) ]
-		view.actions.value = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+		gen_play_reserve()
 	},
 	value(v) {
-		log(POWER_NAME[game.power] + " reserve " + v)
-		game.count -= v
+		play_reserve(v, -1)
 		resume_combat_defend()
 	},
 }
@@ -2363,9 +2454,13 @@ function select_stack(s) {
 }
 
 function resolve_combat() {
+	if (must_reach_positive_score())
+		clear_fate_effect()
+
 	if (game.fx === NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL)
 		if (get_supreme_commander(game.attacker) === GEN_HILDBURGHAUSEN)
 			game.ia_attack = get_space_suit(game.attacker)
+
 	if (game.count === 0) {
 		log("Tie.")
 		next_combat()
