@@ -554,7 +554,7 @@ function turn_power_draw() {
 		case P_FRANCE:
 			n = 4
 			if (set_has(game.fate, FC_INDIA) || set_has(game.fate, FC_AMERICA))
-				n = 4
+				n = 3
 			break
 	}
 	return n
