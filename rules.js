@@ -427,13 +427,17 @@ states.prussians_who_are_attacked_by_daun_may_move = {
 	},
 	piece(p) {
 		push_undo()
+		remove_stack_from_combat(game.pos[p])
 		game.selected = select_stack(game.pos[p])
 		game.state = "move_to_any_empty_adjacent_city"
 	},
 	next() {
 		clear_undo()
 		set_active_to_power(P_AUSTRIA)
-		goto_combat_2()
+		if (game.combat.length > 0)
+			game.state = "combat"
+		else
+			goto_retroactive_conquest()
 	},
 }
 
@@ -2301,18 +2305,6 @@ function inactive_defend() {
 function goto_combat() {
 	set_clear(game.moved)
 
-	if (game.fx === NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY) {
-		if (are_prussians_attacked_by_daun()) {
-			set_active_to_power(P_PRUSSIA)
-			game.state = "prussians_who_are_attacked_by_daun_may_move"
-			return
-		}
-	}
-
-	goto_combat_2()
-}
-
-function goto_combat_2() {
 	let from = []
 	let to = []
 
@@ -2333,6 +2325,14 @@ function goto_combat_2() {
 					game.combat.push(b)
 				}
 			}
+		}
+	}
+
+	if (game.fx === NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY) {
+		if (are_prussians_attacked_by_daun()) {
+			set_active_to_power(P_PRUSSIA)
+			game.state = "prussians_who_are_attacked_by_daun_may_move"
+			return
 		}
 	}
 
@@ -2724,15 +2724,19 @@ function set_active_winner() {
 		set_active_defender()
 }
 
+function remove_stack_from_combat(s) {
+	for (let i = game.combat.length - 2; i >= 0; i -= 2)
+		if (game.combat[i] === s || game.combat[i + 1] === s)
+			array_remove_pair(game.combat, i)
+}
+
 function goto_retreat() {
 	let hits = Math.abs(game.count)
 
 	let loser = get_loser()
 
 	// no more fighting for the loser
-	for (let i = game.combat.length - 2; i >= 0; i -= 2)
-		if (game.combat[i] === loser || game.combat[i+1] === loser)
-			array_remove_pair(game.combat, i)
+	remove_stack_from_combat(loser)
 
 	log("P" + get_supreme_commander(loser) + " lost " + hits + " troops.")
 
