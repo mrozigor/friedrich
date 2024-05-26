@@ -839,10 +839,10 @@ function has_own_general(to) {
 	return false
 }
 
-function count_pieces(to) {
+function count_generals(to) {
 	let n = 0
-	for (let s of game.pos)
-		if (s === to)
+	for (let p of all_generals)
+		if (game.pos[p] === to)
 			++n
 	return n
 }
@@ -1530,7 +1530,7 @@ function can_move_general_in_theory(p, to) {
 		return false
 	if (has_enemy_supply_train(to) && forbid_capture_by(p, to))
 		return false
-	if (count_pieces(to) >= 3)
+	if (count_generals(to) >= 3)
 		return false
 	return true
 }
@@ -1542,7 +1542,7 @@ function can_move_general_to(to) {
 		return false
 	if (has_enemy_supply_train(to) && forbid_capture(to))
 		return false
-	if (game.selected.length + count_pieces(to) > 3)
+	if (game.selected.length + count_generals(to) > 3)
 		return false
 
 	// TODO: in search_move apply this as a post-process filter on the list of destinations
@@ -2246,7 +2246,7 @@ function can_re_enter_general(to) {
 		return false
 	if (has_any_other_general(to))
 		return false
-	if (1 + count_pieces(to) > 3)
+	if (1 + count_generals(to) > 3)
 		return false
 	return true
 }
