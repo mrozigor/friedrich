@@ -80,7 +80,8 @@ function find_city_list(names) {
 	return list
 }
 
-let suit_name = [ "\u2660", "\u2663", "\u2665", "\u2666", "R" ]
+const deck_name = [ "brown", "blue", "green", "red", "gray" ]
+const suit_name = [ "\u2660", "\u2663", "\u2665", "\u2666", "R" ]
 
 const P_PRUSSIA = 0
 const P_HANOVER = 1
@@ -514,6 +515,9 @@ make_protect(P_HANOVER, data.country.Hanover)
 make_protect(P_AUSTRIA, data.country.Austria)
 
 function is_conquest_space(pow, s) {
+	// TODO: prussian offensive option
+	if (has_eased_victory(pow))
+		return set_has(primary_objective[pow], s)
 	return set_has(full_objective[pow], s)
 }
 
@@ -552,6 +556,11 @@ function is_protected_from_reconquest(s) {
 		}
 	}
 	return false
+}
+
+function remove_secondary_objectives(power) {
+	for (let s of secondary_objective[power])
+		set_delete(game.conquest, s)
 }
 
 /* STATE */
@@ -864,6 +873,7 @@ function retire_general(p) {
 	let n = game.troops[p]
 	game.pos[p] = REMOVED
 	game.troops[p] = 0
+	set_in_supply(p)
 
 	if (s < ELIMINATED) {
 		for (let p of all_power_generals[game.power]) {
@@ -876,6 +886,18 @@ function retire_general(p) {
 		if (n > 0)
 			log("Lost " + n + " troops.")
 	}
+}
+
+function eliminate_general(p) {
+	log("P" + p + " eliminated.")
+	game.pos[p] = ELIMINATED
+	game.troops[p] = 0
+	set_in_supply(p)
+}
+
+function eliminate_train(p) {
+	log("P" + p + " eliminated.")
+	game.pos[p] = ELIMINATED
 }
 
 /* SEQUENCE OF PLAY */
@@ -940,6 +962,15 @@ function goto_start_turn() {
 		if (game.scenario === 1 || game.scenario === 2) {
 			resume_start_turn()
 			return
+		}
+
+		// eased victory conditions
+		if (has_russia_dropped_out()) {
+			remove_secondary_objectives(P_SWEDEN)
+		}
+		if (has_imperial_army_switched_players()) {
+			remove_secondary_objectives(P_AUSTRIA)
+			remove_secondary_objectives(P_IMPERIAL)
 		}
 
 		if (fc === FC_ELISABETH) {
@@ -1070,6 +1101,16 @@ function check_victory_the_austrian_theatre() {
 	return check_victory_list(victory)
 }
 
+function has_eased_victory(power) {
+	if (power === P_SWEDEN)
+		return has_russia_dropped_out()
+	if (power === P_AUSTRIA)
+		return has_imperial_army_switched_players()
+	if (power === P_IMPERIAL)
+		return has_imperial_army_switched_players()
+	return false
+}
+
 function check_victory_4() {
 	// Prussian victory
 	if (has_russia_dropped_out() && has_sweden_dropped_out() && has_france_dropped_out()) {
@@ -1129,13 +1170,6 @@ function next_tactics_deck() {
 		}
 	}
 
-	log("Discards " + held.map(x=>50-x).join(", "))
-	log("Deck 1: " + make_tactics_discard(0).map(x=>"C"+x).join(" "))
-	log("Deck 2: " + make_tactics_discard(1).map(x=>"C"+x).join(" "))
-	log("Deck 3: " + make_tactics_discard(2).map(x=>"C"+x).join(" "))
-	log("Deck 4: " + make_tactics_discard(3).map(x=>"C"+x).join(" "))
-	log("Deck 5: " + make_tactics_discard(4).map(x=>"C"+x).join(" "))
-
 	// find two largest discard piles
 	let a = find_largest_discard(held)
 	if (held[a] === 50)
@@ -1147,7 +1181,7 @@ function next_tactics_deck() {
 	if (held[b] === 50)
 		return
 
-	log("Shuffled new deck from discards " + (a+1) + " and " + (b+1) + ".")
+	log("Shuffled " + deck_name[a] + " and " + deck_name[b] + ".")
 
 	game.deck = [
 		make_tactics_discard(a),
@@ -1664,8 +1698,7 @@ function move_general_to(to) {
 	// eliminate supply train
 	for (let p of all_enemy_trains[pow]) {
 		if (game.pos[p] === to) {
-			log("Eliminate P" + p)
-			game.pos[p] = ELIMINATED
+			eliminate_train(p)
 			stop = true
 		}
 	}
@@ -1700,8 +1733,7 @@ function move_general_immediately(to) {
 	// eliminate supply train
 	for (let p of all_enemy_trains[game.power]) {
 		if (game.pos[p] === to) {
-			log("Eliminate P" + p)
-			game.pos[p] = ELIMINATED
+			eliminate_train(p)
 		}
 	}
 }
@@ -2816,7 +2848,7 @@ states.retreat_eliminate_hits = {
 	},
 	piece(p) {
 		log("P" + p + " eliminated.")
-		game.pos[p] = ELIMINATED
+		eliminate_general(p)
 		set_delete(game.selected, p)
 		resume_retreat()
 	},
@@ -2831,10 +2863,8 @@ states.retreat_eliminate_trapped = {
 	},
 	piece(_) {
 		log("Trapped.")
-		for (let p of game.selected) {
-			game.pos[p] = ELIMINATED
-			game.troops[p] = 0
-		}
+		for (let p of game.selected)
+			eliminate_general(p)
 		next_combat()
 	},
 }
@@ -3118,14 +3148,9 @@ states.supply_eliminate = {
 	},
 	piece(x) {
 		let s = game.pos[x]
-		for (let p of all_power_generals[game.power]) {
-			if (game.pos[p] === s) {
-				set_in_supply(p)
-				log("P" + p + " eliminated.")
-				game.pos[p] = ELIMINATED
-				game.troops[p] = 0
-			}
-		}
+		for (let p of all_power_generals[game.power])
+			if (game.pos[p] === s)
+				eliminate_general(p)
 		resume_supply_eliminate()
 	},
 }
@@ -3974,7 +3999,6 @@ exports.setup = function (seed, scenario, options) {
 		game.turn = 3
 		game.clock = [ 18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1 ]
 	}
-
 
 	if (game.scenario === 1)
 		log("# The War in the West")
