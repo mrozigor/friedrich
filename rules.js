@@ -161,17 +161,6 @@ const all_power_re_entry_cities = [
 	data.sectors.hearts_south_of_koblenz,
 ]
 
-const piece_abbr = [
-	"P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8",
-	"H1", "H2",
-	"R1", "R2", "R3", "R4",
-	"S1",
-	"A1", "A2", "A3", "A4", "A5",
-	"IA1",
-	"F1", "F2", "F3",
-	"PT1", "PT2", "HT", "RT1", "RT2", "ST", "AT1", "AT2", "IAT", "FT1", "FT2",
-]
-
 const all_power_generals = [
 	/* P */ [ 0, 1, 2, 3, 4, 5, 6, 7 ],
 	/* H */ [ 8, 9 ],
@@ -2295,11 +2284,11 @@ function prompt_combat(value, extra = null) {
 }
 
 function inactive_attack() {
-	return "play TC for " + format_combat(game.count)
+	return "attack " + format_combat(game.count)
 }
 
 function inactive_defend() {
-	return "play TC for " + format_combat(-game.count)
+	return "defend " + format_combat(-game.count)
 }
 
 function goto_combat() {
@@ -2344,7 +2333,7 @@ function goto_combat() {
 
 states.combat = {
 	prompt() {
-		prompt("Combat!")
+		prompt("Resolve your attacks.")
 		for (let i = 0; i < game.combat.length; i += 2)
 			gen_action_supreme_commander(game.combat[i])
 	},
@@ -2357,7 +2346,7 @@ states.combat = {
 
 states.combat_target = {
 	prompt() {
-		prompt("Choose enemy stack to fight.")
+		prompt("Choose enemy stack to attack.")
 		for (let i = 0; i < game.combat.length; i += 2)
 			if (game.combat[i] === game.attacker)
 				gen_action_supreme_commander(game.combat[i+1])
@@ -2907,7 +2896,7 @@ states.retreat = {
 			game.pos[p] = to
 		}
 		delete game.retreat
-		next_combat()
+		game.state = "retreat_done"
 	},
 }
 
@@ -3562,6 +3551,7 @@ function flip_stack_out_of_supply(p) {
 	}
 }
 
+// TODO: pause to show received cards
 states.austria_and_russia_may_exchange_one_tc_with_each_other_1 = {
 	prompt() {
 		prompt("You may exchange one TC with Russia.")
@@ -3580,6 +3570,7 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_1 = {
 	},
 }
 
+// TODO: pause to show received cards
 states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
 	prompt() {
 		prompt("You may exchange one TC with Austria.")
@@ -3605,6 +3596,7 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
 	},
 }
 
+// TODO: pause to show received cards
 states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 	prompt() {
 		prompt("You may discard one TC to draw a new one.")
@@ -3626,6 +3618,7 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 	},
 }
 
+// TODO: pause to show received cards
 states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria = {
 	prompt() {
 		prompt("You may give Austria one TC to draw a random TC from her.")
