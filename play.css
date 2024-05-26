@@ -205,6 +205,15 @@ TWOD.piece.cylinder {
 	border: 1px solid black;
 }
 
+#combat {
+	position: absolute;
+	width: 52px;
+	height: 52px;
+	border: 4px solid #c00;
+	background-color: #c008;
+	border-radius: 50%;
+}
+
 .panel {
 	background-color: #444;
 	width: clamp(824px, calc(100% - 30px), 1636px);
@@ -278,17 +287,6 @@ TWOD.piece.cylinder {
 .space.objective.action.austria { background-color: #f5f5f580; }
 .space.objective.action.imperial { background-color: #fbe30080; }
 .space.objective.action.france { background-color: #ed1c2380; }
-
-@media (pointer: fine) {
-
-.move line { stroke: white; }
-.battle line { stroke: #c00; }
-.retreat line { stroke: #800; opacity: 33%; }
-line { stroke-linecap: round; }
-line.road { stroke-width: 6px; }
-line.major_road { stroke-width: 8px; }
-
-}
 
 .marker.conquest.austria { background-image: url(images/conquest_austria.2x.png) }
 .marker.conquest.france { background-image: url(images/conquest_france.2x.png) }

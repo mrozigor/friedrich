@@ -1,5 +1,8 @@
 "use strict"
 
+// TODO: prussian offensive (no capture when not offensive)
+// TODO: final score summary at game end (FWC rules)
+
 const R_FREDERICK = "Frederick"
 const R_ELISABETH = "Elisabeth"
 const R_MARIA_THERESA = "Maria Theresa"
@@ -362,13 +365,6 @@ const NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJ
 
 function clear_fate_effect() {
 	game.fx = 0
-}
-
-function may_unstack() {
-	// TODO: 3-piece stack?
-	if (game.fx === NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK)
-		return !set_has(game.selected, GEN_CHEVERT)
-	return true
 }
 
 function forbid_play_value_10_or_more() {
@@ -1463,9 +1459,9 @@ states.movement = {
 			game.major = 0
 
 		if (is_supply_train(p))
-			resume_move_supply_train()
+			game.state = "move_supply_train"
 		else
-			resume_move_general()
+			game.state = "move_general"
 	},
 	confirm_end_movement() {
 		this.end_movement()
@@ -1483,7 +1479,6 @@ function format_move(max) {
 	return ` up to ${n} cities.`
 }
 
-// TODO: also force moving if in such a position and can move away
 function forbid_stopping_at(from) {
 	switch (game.fx) {
 		case NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL:
@@ -1496,22 +1491,6 @@ function forbid_stopping_at(from) {
 			return set_has(game.selected, GEN_SOUBISE) && is_attack_position(from)
 		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
 			return set_has(game.selected, GEN_FRIEDRICH) && is_attack_position(from)
-	}
-	return false
-}
-
-function forbid_attack(from, to) {
-	switch (game.fx) {
-		case NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL:
-			return game.pos[GEN_SOUBISE] === from && game.ia_attack === get_space_suit(from)
-		case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
-			return to === HALLE
-		case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return game.pos[GEN_CUMBERLAND] === from
-		case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return game.pos[GEN_SOUBISE] === from
-		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return game.pos[GEN_FRIEDRICH] === from
 	}
 	return false
 }
@@ -1546,10 +1525,6 @@ function forbid_capture_by(p, s) {
 
 function can_move_train_to(to) {
 	return !has_any_piece(to)
-}
-
-function can_continue_train_from(_) {
-	return true
 }
 
 function can_move_general_in_theory(p, to) {
@@ -1593,65 +1568,6 @@ function can_continue_general_from(from) {
 	if (has_own_general(from))
 		return false
 	return true
-}
-
-function search_move(from, range, road_type, can_move_to, can_continue_from) {
-	let seen = [ from, -1 ]
-	let queue = [ from << 4 ]
-	while (queue.length > 0) {
-		let item = queue.shift()
-		let here = item >> 4
-		let dist = (item & 15) + 1
-		for (let next of data.cities[road_type][here]) {
-			if (map_has(seen, next))
-				continue
-			if (!can_move_to(next))
-				continue
-			if (dist <= range) {
-				map_set(seen, next, here)
-				if (can_continue_from(next))
-					queue.push((next << 4) | dist)
-			}
-		}
-	}
-	return seen
-}
-
-function resume_move_supply_train() {
-	if (game.count === 2 + game.major) {
-		end_move_piece()
-	} else {
-		let here = game.pos[game.selected[0]]
-		game.state = "move_supply_train"
-		if (game.major && game.count < 3)
-			game.move_major = search_move(here, 3 - game.count, "major_roads", can_move_train_to, can_continue_train_from)
-		else
-			game.move_major = []
-		if (game.count < 2)
-			game.move_minor = search_move(here, 2 - game.count, "adjacent", can_move_train_to, can_continue_train_from)
-		else
-			game.move_minor = []
-	}
-}
-
-function resume_move_general() {
-	let range = movement_range()
-	if (game.count === range + game.major) {
-		end_move_piece()
-	} else {
-		game.state = "move_general"
-		/* NEW
-		let here = game.pos[game.selected[0]]
-		if (game.major && game.count < range+1)
-			game.move_major = search_move(here, range+1 - game.count, "major_roads", can_move_general_to, can_continue_general_from)
-		else
-			game.move_major = []
-		if (game.count < range)
-			game.move_minor = search_move(here, range - game.count, "adjacent", can_move_general_to, can_continue_general_from)
-		else
-			game.move_minor = []
-		*/
-	}
 }
 
 function move_general_to(to) {
@@ -1738,77 +1654,7 @@ function move_general_immediately(to) {
 	}
 }
 
-states.move_supply_train_NEW = {
-	inactive: "move",
-	prompt() {
-		prompt("Move supply train" + format_move(2))
-		view.selected = game.selected
-
-		let who = game.selected[0]
-		let here = game.pos[who]
-
-		if (game.move_major)
-			map_for_each_key(game.move_major, s => { if (s !== here) gen_action_space(s) })
-		if (game.move_minor)
-			map_for_each_key(game.move_minor, s => { if (s !== here) gen_action_space(s) })
-
-		view.move_major = game.move_major
-		view.move_minor = game.move_minor
-
-		/*
-		if (game.count < 2 + game.major)
-			for (let next of data.cities.major_roads[here])
-				if (!has_any_piece(next))
-					gen_action_space(next)
-		if (game.count < 2)
-			for (let next of data.cities.roads[here])
-				if (!has_any_piece(next))
-					gen_action_space(next)
-		*/
-
-		if (game.count > 0) {
-			gen_action_piece(who)
-			view.actions.stop = 1
-		}
-	},
-	piece(_) {
-		this.stop()
-	},
-	stop() {
-		end_move_piece()
-	},
-	space(to) {
-		let who = game.selected[0]
-
-		set_add(game.moved, who)
-		game.pos[who] = to
-
-		log("P" + who + " to S" + to)
-
-		let m = map_get(game.move_major, to, 0)
-		if (m > 0) {
-			while (m > 0) {
-				// TODO: reverse
-				log(">S" + m)
-				m = map_get(game.move_major, m)
-				++ game.count
-			}
-		} else {
-			m = map_get(game.move_minor, to, 0)
-			while (m > 0) {
-				// TODO: reverse
-				log(">S" + m)
-				m = map_get(game.move_minor, m)
-				++ game.count
-			}
-			game.major = 0
-		}
-
-		resume_move_supply_train()
-	},
-}
-
-states.move_supply_train_OLD = {
+states.move_supply_train = {
 	inactive: "move",
 	prompt() {
 		prompt("Move supply train" + format_move(2))
@@ -1854,7 +1700,7 @@ states.move_supply_train_OLD = {
 	},
 }
 
-states.move_general_NEW = {
+states.move_general = {
 	inactive: "move",
 	prompt() {
 		prompt("Move " + format_selected() + format_move(movement_range()))
@@ -1864,110 +1710,20 @@ states.move_general_NEW = {
 		let here = game.pos[who]
 
 		if (game.count === 0) {
-			if (may_unstack()) {
-				if (game.selected.length > 1)
-					view.actions.detach = 1
-				else
-					view.actions.detach = 0
-			}
-
-			let s_take = count_stacked_take()
-			let s_give = count_stacked_give()
-			let u_take = count_unstacked_take()
-			let u_give = count_unstacked_give()
-			if (s_take > 0 && u_give > 0)
-				view.actions.take = 1
-			if (s_give > 0 && u_take > 0)
-				view.actions.give = 1
-		} else {
-			if (forbid_stopping_at(here)) {
-				view.actions.stop = 0
+			if (game.fx === NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK && game.pos[GEN_CHEVERT] === here) {
+				view.prompt += " Chevert may not unstack."
+				if (count_generals(here) === 3) {
+					// two options: leave alone, or leave with chevert
+					// to leave with chevert, detach non-chevert
+					// to leave alone, detach non-chevert, then detach chevert
+					if (game.selected.length === 3)
+						for (let p of game.selected)
+							if (p !== GEN_CHEVERT)
+								gen_action_piece(p)
+					if (game.selected.length === 2)
+						gen_action_piece(GEN_CHEVERT)
+				}
 			} else {
-				gen_action_piece(who)
-				view.actions.stop = 1
-			}
-		}
-
-		view.move_major = game.move_major
-		view.move_minor = game.move_minor
-
-		if (game.move_major)
-			map_for_each_key(game.move_major, s => { if (s !== here) gen_action_space_or_piece(s) })
-		if (game.move_minor)
-			map_for_each_key(game.move_minor, s => { if (s !== here) gen_action_space_or_piece(s) })
-	},
-	take() {
-		game.state = "move_take"
-	},
-	give() {
-		game.state = "move_give"
-	},
-	detach() {
-		game.state = "move_detach"
-	},
-	piece(p) {
-		if (p === game.selected[0])
-			this.stop()
-		else
-			this.space(game.pos[p])
-	},
-	stop() {
-		for (let p of game.selected)
-			set_add(game.moved, p)
-		end_move_piece()
-	},
-	space(to) {
-		let who = game.selected[0]
-		let path = [ to ]
-
-		let m = map_get(game.move_major, to, -1)
-		if (m >= 0) {
-			while (m >= 0) {
-				path.unshift(m)
-				m = map_get(game.move_major, m, -1)
-				++game.count
-			}
-		} else {
-			m = map_get(game.move_minor, to, -1)
-			while (m >= 0) {
-				path.unshift(m)
-				m = map_get(game.move_minor, m, -1)
-				++game.count
-			}
-			game.major = 0
-		}
-
-		log("P" + who + " " + path.map(s => "S" + s).join(" > "))
-
-		let stop = false
-		path.shift() // skip start space
-		for (let s of path)
-			stop ||= move_general_to(s)
-
-		if (stop)
-			this.stop()
-		else
-			resume_move_general()
-	},
-}
-
-states.move_general_OLD = {
-	inactive: "move",
-	prompt() {
-		prompt("Move " + format_selected() + format_move(movement_range()))
-		view.selected = game.selected
-
-		let who = game.selected[0]
-		let here = game.pos[who]
-
-		if (game.count === 0) {
-			if (may_unstack()) {
-				/*
-				if (game.selected.length > 1)
-					view.actions.detach = 1
-				else
-					view.actions.detach = 0
-				*/
 				if (game.selected.length > 1)
 					for (let p of game.selected)
 						gen_action_piece(p)
@@ -2007,9 +1763,6 @@ states.move_general_OLD = {
 	give() {
 		game.state = "move_give"
 	},
-	detach() {
-		game.state = "move_detach"
-	},
 	piece(p) {
 		if (game.count === 0) {
 			if (set_has(game.selected, p))
@@ -2039,24 +1792,6 @@ states.move_general_OLD = {
 
 		if (move_general_to(to) || ++game.count === movement_range() + game.major)
 			end_move_piece()
-	},
-}
-
-states.move_general = states.move_general_OLD
-states.move_supply_train = states.move_supply_train_OLD
-//states.move_general = states.move_general_NEW
-//states.move_supply_train = states.move_supply_train_NEW
-
-states.move_detach = {
-	inactive: "move",
-	prompt() {
-		prompt("Move " + format_selected() + ". Detach general from stack.")
-		for (let p of game.selected)
-			gen_action_piece(p)
-	},
-	piece(p) {
-		set_delete(game.selected, p)
-		game.state = "move_general"
 	},
 }
 
@@ -2332,11 +2067,11 @@ function prompt_combat(value, extra = null) {
 }
 
 function inactive_attack() {
-	return "attack " + format_combat(game.count)
+	return "combat " + format_combat(game.count)
 }
 
 function inactive_defend() {
-	return "defend " + format_combat(-game.count)
+	return "combat " + format_combat(-game.count)
 }
 
 function goto_combat() {
@@ -2357,10 +2092,8 @@ function goto_combat() {
 	for (let a of from) {
 		for (let b of to) {
 			if (set_has(data.cities.adjacent[a], b)) {
-				if (!forbid_attack(a, b)) {
-					game.combat.push(a)
-					game.combat.push(b)
-				}
+				game.combat.push(a)
+				game.combat.push(b)
 			}
 		}
 	}
@@ -2897,7 +2630,7 @@ function search_retreat_possible_dfs(result, seen, here, range) {
 		if (has_any_piece(next))
 			continue
 		if (range === 1) {
-			map_set(result, next, seen.slice())
+			set_add(result, next)
 		} else {
 			seen.push(next)
 			search_retreat_possible_dfs(result, seen, next, range - 1)
@@ -2924,12 +2657,9 @@ function search_retreat(loser, winner, range) {
 	}
 
 	let result = []
-	map_for_each(possible, (s, path) => {
-		if (map_get(distance, s, -1) === max) {
+	for (let s of possible)
+		if (map_get(distance, s, -1) === max)
 			result.push(s)
-			result.push(path)
-		}
-	})
 	return result
 }
 
@@ -2938,15 +2668,14 @@ states.retreat = {
 	prompt() {
 		prompt("Retreat " + format_selected() + " " + Math.abs(game.count) + " cities.")
 		view.selected = game.selected
-		view.retreat = game.retreat
-		map_for_each_key(game.retreat, gen_action_space)
+		for (let s of game.retreat)
+			gen_action_space(s)
 	},
 	space(to) {
 		push_undo()
 		log("Retreated to S" + to + ".")
-		for (let p of game.selected) {
+		for (let p of game.selected)
 			game.pos[p] = to
-		}
 		delete game.retreat
 		game.state = "retreat_done"
 	},
@@ -3578,7 +3307,7 @@ function goto_flip_5_or_6_from_nearest_train(power, list) {
 }
 
 states.flip_5_or_6_from_nearest_train = {
-	inactive: "flip general out of supply",
+	inactive: "flip generals out of supply",
 	prompt() {
 		prompt("Flip " + format_selected() + " out of supply.")
 		for (let p of game.selected)
@@ -3592,7 +3321,7 @@ states.flip_5_or_6_from_nearest_train = {
 }
 
 states.flip_any_one_prussian_general_or_stack_in_austria_or_saxony = {
-	inactive: "flip general out of supply",
+	inactive: "flip any one Prussian general/stack in Austria or Saxony out of supply",
 	prompt() {
 		prompt("Flip any one Prussian general/stack in Austria or Saxony out of supply.")
 		for (let p of game.selected)

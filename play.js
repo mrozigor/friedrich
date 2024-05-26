@@ -1,13 +1,13 @@
 "use strict"
 
 // vim: set nowrap:
+/* globals data, view, action_button, action_button_with_argument, confirm_action_button, send_action
+*/
 
 // TODO: sort selected generals above deselected generals when detaching?
 // TODO: show battle icon overlay (instead of roads)
 // TODO: remove roads and path highlighting code
 // TODO: tooltips
-
-const svgNS = "http://www.w3.org/2000/svg"
 
 function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
@@ -47,7 +47,6 @@ set_add_all(all_objectives, data.type.objective_russia)
 
 const objective1 = [ [], [], [], [], [], [], [] ]
 const objective2 = [ [], [], [], [], [], [], [] ]
-const protect = [ [], [], [], [], [], [], [] ]
 
 for (let s of data.type.objective_prussia) set_add(objective1[P_PRUSSIA], s)
 for (let s of data.type.objective_russia) set_add(objective1[P_RUSSIA], s)
@@ -63,7 +62,6 @@ const power_class = [ "prussia", "hanover", "russia", "sweden", "austria", "impe
 const power_name = [ "Prussia", "Hanover", "Russia", "Sweden", "Austria", "Imperial Army", "France" ]
 
 const GENERAL_POWER = [ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 5, 6, 6, 6 ]
-const TRAIN_POWER = [ 0, 0, 1, 2, 2, 3, 4, 4, 5, 6, 6 ]
 
 const all_powers = [ 0, 1, 2, 3, 4, 5, 6 ]
 
@@ -89,6 +87,10 @@ const all_power_trains = [
 
 const RESERVE = 4
 let suit_class = [ "S", "C", "H", "D", "R" ]
+
+function to_deck(c) {
+	return c >> 7
+}
 
 function to_suit(c) {
 	return (c >> 4) & 7
@@ -304,12 +306,9 @@ function register_action(target, action, id) {
 }
 
 function on_click_action(evt, target) {
-	if (evt.button === 0) {
-		if (send_action(target.my_action, target.my_id)) {
-			hide_move_path()
+	if (evt.button === 0)
+		if (send_action(target.my_action, target.my_id))
 			evt.stopPropagation()
-		}
-	}
 }
 
 function process_actions() {
@@ -321,33 +320,6 @@ function is_action(action, arg) {
 	if (arg === undefined)
 		return !!(view.actions && view.actions[action] === 1)
 	return !!(view.actions && view.actions[action] && set_has(view.actions[action], arg))
-}
-
-function make_road(c1, c2, type) {
-	let e = document.createElementNS(svgNS, "line")
-	e.setAttribute("class", type)
-	let x1 = data.cities.x[c1]
-	let y1 = data.cities.y[c1]
-	let x2 = data.cities.x[c2]
-	let y2 = data.cities.y[c2]
-
-	let v = Math.hypot(x2 - x1, y2 - y1)
-	let dx = (x2 - x1) / v
-	let dy = (y2 - y1) / v
-	let r = 18
-	x1 += r * dx
-	y1 += r * dy
-	x2 -= r * dx
-	y2 -= r * dy
-
-	e.setAttribute("x1", x1)
-	e.setAttribute("y1", y1)
-	e.setAttribute("x2", x2)
-	e.setAttribute("y2", y2)
-	e.setAttribute("visibility", "hidden")
-	ui.roads[c1][c2] = e
-	ui.roads[c2][c1] = e
-	ui.roads_element.appendChild(e)
 }
 
 function create_piece(action, id, style) {
@@ -363,10 +335,6 @@ function create_marker(style) {
 	let e = document.createElement("div")
 	e.className = style
 	return e
-}
-
-function make_tc_id(n, suit, value) {
-	return (n << 7) | (suit << 4) | value
 }
 
 function make_tc_deck(n) {
@@ -493,29 +461,15 @@ function on_init() {
 		make_tc_deck_back("deck_5"),
 	]
 
+	ui.combat = document.createElement("div")
+	ui.combat.id = "combat"
+
 	ui.tcbreak = document.createElement("div")
 	ui.tcbreak.className = "draw-break"
 
 	ui.fate = []
 	for (let fc = 0; fc <= 18; ++fc)
 		ui.fate[fc] = make_fate_card(fc)
-
-	if (1) {
-		for (let a = 0; a <= last_city; ++a)
-			ui.roads[a] = []
-		for (let a = 0; a <= last_city; ++a) {
-			for (let b of cities.major_roads[a]) {
-				if (a < b) {
-					make_road(a, b, "major_road")
-				}
-			}
-			for (let b of cities.roads[a]) {
-				if (a < b) {
-					make_road(a, b, "road")
-				}
-			}
-		}
-	}
 
 	for (let a = 0; a <= last_city; ++a) {
 		let e = ui.cities[a] = document.createElement("div")
@@ -569,117 +523,18 @@ function on_init() {
 
 on_init()
 
-/* SHOW PATH FOR MOVES */
+/* TOOLTIPS */
 
 function on_focus_city(evt) {
-	document.getElementById("status").textContent = evt.target.my_name
-	if (view) {
-		if (view.move_minor)
-			show_move_path(evt.target.my_id)
-		if (view.retreat)
-			show_retreat_path(evt.target.my_id)
-	}
 }
 
 function on_blur_city() {
-	document.getElementById("status").textContent = ""
-	hide_move_path()
 }
 
 function on_focus_piece(evt) {
-	document.getElementById("status").textContent = evt.target.my_name
-	if (view && view.move_minor)
-		show_move_path(view.pos[evt.target.my_id])
 }
 
 function on_blur_piece() {
-	document.getElementById("status").textContent = ""
-	hide_move_path()
-}
-
-var _move_path = []
-var _battle_road = null
-
-function hide_move_path() {
-	if (_move_path) {
-		for (let i = 1; i < _move_path.length; ++i) {
-			let x = _move_path[i-1]
-			let y = _move_path[i]
-			ui.roads[x][y].setAttribute("visibility", "hidden")
-		}
-		_move_path = null
-	}
-}
-
-function show_move_path(x) {
-	hide_move_path()
-
-	if (map_get(view.move_major, x, -1) >= 0) {
-		_move_path = []
-		while (x >= 0) {
-			_move_path.push(x)
-			x = map_get(view.move_major, x, -1)
-		}
-	}
-
-	else
-
-	if (map_get(view.move_minor, x, -1) >= 0) {
-		_move_path = []
-		while (x >= 0) {
-			_move_path.push(x)
-			x = map_get(view.move_minor, x, -1)
-		}
-	}
-
-	if (_move_path) {
-		for (let i = 1; i < _move_path.length; ++i) {
-			let x = _move_path[i-1]
-			let y = _move_path[i]
-			ui.roads[x][y].setAttribute("visibility", "visible")
-		}
-	}
-}
-
-function show_retreat_path(x) {
-	hide_move_path()
-	_move_path = map_get(view.retreat, x, null)
-	if (_move_path) {
-		_move_path = _move_path.slice()
-		_move_path.push(x)
-		for (let i = 1; i < _move_path.length; ++i) {
-			let x = _move_path[i-1]
-			let y = _move_path[i]
-			ui.roads[x][y].setAttribute("visibility", "visible")
-		}
-	}
-}
-
-function show_battle_path() {
-	_battle_road = ui.roads[view.attacker][view.defender]
-	_battle_road.setAttribute("visibility", "visible")
-}
-
-function hide_battle_path() {
-	if (_battle_road) {
-		_battle_road.setAttribute("visibility", "hidden")
-		_battle_road = null
-	}
-}
-
-function update_path() {
-	hide_move_path()
-	hide_battle_path()
-	if (view.move_major) {
-		ui.roads_element.setAttribute("class", "move")
-	} else if (view.retreat) {
-		ui.roads_element.setAttribute("class", "retreat")
-	} else if (view.attacker !== undefined) {
-		ui.roads_element.setAttribute("class", "battle")
-		show_battle_path()
-	} else {
-		ui.roads_element.setAttribute("class", null)
-	}
 }
 
 /* UPDATE UI */
@@ -796,6 +651,14 @@ function layout_train(id, s) {
 	e.classList.toggle("selected", set_has(view.selected, id))
 }
 
+function layout_combat_marker() {
+	let x = (data.cities.x[view.attacker] + data.cities.x[view.defender]) >> 1
+	let y = (data.cities.y[view.attacker] + data.cities.y[view.defender]) >> 1
+	ui.combat.style.left = x - 30 + "px"
+	ui.combat.style.top = y - 30 + "px"
+	ui.combat.style.zIndex = y
+}
+
 function create_conquest(style, s) {
 	let x = data.cities.x[s]
 	let y = data.cities.y[s]
@@ -805,18 +668,6 @@ function create_conquest(style, s) {
 	e.style.top = (y - 16) + "px"
 	e.className = style
 	return e
-}
-
-function to_deck(c) {
-	return c >> 7
-}
-
-function to_suit(c) {
-	return (c >> 4) & 7
-}
-
-function to_value(c) {
-	return c & 15
 }
 
 function update_favicon() {
@@ -859,7 +710,9 @@ function colorize(text) {
 }
 
 function on_update() {
-	ui.prompt.innerHTML = colorize(view.prompt)
+	let text = colorize(view.prompt)
+	if (text !== view.prompt)
+		ui.prompt.innerHTML = text
 
 	ui.header.classList.toggle("prussia", view.power === P_PRUSSIA)
 	ui.header.classList.toggle("hanover", view.power === P_HANOVER)
@@ -875,8 +728,6 @@ function on_update() {
 		layout_general(g, view.pos[g])
 	for (let t = 24; t <= 34; ++t)
 		layout_train(t, view.pos[t])
-
-	update_path()
 
 	let back = [ 0, 0, 0, 0, 0 ]
 
@@ -915,6 +766,11 @@ function on_update() {
 		ui.markers_element.appendChild(ui.conquest[s])
 	for (let s of view.retro)
 		ui.markers_element.appendChild(ui.retro[s])
+
+	if (view.attacker !== undefined && view.defender !== undefined) {
+		ui.markers_element.appendChild(ui.combat)
+		layout_combat_marker()
+	}
 
 	/* troops 1-8, reserve 1-10 with modifiers +1 and +5 */
 	for (let v = 16; v >= 0; --v)
@@ -1065,20 +921,4 @@ function set_add(set, item) {
 function set_add_all(set, other) {
 	for (let item of other)
 		set_add(set, item)
-}
-
-function map_get(map, key, missing) {
-	let a = 0
-	let b = (map.length >> 1) - 1
-	while (a <= b) {
-		let m = (a + b) >> 1
-		let x = map[m<<1]
-		if (key < x)
-			b = m - 1
-		else if (key > x)
-			a = m + 1
-		else
-			return map[(m<<1)+1]
-	}
-	return missing
 }
