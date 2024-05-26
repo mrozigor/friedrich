@@ -2,6 +2,12 @@
 	Friedrich
 */
 
+@font-face {
+	font-family: "Suit Symbols";
+	src: url(fonts/FriedrichSymbols-Regular.woff2) format(woff2);
+	unicode-range:U+2660-2667;
+}
+
 :root {
 	--color-prussia: #005478;
 	--color-hanover: #91c9ed;
@@ -17,7 +23,7 @@
 	--color-hanover: hsl(203, 72%, 75%);
 	--color-russia: hsl(139, 72%, 28%);
 	--color-sweden: hsl(72, 64%, 51%);
-	--color-austria: hsl(0, 0%, 96%);
+	--color-austria: hsl(0, 0%, 97%);
 	--color-imperial: hsl(54, 100%, 49%);
 	--color-france: hsl(358, 85%, 52%);
 
@@ -25,7 +31,7 @@
 	--color-light-hanover: hsl(200, 75%, 75%);
 	--color-light-russia: hsl(120, 50%, 70%);
 	--color-light-sweden: hsl(80, 60%, 75%);
-	--color-light-austria: hsl(0, 0%, 100%);
+	--color-light-austria: hsl(0, 0%, 97%);
 	--color-light-imperial: hsl(55, 85%, 75%);
 	--color-light-france: hsl(0, 70%, 80%);
 
@@ -33,19 +39,20 @@
 	--color-dark-hanover: hsl(203, 72%, 75%);
 	--color-dark-russia: hsl(139, 72%, 28%);
 	--color-dark-sweden: hsl(72, 64%, 51%);
-	--color-dark-austria: hsl(0, 0%, 96%);
+	--color-dark-austria: hsl(0, 0%, 97%);
 	--color-dark-imperial: hsl(54, 100%, 49%);
 	--color-dark-france: hsl(358, 85%, 52%);
 
 	--color-role-prussia: hsl(210, 80%, 75%);
 	--color-role-russia: hsl(120, 50%, 70%);
-	--color-role-austria: hsl(0, 0%, 98%);
+	--color-role-austria: hsl(0, 0%, 97%);
 	--color-role-france: hsl(0, 70%, 80%);
 
-	--color-spades: #004b70;
-	--color-clubs: #037a37;
-	--color-hearts: #ed1c23;
-	--color-diamonds: #c2253e;
+	--color-clubs: #007c49;
+	--color-diamonds: #c2263e;
+	--color-hearts: #ed1c24;
+	--color-spades: #274085;
+
 	--color-reserve: #0094c9;
 }
 
@@ -53,6 +60,14 @@
 #role_Elisabeth { background-color: var(--color-role-russia) }
 #role_Maria_Theresa { background-color: var(--color-role-austria) }
 #role_Pompadour { background-color: var(--color-role-france) }
+
+#prompt {
+	font-family: "Suit Symbols", var(--font-widget);
+}
+
+#log {
+	font-family: "Suit Symbols", var(--font-small);
+}
 
 #log { background-color: #f3ebd4 }
 
@@ -82,11 +97,12 @@ header.your_turn.austria { background-color: var(--color-light-austria); }
 header.your_turn.imperial { background-color: var(--color-light-imperial); }
 header.your_turn.france { background-color: var(--color-light-france); }
 
+#log span.suit { font-size: 11px; }
 span.suit.spades { color: var(--color-spades) }
 span.suit.clubs { color: var(--color-clubs) }
 span.suit.hearts { color: var(--color-hearts) }
 span.suit.diamonds { color: var(--color-diamonds) }
-span.suit.reserve { color: var(--color-reserve); font-weight: bold; }
+span.suit.reserve { color: var(--color-reserve); font-size: 18px; font-weight: bold; font-family: "Source Serif SmText"; }
 
 #mapwrap {
 	width: 2485px;
