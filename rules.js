@@ -3185,7 +3185,7 @@ states.russia_quits_the_game_2 = {
 	prompt() {
 		prompt("Russia quits the game. Retire one Prussian general.")
 		for (let p of all_power_generals[game.power])
-			if (p !== GEN_FRIEDRICH && game.pos[p] < ELIMINATED)
+			if (p !== GEN_FRIEDRICH && game.pos[p] < REMOVED)
 				gen_action_piece(p)
 	},
 	piece(p) {
@@ -3227,7 +3227,7 @@ states.sweden_quits_the_game_2 = {
 	prompt() {
 		prompt("Sweden quits the game. Retire one Prussian general.")
 		for (let p of all_power_generals[game.power])
-			if (p !== GEN_FRIEDRICH && game.pos[p] < ELIMINATED)
+			if (p !== GEN_FRIEDRICH && game.pos[p] < REMOVED)
 				gen_action_piece(p)
 	},
 	piece(p) {
