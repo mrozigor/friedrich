@@ -406,6 +406,7 @@ function are_prussians_attacked_by_daun() {
 }
 
 states.prussians_who_are_attacked_by_daun_may_move = {
+	inactive: "move Prussians who are attacked by Daun",
 	prompt() {
 		prompt("Any Prussians who are attacked by Daun may move to any empty adjacent city.")
 		let daun = game.pos[GEN_DAUN]
@@ -431,6 +432,7 @@ states.prussians_who_are_attacked_by_daun_may_move = {
 }
 
 states.move_to_any_empty_adjacent_city = {
+	inactive: "move Prussians who are attacked by Daun",
 	prompt() {
 		prompt(format_selected() + " may move to any empty adjacent city.")
 		let here = game.pos[game.selected[0]]
@@ -1193,6 +1195,7 @@ function should_power_discard_tc() {
 }
 
 states.tactical_cards_discard = {
+	inactive: "draw tactical cards",
 	prompt() {
 		view.draw = game.draw
 		prompt("Draw " + format_cards(game.draw) + ". Discard one of them.")
@@ -1208,6 +1211,7 @@ states.tactical_cards_discard = {
 }
 
 states.tactical_cards_discard_done = {
+	inactive: "draw tactical cards",
 	prompt() {
 		view.draw = game.draw
 		prompt("Draw " + format_cards(game.draw) + ".")
@@ -1219,6 +1223,7 @@ states.tactical_cards_discard_done = {
 }
 
 states.tactical_cards_show = {
+	inactive: "draw tactical cards",
 	prompt() {
 		view.draw = game.draw
 		prompt("Draw " + format_cards(game.draw) + ".")
@@ -1364,6 +1369,7 @@ function can_general_move_anywhere(p) {
 }
 
 states.movement = {
+	inactive: "move",
 	prompt() {
 		let done_generals = true
 		let done_trains = true
@@ -1701,6 +1707,7 @@ function move_general_immediately(to) {
 }
 
 states.move_supply_train_NEW = {
+	inactive: "move",
 	prompt() {
 		prompt("Move supply train" + format_move(2))
 		view.selected = game.selected
@@ -1770,6 +1777,7 @@ states.move_supply_train_NEW = {
 }
 
 states.move_supply_train_OLD = {
+	inactive: "move",
 	prompt() {
 		prompt("Move supply train" + format_move(2))
 		view.selected = game.selected
@@ -1815,6 +1823,7 @@ states.move_supply_train_OLD = {
 }
 
 states.move_general_NEW = {
+	inactive: "move",
 	prompt() {
 		prompt("Move " + format_selected() + format_move(movement_range()))
 		view.selected = game.selected
@@ -1911,6 +1920,7 @@ states.move_general_NEW = {
 }
 
 states.move_general_OLD = {
+	inactive: "move",
 	prompt() {
 		prompt("Move " + format_selected() + format_move(movement_range()))
 		view.selected = game.selected
@@ -2006,6 +2016,7 @@ states.move_supply_train = states.move_supply_train_OLD
 //states.move_supply_train = states.move_supply_train_NEW
 
 states.move_detach = {
+	inactive: "move",
 	prompt() {
 		prompt("Move " + format_selected() + ". Detach general from stack.")
 		for (let p of game.selected)
@@ -2018,6 +2029,7 @@ states.move_detach = {
 }
 
 states.move_take = {
+	inactive: "move",
 	prompt() {
 		prompt("Transfer troops to " + format_selected() + ".")
 		let take = count_stacked_take()
@@ -2037,6 +2049,7 @@ states.move_take = {
 }
 
 states.move_give = {
+	inactive: "move",
 	prompt() {
 		prompt("Transfer troops from " + format_selected() + ".")
 		let take = count_unstacked_take()
@@ -2096,6 +2109,7 @@ function goto_recruit() {
 }
 
 states.re_enter_choose_city = {
+	inactive: "recruit",
 	prompt() {
 		prompt("Choose city to re-enter troops.")
 		for (let s of all_power_re_entry_cities[game.power])
@@ -2144,6 +2158,7 @@ function can_recruit_anything() {
 }
 
 states.recruit = {
+	inactive: "recruit",
 	prompt() {
 		let cost = troop_cost()
 		let n_troops = count_used_troops()
@@ -2245,6 +2260,7 @@ function can_re_enter_supply_train(s) {
 }
 
 states.re_enter = {
+	inactive: "recruit",
 	prompt() {
 		prompt("Re-enter " + format_selected() + ".")
 		let p = game.selected[0]
@@ -2332,6 +2348,7 @@ function goto_combat() {
 }
 
 states.combat = {
+	inactive: "attack",
 	prompt() {
 		prompt("Resolve your attacks.")
 		for (let i = 0; i < game.combat.length; i += 2)
@@ -2345,6 +2362,7 @@ states.combat = {
 }
 
 states.combat_target = {
+	inactive: "attack",
 	prompt() {
 		prompt("Choose enemy stack to attack.")
 		for (let i = 0; i < game.combat.length; i += 2)
@@ -2696,6 +2714,7 @@ function next_combat() {
 }
 
 states.combat_done = {
+	inactive: "attack",
 	prompt() {
 		prompt("Combat done.")
 		view.actions.end_combat = 1
@@ -2787,6 +2806,7 @@ function resume_retreat() {
 }
 
 states.retreat_eliminate_hits = {
+	inactive: "retreat loser",
 	prompt() {
 		prompt("Eliminate generals without troops.")
 		// remove eliminated generals
@@ -2803,6 +2823,7 @@ states.retreat_eliminate_hits = {
 }
 
 states.retreat_eliminate_trapped = {
+	inactive: "retreat loser",
 	prompt() {
 		prompt("Eliminate " + format_selected() + " without a retreat path.")
 		for (let p of game.selected)
@@ -2883,6 +2904,7 @@ function search_retreat(loser, winner, range) {
 }
 
 states.retreat = {
+	inactive: "retreat loser",
 	prompt() {
 		prompt("Retreat " + format_selected() + " " + Math.abs(game.count) + " cities.")
 		view.selected = game.selected
@@ -2901,6 +2923,7 @@ states.retreat = {
 }
 
 states.retreat_done = {
+	inactive: "retreat loser",
 	prompt() {
 		prompt("Retreat done.")
 		view.actions.next = 1
@@ -3059,6 +3082,7 @@ function resume_supply_flip() {
 }
 
 states.supply_restore = {
+	inactive: "supply",
 	prompt() {
 		prompt("Restore supply to generals with a supply line.")
 		for (let p of all_power_generals[game.power]) {
@@ -3082,6 +3106,7 @@ states.supply_restore = {
 }
 
 states.supply_eliminate = {
+	inactive: "supply",
 	prompt() {
 		prompt("Eliminate out of supply generals with no supply line.")
 		for (let p of all_power_generals[game.power]) {
@@ -3106,6 +3131,7 @@ states.supply_eliminate = {
 }
 
 states.supply_flip = {
+	inactive: "supply",
 	prompt() {
 		prompt("Flip generals with no supply line.")
 		for (let p of all_power_generals[game.power]) {
@@ -3128,6 +3154,7 @@ states.supply_flip = {
 }
 
 states.supply_done = {
+	inactive: "supply",
 	prompt() {
 		prompt("Supply done.")
 		view.actions.end_supply = 1
@@ -3154,6 +3181,7 @@ const strokes_of_fate_name = [
 ]
 
 states.russia_quits_the_game_1 = {
+	inactive: "remove Russia from the game",
 	prompt() {
 		prompt("Russia quits the game. Remove all Russian pieces.")
 		for (let p of all_power_generals[P_RUSSIA])
@@ -3171,6 +3199,7 @@ states.russia_quits_the_game_1 = {
 }
 
 states.russia_quits_the_game_2 = {
+	inactive: "remove Russia from the game",
 	prompt() {
 		prompt("Russia quits the game. Retire one Prussian general.")
 		for (let p of all_power_generals[game.power])
@@ -3185,6 +3214,7 @@ states.russia_quits_the_game_2 = {
 }
 
 states.russia_quits_the_game_3 = {
+	inactive: "remove Russia from the game",
 	prompt() {
 		prompt("Russia quits the game.")
 		view.actions.done = 1
@@ -3196,6 +3226,7 @@ states.russia_quits_the_game_3 = {
 }
 
 states.sweden_quits_the_game_1 = {
+	inactive: "remove Sweden from the game",
 	prompt() {
 		prompt("Sweden quits the game. Remove all Swedish pieces.")
 		for (let p of all_power_generals[P_SWEDEN])
@@ -3213,6 +3244,7 @@ states.sweden_quits_the_game_1 = {
 }
 
 states.sweden_quits_the_game_2 = {
+	inactive: "remove Sweden from the game",
 	prompt() {
 		prompt("Sweden quits the game. Retire one Prussian general.")
 		for (let p of all_power_generals[game.power])
@@ -3227,6 +3259,7 @@ states.sweden_quits_the_game_2 = {
 }
 
 states.sweden_quits_the_game_3 = {
+	inactive: "remove Sweden from the game",
 	prompt() {
 		prompt("Sweden quits the game.")
 		view.actions.done = 1
@@ -3238,6 +3271,7 @@ states.sweden_quits_the_game_3 = {
 }
 
 states.france_quits_the_game_1 = {
+	inactive: "remove France from the game",
 	prompt() {
 		prompt("France quits the game. Remove all French pieces.")
 		for (let p of all_power_generals[P_FRANCE])
@@ -3255,6 +3289,7 @@ states.france_quits_the_game_1 = {
 }
 
 states.france_quits_the_game_2 = {
+	inactive: "remove France from the game",
 	prompt() {
 		prompt("France quits the game. Retire Cumberland.")
 		gen_action_piece(GEN_CUMBERLAND)
@@ -3450,6 +3485,7 @@ function goto_receive_a_new_troop(power, list) {
 }
 
 states.receive_a_new_troop = {
+	inactive: "receive a new troop for free",
 	prompt() {
 		prompt("Receive a new troop for free.")
 		for (let p of game.selected)
@@ -3484,6 +3520,7 @@ function goto_lose_one_troop(power, list) {
 }
 
 states.lose_one_troop = {
+	inactive: "lose one troop",
 	prompt() {
 		prompt("Lose one troop.")
 		for (let p of game.selected)
@@ -3516,6 +3553,7 @@ function goto_flip_5_or_6_from_nearest_train(power, list) {
 }
 
 states.flip_5_or_6_from_nearest_train = {
+	inactive: "flip general out of supply",
 	prompt() {
 		prompt("Flip " + format_selected() + " out of supply.")
 		for (let p of game.selected)
@@ -3529,6 +3567,7 @@ states.flip_5_or_6_from_nearest_train = {
 }
 
 states.flip_any_one_prussian_general_or_stack_in_austria_or_saxony = {
+	inactive: "flip general out of supply",
 	prompt() {
 		prompt("Flip any one Prussian general/stack in Austria or Saxony out of supply.")
 		for (let p of game.selected)
@@ -3553,6 +3592,7 @@ function flip_stack_out_of_supply(p) {
 
 // TODO: pause to show received cards
 states.austria_and_russia_may_exchange_one_tc_with_each_other_1 = {
+	inactive: "exchange TC with Russia",
 	prompt() {
 		prompt("You may exchange one TC with Russia.")
 		for (let c of game.hand[P_AUSTRIA])
@@ -3572,6 +3612,7 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_1 = {
 
 // TODO: pause to show received cards
 states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
+	inactive: "exchange TC with Austria",
 	prompt() {
 		prompt("You may exchange one TC with Austria.")
 		for (let c of game.hand[P_RUSSIA])
@@ -3598,6 +3639,7 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
 
 // TODO: pause to show received cards
 states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
+	inactive: "discard a TC for a new one",
 	prompt() {
 		prompt("You may discard one TC to draw a new one.")
 		for (let c of game.hand[P_FRANCE])
@@ -3620,6 +3662,7 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 
 // TODO: pause to show received cards
 states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria = {
+	inactive: "give one TC to Austria",
 	prompt() {
 		prompt("You may give Austria one TC to draw a random TC from her.")
 		for (let c of game.hand[P_PRUSSIA])
@@ -3645,7 +3688,10 @@ states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_o
 	},
 }
 
+// TODO: inactive: "randomly draw one TC from Austria",
+
 states.austria_may_move_laudon_by_one_city_immediately = {
+	inactive: "move Laudon by one city",
 	prompt() {
 		prompt("You may move Laudon by one city.")
 		view.selected = game.selected
@@ -3685,6 +3731,7 @@ states.laudon_take = states.move_take
 states.laudon_give = states.move_give
 
 states.laudon_done = {
+	inactive: "move Laudon by one city",
 	prompt() {
 		prompt("You may move Laudon by one city.")
 		view.selected = game.selected
@@ -3704,6 +3751,7 @@ function is_west_of(here, there) {
 }
 
 states.prussia_may_move_hildburghausen_2_cities_westwards = {
+	inactive: "move Hildburghausen two cities westwards",
 	prompt() {
 		prompt("You may move Hildburghausen two cities westwards.")
 		view.selected = game.selected
@@ -3980,6 +4028,7 @@ function setup_the_austrian_theatre() {
 }
 
 states.setup = {
+	inactive: "setup troops",
 	prompt() {
 		let n_troops = max_power_troops(game.power) - count_used_troops()
 		if (n_troops === 0) {
@@ -4015,6 +4064,7 @@ states.setup = {
 }
 
 states.setup_general = {
+	inactive: "setup troops",
 	prompt() {
 		prompt("Add troops to " + format_selected() + ".")
 		view.selected = game.selected
