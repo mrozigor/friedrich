@@ -63,13 +63,17 @@
 
 #prompt {
 	font-family: "Suit Symbols", var(--font-widget);
+	font-variant-numeric: tabular-nums;
 }
 
 #log {
 	font-family: "Suit Symbols", var(--font-small);
+	font-variant-numeric: tabular-nums;
 }
 
 #log { background-color: #f3ebd4 }
+
+#log .city_tip:hover { cursor: pointer; text-decoration: underline; }
 
 #log .h {
 	background-color: tan;
@@ -88,6 +92,9 @@
 #log .h.france { background-color: var(--color-light-france); }
 
 #log .q { font-style: italic; margin: 8px 0; }
+
+#log .i { padding-left: 20px }
+#log .ii { padding-left: 32px }
 
 header.your_turn.prussia { background-color: var(--color-light-prussia); }
 header.your_turn.hanover { background-color: var(--color-light-hanover); }
@@ -278,6 +285,14 @@ TWOD.piece.cylinder {
 	height: 52px;
 	border-radius: 50%;
 }
+
+.space.country_austria.tip { border-color: gray; }
+.space.country_sweden.tip { border-color: forestgreen; }
+.space.country_poland.tip { border-color: indianred; }
+.space.country_prussia.tip { border-color: royalblue; }
+.space.country_hanover.tip { border-color: cornflowerblue; }
+.space.country_saxony.tip { border-color: chocolate; }
+.space.country_empire.tip { border-color: darkgoldenrod; }
 
 .space.action {
 	border-color: white;

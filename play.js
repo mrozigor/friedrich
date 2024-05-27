@@ -504,6 +504,14 @@ function on_init() {
 			y -= 18
 		}
 
+		if (set_has(data.country.Austria, a)) e.classList.add("country_austria")
+		if (set_has(data.country.Sweden, a)) e.classList.add("country_sweden")
+		if (set_has(data.country.Poland, a)) e.classList.add("country_poland")
+		if (set_has(data.country.Prussia, a)) e.classList.add("country_prussia")
+		if (set_has(data.country.Hanover, a)) e.classList.add("country_hanover")
+		if (set_has(data.country.Saxony, a)) e.classList.add("country_saxony")
+		if (set_has(data.country.Empire, a)) e.classList.add("country_empire")
+
 		register_action(e, "space", a)
 
 		e.onmouseenter = on_focus_city
@@ -525,6 +533,30 @@ function on_init() {
 on_init()
 
 /* TOOLTIPS */
+
+function on_click_city_tip(loc) {
+	ui.cities[loc].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" })
+}
+
+function on_focus_city_tip(s) {
+	ui.cities[s].classList.add("tip")
+}
+
+function on_blur_city_tip(s) {
+	ui.cities[s].classList.remove("tip")
+}
+
+function on_click_piece_tip(loc) {
+	ui.pieces[loc].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" })
+}
+
+function on_focus_piece_tip(s) {
+	ui.pieces[s].classList.add("tip")
+}
+
+function on_blur_piece_tip(s) {
+	ui.pieces[s].classList.remove("tip")
+}
 
 function on_focus_city(evt) {
 }
@@ -806,6 +838,23 @@ function on_update() {
 
 /* LOG */
 
+const piece_log_name = [
+	"Friedrich", "Winterfeldt", "Heinrich", "Schwerin", "Keith", "Seydlitz", "Dohna", "Lehwaldt",
+	"Ferdinand", "Cumberland",
+	"Saltikov", "Fermor", "Apraxin", "Tottleben",
+	"Ehrensvärd",
+	"Daun", "Browne", "Karl", "Laudon", "Lacy",
+	"Hildburghausen",
+	"Richelieu", "Soubise", "Chevert",
+	"Prussian supply train", "Prussian supply train",
+	"Hanoverian supply train",
+	"Russian supply train", "Russian supply train",
+	"Swedish supply train",
+	"Austrian supply train", "Austrian supply train",
+	"Imperial Army supply train",
+	"French supply train", "French supply train",
+]
+
 const piece_name = [
 	"P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8",
 	"H1", "H2",
@@ -819,16 +868,15 @@ const piece_name = [
 
 function sub_piece(match, p1) {
 	let x = p1 | 0
-	let n = piece_name[x]
-	// TODO: tooltip to highlight piece
+	let n = piece_log_name[x]
+	return `<span class="piece_tip" onclick="on_click_piece_tip(${x})" onmouseenter="on_focus_piece_tip(${x})" onmouseleave="on_blur_piece_tip(${x})">${n}</span>`
 	return n
 }
 
 function sub_space(match, p1) {
 	let x = p1 | 0
 	let n = data.cities.name[x]
-	// TODO: tooltip to highlight location
-	return n
+	return `<span class="city_tip" onclick="on_click_city_tip(${x})" onmouseenter="on_focus_city_tip(${x})" onmouseleave="on_blur_city_tip(${x})">${n}</span>`
 }
 
 function sub_tc(match, p1) {
@@ -843,9 +891,14 @@ function sub_tc(match, p1) {
 function on_log(text) {
 	let p = document.createElement("div")
 
+	if (text.match(/^>>/)) {
+		text = text.substring(2)
+		p.className = "ii"
+	}
+
 	if (text.match(/^>/)) {
 		text = text.substring(1)
-		p.className = 'i'
+		p.className = "i"
 	}
 
 	text = text.replace(/&/g, "&amp;")
