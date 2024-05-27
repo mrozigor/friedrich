@@ -2103,7 +2103,7 @@ function end_resolve_combat() {
 			game.ia_attack = get_space_suit(game.attacker)
 
 	if (game.count === 0) {
-		log("Tie.")
+		log(">Tie")
 		next_combat()
 	} else if (game.count > 0) {
 		if (get_supreme_commander(game.defender) == GEN_HILDBURGHAUSEN)
@@ -2259,7 +2259,7 @@ function fate_card_bonus(c) {
 
 function play_card(c, sign) {
 	if (fate_card_zero()) {
-		log(POWER_NAME[game.power] + " C" + c + " - " + to_value(c) + " = " + game.count)
+		log(">" + POWER_NAME[game.power] + " C" + c + " - " + to_value(c) + " to " + (sign * game.count))
 		clear_fate_effect()
 		return
 	}
@@ -2269,16 +2269,16 @@ function play_card(c, sign) {
 	else
 		game.count += to_value(c) + bonus
 	if (bonus > 0)
-		log(POWER_NAME[game.power] + " C" + c + " + " + bonus + " = " + (game.count))
+		log(">" + POWER_NAME[game.power] + " C" + c + " + " + bonus + " to " + (sign * game.count))
 	else
-		log(POWER_NAME[game.power] + " C" + c + " = " + (game.count))
+		log(">" + POWER_NAME[game.power] + " C" + c + " to " + (sign * game.count))
 	if (bonus > 0)
 		clear_fate_effect()
 }
 
 function play_reserve(v, sign) {
 	if (fate_card_zero()) {
-		log(POWER_NAME[game.power] + " 0R = " + game.count)
+		log(">" + POWER_NAME[game.power] + " 0R to " + (sign * game.count))
 		clear_fate_effect()
 		return
 	}
@@ -2288,9 +2288,9 @@ function play_reserve(v, sign) {
 	else
 		game.count += v
 	if (bonus > 0)
-		log(POWER_NAME[game.power] + " " + (v-bonus) + "R +" + bonus + " = " + (game.count))
+		log(">" + POWER_NAME[game.power] + " " + (v-bonus) + "R +" + bonus + " to " + (sign * game.count))
 	else
-		log(POWER_NAME[game.power] + " " + (v) + "R = " + (game.count))
+		log(">" + POWER_NAME[game.power] + " " + (v) + "R to " + (sign * game.count))
 	if (bonus > 0)
 		clear_fate_effect()
 }
@@ -2441,7 +2441,7 @@ function goto_retreat() {
 		}
 	}
 
-	log("P" + get_supreme_commander(loser) + " lost " + (lost-hits) + " troops")
+	log(">P" + get_supreme_commander(loser) + " lost " + (lost-hits) + " troops")
 
 	resume_retreat()
 }

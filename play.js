@@ -592,11 +592,11 @@ function layout_general_count(g, s) {
 	return n
 }
 
-function layout_general_offset_elim(g, s) {
+function layout_general_offset_elim(g) {
 	let n = 0
 	let p = get_cylinder_power(g)
 	for (let i of all_power_generals[p])
-		if (i > g && view.pos[i] === s)
+		if (i > g && view.pos[i] === ELIMINATED)
 			++n
 	return n
 }
