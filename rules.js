@@ -974,6 +974,7 @@ function next_tactics_deck() {
 		if (held[i] === 0) {
 			game.deck = make_tactics_deck(i)
 			shuffle_bigint(game.deck)
+			log("Shuffled " + deck_name[i] + ".")
 			return
 		}
 	}
@@ -985,7 +986,6 @@ function next_tactics_deck() {
 	held[a] = 100
 
 	let b = find_largest_discard(held)
-	log("Deck " + b + ": " + held[b])
 	if (held[b] === 50)
 		return
 
@@ -1018,9 +1018,9 @@ function goto_tactical_cards() {
 	}
 
 	if (game.draw.length < n)
-		log("Draw " + game.draw.length + " / " + n + " TC.")
+		log("Drew " + game.draw.length + " / " + n + " TC.")
 	else
-		log("Draw " + n + " TC.")
+		log("Drew " + n + " TC.")
 
 	if (should_power_discard_tc() && game.draw.length > 0)
 		game.state = "tactical_cards_discard"
@@ -1185,7 +1185,6 @@ function goto_movement() {
 
 	if (game.fx === NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KUSTRIN_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE) {
 		if (game.power === P_RUSSIA && set_has(data.cities.adjacent[KUSTRIN], game.pos[GEN_FERMOR])) {
-			// log("P" + GEN_FERMOR + " in S" + game.pos[GEN_FERMOR] + " may not move.")
 			set_add(game.moved, GEN_FERMOR)
 		}
 	}
@@ -1287,7 +1286,7 @@ states.movement = {
 		push_undo()
 
 		if (game.moved.length === 0)
-			log("No moves.")
+			log("Nothing moved.")
 
 		set_clear(game.moved)
 
@@ -1460,10 +1459,12 @@ function move_general_to(to) {
 }
 
 function move_general_immediately(to) {
-	for (let p of game.selected) {
-		log("P" + p + " to S" + to)
+	log("P" + p)
+	log(">from S" + game.pos[p])
+	log(">to S", to)
+
+	for (let p of game.selected)
 		game.pos[p] = to
-	}
 
 	// uniting stacks (turn all oos if one is oos)
 	let oos = false
@@ -1916,7 +1917,7 @@ function end_recruit() {
 	if (game.recruit) {
 		if (game.recruit.used.length > 0) {
 			log_br()
-			log("Recruit")
+			log("Recruited")
 			log(">" + game.recruit.used.map(c => "C" + c).join(", "))
 			map_for_each(game.recruit.pieces, (p,s) => {
 				log(">P" + p + " at S" + s)
@@ -1953,7 +1954,6 @@ states.re_enter = {
 	},
 	space(s) {
 		let p = game.selected[0]
-		log("Re-entered P" + p + " at S" + s + ".")
 		game.pos[p] = s
 		map_set(game.recruit.pieces, p, s)
 		if (is_general(p)) {
@@ -2103,7 +2103,7 @@ function end_resolve_combat() {
 			game.ia_attack = get_space_suit(game.attacker)
 
 	if (game.count === 0) {
-		log(">Tie")
+		log(">Tied")
 		next_combat()
 	} else if (game.count > 0) {
 		if (get_supreme_commander(game.defender) == GEN_HILDBURGHAUSEN)
@@ -2441,7 +2441,7 @@ function goto_retreat() {
 		}
 	}
 
-	log(">P" + get_supreme_commander(loser) + " lost " + (lost-hits) + " troops")
+	log("P" + get_supreme_commander(loser) + " lost " + (lost-hits) + " troops.")
 
 	resume_retreat()
 }
@@ -2498,7 +2498,7 @@ states.retreat_eliminate_trapped = {
 			gen_action_piece(p)
 	},
 	piece(_) {
-		log("Trapped.")
+		log("Trapped")
 		for (let p of game.selected)
 			eliminate_general(p)
 		next_combat()
@@ -2601,12 +2601,12 @@ function log_conquest(conq, reconq) {
 	if (conq.length > 0 || reconq.length > 0) {
 		log_br()
 		if (conq.length > 0) {
-			log("Conquer")
+			log("Conquered")
 			for (let s of conq)
 				log(">S" + s)
 		}
 		if (reconq.length > 0) {
-			log("Reconquer")
+			log("Reconquered")
 			for (let s of reconq)
 				log(">S" + s)
 		}
@@ -2622,14 +2622,12 @@ function goto_retroactive_conquest() {
 	for (let s of game.retro) {
 		if (is_conquest_space(game.power, s)) {
 			if (!is_protected_from_conquest(s)) {
-				log("Conquered S" + s)
 				set_add(game.conquest, s)
 				conq.push(s)
 			}
 		}
 		if (is_reconquest_space(game.power, s)) {
 			if (!is_protected_from_reconquest(s)) {
-				log("Reconquered S" + s)
 				set_delete(game.conquest, s)
 				reconq.push(s)
 			}
@@ -2881,7 +2879,7 @@ function goto_clock_of_fate() {
 	delete game.ia_attack
 
 	if (game.scenario === 1 || game.scenario === 2) {
-		log("Imaginary player draws 5 TC.")
+		log("Imaginary player drew 5 TC.")
 		for (let i = 0; i < 5; ++i)
 			draw_next_tc()
 	}
@@ -3376,7 +3374,7 @@ function flip_stack_out_of_supply(p) {
 	let s = game.pos[p]
 	for (let x of all_generals) {
 		if (game.pos[x] === s) {
-			log("P" + x + " out of supply")
+			log("P" + x + " out of supply.")
 			set_out_of_supply(x)
 			set_delete(game.selected, x)
 		}
@@ -3558,7 +3556,9 @@ states.prussia_may_move_hildburghausen_2_cities_westwards = {
 						gen_action_space(b)
 	},
 	space(s) {
-		log("P" + GEN_HILDBURGHAUSEN + " to S" + s)
+		log("P" + GEN_HILDBURGHAUSEN)
+		log(">from S" + game.pos[GEN_HILDBURGHAUSEN])
+		log(">to S" + s)
 		game.pos[GEN_HILDBURGHAUSEN] = s
 		goto_start_turn()
 	},
@@ -3673,10 +3673,11 @@ states.move_to_any_empty_adjacent_city = {
 				gen_action_space(next)
 	},
 	space(s) {
-		for (let p of game.selected) {
-			log("P" + p + " to S" + s)
+		log_selected()
+		log(">from S" + game.pos[game.selected[0]])
+		log(">to S" + s)
+		for (let p of game.selected)
 			game.pos[p] = s
-		}
 		game.state = "prussians_who_are_attacked_by_daun_may_move"
 	},
 }
@@ -3904,7 +3905,7 @@ function remove_power_from_play(pow) {
 	for (let s of full_objective[pow])
 		set_delete(game.conquest, s)
 	if (game.hand[pow].length > 0)
-		log("Discarded " + game.hand[pow].length + " TCs.")
+		log("Discarded " + game.hand[pow].length + " TC.")
 	game.hand[pow] = []
 }
 
