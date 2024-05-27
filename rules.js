@@ -785,7 +785,7 @@ function retire_general(p) {
 }
 
 function eliminate_general(p) {
-	log("P" + p + " eliminated.")
+	log(">P" + p + " eliminated")
 	game.pos[p] = ELIMINATED
 	game.troops[p] = 0
 	set_in_supply(p)
@@ -1286,6 +1286,11 @@ states.movement = {
 	end_movement() {
 		push_undo()
 
+		if (game.moved.length === 0)
+			log("No moves.")
+
+		set_clear(game.moved)
+
 		log_conquest(game.move_conq, game.move_reconq)
 		delete game.move_conq
 		delete game.move_reconq
@@ -1712,7 +1717,6 @@ function spend_recruit_cost() {
 	while (spend > 0) {
 		let c = find_largest_card(game.recruit.pool)
 		let v = to_value(c)
-		console.log("  REMOVE CARD", v)
 		set_delete(game.recruit.pool, c)
 		set_add(game.recruit.used, c)
 		if (v > spend) {
@@ -1748,8 +1752,6 @@ function can_re_enter_supply_train(s) {
 
 function goto_recruit() {
 	game.count = 0
-
-	log_br()
 
 	// TODO: reveal too much if we skip recruitment phase?
 	if (!can_recruit_anything()) {
@@ -1966,8 +1968,6 @@ states.re_enter = {
 /* COMBAT (CHOOSE TARGETS) */
 
 function goto_combat() {
-	set_clear(game.moved)
-
 	let from = []
 	let to = []
 
@@ -2005,7 +2005,6 @@ function goto_combat() {
 
 function next_combat() {
 	clear_undo()
-	log_br()
 	set_active_to_current_action_step()
 	game.count = 0
 	delete game.attacker
@@ -2484,7 +2483,6 @@ states.retreat_eliminate_hits = {
 				gen_action_piece(p)
 	},
 	piece(p) {
-		log("P" + p + " eliminated.")
 		eliminate_general(p)
 		set_delete(game.selected, p)
 		resume_retreat()
@@ -2734,32 +2732,55 @@ function should_supply_flip() {
 }
 
 function goto_supply() {
-	log_br()
-
 	set_clear(game.moved)
 	search_supply(6)
+
 	if (should_supply_restore())
-		resume_supply_restore()
+		goto_supply_restore()
 	else if (should_supply_eliminate())
-		resume_supply_eliminate()
+		goto_supply_eliminate()
 	else if (should_supply_flip())
-		resume_supply_flip()
+		goto_supply_flip()
 	else
 		end_supply()
+}
+
+function goto_supply_restore() {
+	log_br()
+	log("In supply")
+	resume_supply_restore()
+}
+
+function goto_supply_eliminate() {
+	log_br()
+	log("Out of supply")
+	resume_supply_eliminate()
+}
+
+function goto_supply_flip() {
+	log_br()
+	log("Out of supply")
+	resume_supply_flip()
 }
 
 function resume_supply_restore() {
 	if (should_supply_restore())
 		game.state = "supply_restore"
+	else if (should_supply_eliminate())
+		goto_supply_eliminate()
+	else if (should_supply_flip())
+		goto_supply_flip()
 	else
-		resume_supply_eliminate()
+		end_supply()
 }
 
 function resume_supply_eliminate() {
 	if (should_supply_eliminate())
 		game.state = "supply_eliminate"
+	else if (should_supply_flip())
+		goto_supply_flip()
 	else
-		resume_supply_flip()
+		end_supply()
 }
 
 function resume_supply_flip() {
@@ -2786,7 +2807,7 @@ states.supply_restore = {
 			if (game.pos[p] === s) {
 				set_add(game.moved, p)
 				set_in_supply(p)
-				log("P" + p + " restored supply.")
+				log(">P" + p + " at S" + s)
 			}
 		}
 		resume_supply_restore()
@@ -2828,7 +2849,7 @@ states.supply_flip = {
 		let s = game.pos[x]
 		for (let p of all_power_generals[game.power]) {
 			if (game.pos[p] === s) {
-				log("P" + p + " out of supply.")
+				log(">P" + p + " at S" + s)
 				set_out_of_supply(p)
 			}
 		}

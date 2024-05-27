@@ -73,12 +73,16 @@
 
 #log { background-color: #f3ebd4 }
 
+#log div:empty {
+	min-height: 4px;
+}
+
 #log .city_tip:hover { cursor: pointer; text-decoration: underline; }
 
 #log .h {
 	background-color: tan;
 	border-top: 1px solid black; border-bottom: 1px solid black;
-	margin: 4px 0;
+	margin: 8px 0;
 }
 
 #log .h.fate { text-align: center; }
@@ -91,7 +95,7 @@
 #log .h.imperial { background-color: var(--color-light-imperial); }
 #log .h.france { background-color: var(--color-light-france); }
 
-#log .q { font-style: italic; margin: 8px 0; }
+#log .q { font-style: italic; }
 
 #log .i { padding-left: 20px }
 #log .ii { padding-left: 32px }
