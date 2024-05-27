@@ -307,6 +307,8 @@ function to_suit(c) {
 }
 
 function to_value(c) {
+	if (to_suit(c) === RESERVE)
+		return 10
 	return c & 15
 }
 
@@ -315,7 +317,7 @@ function is_reserve(c) {
 }
 
 function format_cards(list) {
-	return list.map(c => to_value(c) + suit_name[to_suit(c)]).join(", ")
+	return list.map(c => is_reserve(c) ? suit_name[RESERVE] : to_value(c) + suit_name[to_suit(c)]).join(", ")
 }
 
 function format_selected() {
@@ -330,6 +332,10 @@ function format_stack(s) {
 		if (game.pos[p] === s)
 			list.push(p)
 	return suit_name[get_space_suit(s)] + " " + list.map(p => piece_name[p]).join(" and ")
+}
+
+function log_selected() {
+	log(game.selected.map(p => "P" + p).join(" and "))
 }
 
 /* OBJECTIVES */
@@ -1172,6 +1178,11 @@ function goto_movement() {
 	game.state = "movement"
 	set_clear(game.moved)
 
+	log_br()
+
+	game.move_conq = []
+	game.move_reconq = []
+
 	if (game.fx === NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KUSTRIN_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE) {
 		if (game.power === P_RUSSIA && set_has(data.cities.adjacent[KUSTRIN], game.pos[GEN_FERMOR])) {
 			// log("P" + GEN_FERMOR + " in S" + game.pos[GEN_FERMOR] + " may not move.")
@@ -1274,6 +1285,11 @@ states.movement = {
 	},
 	end_movement() {
 		push_undo()
+
+		log_conquest(game.move_conq, game.move_reconq)
+		delete game.move_conq
+		delete game.move_reconq
+
 		goto_recruit()
 	},
 }
@@ -1402,7 +1418,7 @@ function move_general_to(to) {
 		if (is_protected_from_conquest(from)) {
 			set_add(game.retro, from)
 		} else {
-			log("Conquered S" + from)
+			game.move_conq.push(from)
 			set_add(game.conquest, from)
 		}
 	}
@@ -1412,10 +1428,12 @@ function move_general_to(to) {
 		if (is_protected_from_reconquest(from)) {
 			set_add(game.retro, from)
 		} else {
-			log("Reconquered S" + from)
+			game.move_reconq.push(from)
 			set_delete(game.conquest, from)
 		}
 	}
+
+	log(">to S" + to)
 
 	// eliminate supply train
 	for (let p of all_enemy_trains[pow]) {
@@ -1491,11 +1509,16 @@ states.move_supply_train = {
 	},
 	space(to) {
 		let who = game.selected[0]
-		let here = game.pos[who]
+		let from = game.pos[who]
 
-		log("P" + who + " to S" + to)
+		if (game.count === 0) {
+			log_selected()
+			log(">from S" + from)
+		}
 
-		if (!set_has(data.cities.major_roads[here], to))
+		log(">to S" + to)
+
+		if (!set_has(data.cities.major_roads[from], to))
 			game.major = 0
 
 		set_add(game.moved, who)
@@ -1591,7 +1614,10 @@ states.move_general = {
 		let who = game.selected[0]
 		let from = game.pos[who]
 
-		log("P" + who + " to S" + to)
+		if (game.count === 0) {
+			log_selected()
+			log(">from S" + from)
+		}
 
 		if (!set_has(data.cities.major_roads[from], to))
 			game.major = 0
@@ -1651,9 +1677,51 @@ function end_move_piece() {
 /* RECRUITMENT */
 
 function troop_cost() {
-	if (game.re_enter !== undefined)
+	if (game.recruit.re_enter < ELIMINATED)
 		return 8
 	return 6
+}
+
+function sum_card_values(list) {
+	let n = 0
+	for (let c of list)
+		n += to_value(c)
+	return n
+}
+
+function find_largest_card(list) {
+	for (let v = 13; v >= 2; --v) {
+		for (let c of list)
+			if (to_value(c) === v)
+				return c
+	}
+	throw "NO CARDS FOUND IN LIST"
+}
+
+function spend_recruit_cost() {
+	let spend = troop_cost()
+	if (game.count > 0) {
+		if (spend < game.count) {
+			game.count -= spend
+			spend = 0
+		} else {
+			spend -= game.count
+			game.count = 0
+		}
+	}
+	while (spend > 0) {
+		let c = find_largest_card(game.recruit.pool)
+		let v = to_value(c)
+		console.log("  REMOVE CARD", v)
+		set_delete(game.recruit.pool, c)
+		set_add(game.recruit.used, c)
+		if (v > spend) {
+			game.count = v - spend
+			spend = 0
+		} else {
+			spend -= v
+		}
+	}
 }
 
 function has_available_depot() {
@@ -1679,8 +1747,9 @@ function can_re_enter_supply_train(s) {
 }
 
 function goto_recruit() {
-	push_undo()
 	game.count = 0
+
+	log_br()
 
 	// TODO: reveal too much if we skip recruitment phase?
 	if (!can_recruit_anything()) {
@@ -1688,7 +1757,15 @@ function goto_recruit() {
 		return
 	}
 
-	// if all depots have enemy pieces, choose ONE city in XXX sector and COST is 8
+	game.recruit = {
+		pool: [],
+		used: [],
+		pieces: [],
+		re_enter: ELIMINATED,
+		troops: 0,
+	}
+
+	// if all depots have enemy pieces, choose ONE city in given sector and COST is 8
 	if (has_available_depot())
 		game.state = "recruit"
 	else
@@ -1705,15 +1782,15 @@ states.re_enter_choose_city = {
 	},
 	space(s) {
 		push_undo()
-		game.re_enter = s
+		game.recruit.re_enter = s
 		game.state = "recruit"
 	},
 }
 
 function has_re_entry_space(p) {
 	let can_re_enter_at = is_general(p) ? can_re_enter_general : can_re_enter_supply_train
-	if (game.re_enter !== undefined)
-		return can_re_enter_at(game.re_enter)
+	if (game.recruit.re_enter < ELIMINATED)
+		return can_re_enter_at(game.recruit.re_enter)
 	for (let s of all_power_depots[game.power])
 		if (can_re_enter_at(s))
 			return true
@@ -1763,21 +1840,25 @@ states.recruit = {
 		else
 			str = "Nothing to recruit"
 
-		if (game.count > 1)
-			str += " \u2014 " + game.count + " points."
-		else if (game.count === 1)
+		let paid = game.count + sum_card_values(game.recruit.pool)
+
+		if (paid > 1)
+			str += " \u2014 " + paid + " points."
+		else if (paid === 1)
 			str += " \u2014 1 point."
 		else
 			str += "."
 
 		prompt(str)
 
-		if (possible && game.count / cost < av_troops + av_trains) {
+		view.draw = game.recruit.pool
+
+		if (possible && paid / cost < av_troops + av_trains) {
 			for (let c of game.hand[game.power])
 				gen_action_card(c)
 		}
 
-		if (game.count >= cost) {
+		if (paid >= cost) {
 			if (av_troops > 0) {
 				for (let p of all_power_generals[game.power]) {
 					if (game.troops[p] > 0 && game.troops[p] < 8) {
@@ -1802,22 +1883,24 @@ states.recruit = {
 			}
 		}
 
-		if (game.count < cost || !possible)
+		if (paid < cost || !possible)
 			view.actions.end_recruit = 1
 	},
 	card(c) {
 		push_undo()
-		log("Recruit with C" + c)
-		array_remove_item(game.hand[game.power], c)
-		game.count += is_reserve(c) ? 10 : to_value(c)
+		set_delete(game.hand[game.power], c)
+		set_add(game.recruit.pool, c)
 	},
 	piece(p) {
 		push_undo()
-		game.count -= troop_cost()
+
+		spend_recruit_cost()
+
 		if (game.pos[p] === ELIMINATED) {
 			game.selected = [ p ]
 			game.state = "re_enter"
 		} else {
+			game.recruit.troops += 1
 			add_one_troop(p)
 		}
 	},
@@ -1828,7 +1911,25 @@ states.recruit = {
 }
 
 function end_recruit() {
-	delete game.re_enter
+	if (game.recruit) {
+		if (game.recruit.used.length > 0) {
+			log_br()
+			log("Recruit")
+			log(">" + game.recruit.used.map(c => "C" + c).join(", "))
+			map_for_each(game.recruit.pieces, (p,s) => {
+				log(">P" + p + " at S" + s)
+			})
+			if (game.recruit.troops)
+				log(">" + game.recruit.troops + " troops")
+		}
+
+		// put back into hand unused cards
+		for (let c of game.recruit.pool)
+			set_add(game.hand[game.power], c)
+
+		delete game.recruit
+	}
+
 	goto_combat()
 }
 
@@ -1839,9 +1940,9 @@ states.re_enter = {
 		let p = game.selected[0]
 		let can_re_enter_at = is_general(p) ? can_re_enter_general : can_re_enter_supply_train
 
-		if (game.re_enter !== undefined) {
-			if (can_re_enter_at(game.re_enter))
-				gen_action_space(game.re_enter)
+		if (game.recruit.re_enter < ELIMINATED) {
+			if (can_re_enter_at(game.recruit.re_enter))
+				gen_action_space(game.recruit.re_enter)
 		} else {
 			for (let s of all_power_depots[game.power])
 				if (can_re_enter_at(s))
@@ -1852,8 +1953,11 @@ states.re_enter = {
 		let p = game.selected[0]
 		log("Re-entered P" + p + " at S" + s + ".")
 		game.pos[p] = s
-		if (set_has(all_power_generals[game.power], p))
+		map_set(game.recruit.pieces, p, s)
+		if (is_general(p)) {
+			game.recruit.troops += 1
 			game.troops[p] = 1
+		}
 		game.selected = null
 		game.state = "recruit"
 	},
@@ -2195,8 +2299,7 @@ function play_reserve(v, sign) {
 function play_combat_card(c, sign, resume, next_state) {
 	push_undo()
 	array_remove_item(game.hand[game.power], c)
-	let c_suit = to_suit(c)
-	if (c_suit === RESERVE) {
+	if (is_reserve(c)) {
 		game.state = next_state
 	} else {
 		play_card(c, sign)
@@ -2495,23 +2598,46 @@ states.retreat_done = {
 
 /* RETRO-ACTIVE CONQUEST */
 
+function log_conquest(conq, reconq) {
+	if (conq.length > 0 || reconq.length > 0) {
+		log_br()
+		if (conq.length > 0) {
+			log("Conquer")
+			for (let s of conq)
+				log(">S" + s)
+		}
+		if (reconq.length > 0) {
+			log("Reconquer")
+			for (let s of reconq)
+				log(">S" + s)
+		}
+	}
+}
+
 function goto_retroactive_conquest() {
 	delete game.combat
+
+	let conq = []
+	let reconq = []
 
 	for (let s of game.retro) {
 		if (is_conquest_space(game.power, s)) {
 			if (!is_protected_from_conquest(s)) {
 				log("Conquered S" + s)
 				set_add(game.conquest, s)
+				conq.push(s)
 			}
 		}
 		if (is_reconquest_space(game.power, s)) {
 			if (!is_protected_from_reconquest(s)) {
 				log("Reconquered S" + s)
 				set_delete(game.conquest, s)
+				reconq.push(s)
 			}
 		}
 	}
+
+	log_conquest(conq, reconq)
 
 	set_clear(game.retro)
 
@@ -2608,6 +2734,8 @@ function should_supply_flip() {
 }
 
 function goto_supply() {
+	log_br()
+
 	set_clear(game.moved)
 	search_supply(6)
 	if (should_supply_restore())
@@ -2721,6 +2849,7 @@ states.supply_done = {
 
 function end_supply() {
 	delete game.supply
+
 	end_action_stage()
 }
 
