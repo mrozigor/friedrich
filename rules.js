@@ -332,120 +332,6 @@ function format_stack(s) {
 	return suit_name[get_space_suit(s)] + " " + list.map(p => piece_name[p]).join(" and ")
 }
 
-/* CARDS OF FATE (PASSIVE) */
-
-const NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KUSTRIN_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE = 5
-
-const NEXT_TURN_SALTIKOV_MAY_MOVE_ONLY_2_CITIES = 7
-const NEXT_TURN_RICHELIEU_MAY_MOVE_2_CITIES_ONLY = 18
-const NEXT_TURN_DAUN_MAY_MOVE_ONLY_2_CITIES = 44
-const NEXT_TURN_FRIEDRICH_MAY_MOVE_4_CITIES_EVEN_AS_A_STACK = 33
-
-const NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK = 19
-const NEXT_TURN_FRIEDRICH_MAY_NOT_RECEIVE_ANY_NEW_TROOPS = 26
-const NEXT_TURN_EVERY_PRUSSIAN_GENERAL_WHO_RECEIVES_NEW_TROOPS_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 36
-
-const NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL = 10
-const NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE = 11
-const NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 15
-const NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 16
-const NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 24
-
-const NEXT_TURN_PRINZ_HEINRICH_PROTECTS_OBJECTIVES_UP_TO_4_CITIES_DISTANT = 42
-
-const NEXT_TURN_IF_PRUSSIA_AND_FRANCE_FIGHT_EACH_OTHER_THEY_MAY_NOT_USE_TCS_WITH_VALUES_OF_10_OR_MORE = 9
-const NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE = 27
-
-const NEXT_TURN_THE_FIRST_TC_PLAYED_BY_FRANCE_IS_WORTH_AN_ADDITIONAL_POINT = 12
-const NEXT_TURN_IF_FRIEDRICH_ATTACKS_HIS_FIRST_TC_IS_WORTH_5_ADDITIONAL_POINTS = 31
-const NEXT_TURN_IF_FRIEDRICH_IS_ATTACKED_THE_FIRST_TC_PLAYED_BY_PRUSSIA_IS_WORTH_NOTHING_0_POINTS = 38
-const NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_ONCE_AT_DOUBLE_VALUE = 40
-
-const NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY = 29
-
-function clear_fate_effect() {
-	game.fx = 0
-}
-
-function forbid_play_value_10_or_more() {
-	if (game.fx === NEXT_TURN_IF_PRUSSIA_AND_FRANCE_FIGHT_EACH_OTHER_THEY_MAY_NOT_USE_TCS_WITH_VALUES_OF_10_OR_MORE) {
-		let a = get_stack_power(game.attacker)
-		let d = get_stack_power(game.defender)
-		if ((a === P_PRUSSIA && d === P_FRANCE) || (a === P_FRANCE && d === P_PRUSSIA))
-			return true
-	}
-	return false
-}
-
-function must_reach_positive_score() {
-	if (game.fx === NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE) {
-		if (game.power === P_PRUSSIA)
-			return (game.pos[GEN_FRIEDRICH] === game.attacker || game.pos[GEN_FRIEDRICH] === game.defender)
-	}
-	return false
-}
-
-function has_empty_adjacent_city(here) {
-	for (let next of data.cities.adjacent[here])
-		if (!has_any_piece(next))
-			return true
-	return false
-}
-
-function are_prussians_attacked_by_daun() {
-	let from = game.pos[GEN_DAUN]
-	if (game.power === P_AUSTRIA && from < ELIMINATED) {
-		for (let p of all_power_generals[P_PRUSSIA])
-			if (set_has(data.cities.adjacent[from], game.pos[p]) && has_empty_adjacent_city(game.pos[p]))
-				return true
-	}
-	return false
-}
-
-states.prussians_who_are_attacked_by_daun_may_move = {
-	inactive: "move Prussians who are attacked by Daun",
-	prompt() {
-		prompt("Any Prussians who are attacked by Daun may move to any empty adjacent city.")
-		let daun = game.pos[GEN_DAUN]
-		for (let p of all_power_generals[P_PRUSSIA])
-			if (set_has(data.cities.adjacent[daun], game.pos[p]))
-				gen_action_supreme_commander(game.pos[p])
-		view.actions.next = 1
-	},
-	piece(p) {
-		push_undo()
-		remove_stack_from_combat(game.pos[p])
-		game.selected = select_stack(game.pos[p])
-		game.state = "move_to_any_empty_adjacent_city"
-	},
-	next() {
-		clear_undo()
-		set_active_to_power(P_AUSTRIA)
-		if (game.combat.length > 0)
-			game.state = "combat"
-		else
-			goto_retroactive_conquest()
-	},
-}
-
-states.move_to_any_empty_adjacent_city = {
-	inactive: "move Prussians who are attacked by Daun",
-	prompt() {
-		prompt(format_selected() + " may move to any empty adjacent city.")
-		let here = game.pos[game.selected[0]]
-		for (let next of data.cities.adjacent[here])
-			if (!has_any_piece(next))
-				gen_action_space(next)
-	},
-	space(s) {
-		for (let p of game.selected) {
-			log("P" + p + " to S" + s)
-			game.pos[p] = s
-		}
-		game.state = "prussians_who_are_attacked_by_daun_may_move"
-	},
-}
-
 /* OBJECTIVES */
 
 const all_objectives = []
@@ -843,6 +729,14 @@ function count_generals(to) {
 	return n
 }
 
+function select_stack(s) {
+	let list = []
+	for (let p of all_generals)
+		if (game.pos[p] === s)
+			list.push(p)
+	return list
+}
+
 function add_one_troop(p) {
 	for (let x of all_power_generals[game.power]) {
 		if (game.pos[x] === game.pos[p] && game.troops[x] < 8) {
@@ -913,85 +807,9 @@ function set_active_to_current_action_step() {
 }
 
 function goto_start_turn() {
+	game.turn += 1
 	game.step = 0
 
-	// Check before drawing a fate card.
-	if (check_victory())
-		return
-
-	if (++game.turn <= 5) {
-		log("# \u2014 " + game.turn + " \u2014")
-		log("$" + (game.turn - 1 + 48 + 6))
-	} else {
-		// remove non-stroke of fate card from last turn
-		for (let i = 1; i <= 12; ++i)
-			set_delete(game.fate, i)
-
-		let fc = game.clock.pop()
-
-		let fs = SPADES
-		if (game.scenario >= 3)
-			fs = get_space_suit(game.pos[game.vg])
-
-		if (fc > 12) {
-			log("# " + strokes_of_fate_name[fc-13])
-			log("$" + (fc - 13 + 48))
-			game.fx = 0
-		} else {
-			game.fx = (fc - 1) * 4 + fs
-			log("# Card of Fate " + fc + suit_name[fs])
-			log("$" + game.fx)
-		}
-
-		set_add(game.fate, fc)
-
-		// Check again in case of eased victory conditions.
-		if (check_victory())
-			return
-
-		if (fate_effect_immediate[game.fx]) {
-			fate_effect_immediate[game.fx]()
-			return
-		}
-
-		// dropped out powers are virtual in 2p scenarios
-		if (game.scenario === 1 || game.scenario === 2) {
-			resume_start_turn()
-			return
-		}
-
-		// eased victory conditions
-		if (has_russia_dropped_out()) {
-			remove_secondary_objectives(P_SWEDEN)
-		}
-		if (has_imperial_army_switched_players()) {
-			remove_secondary_objectives(P_AUSTRIA)
-			remove_secondary_objectives(P_IMPERIAL)
-		}
-
-		if (fc === FC_ELISABETH) {
-			set_active_to_power(P_PRUSSIA)
-			game.state = "russia_quits_the_game_1"
-			return
-		}
-
-		if (fc === FC_SWEDEN) {
-			set_active_to_power(P_PRUSSIA)
-			game.state = "sweden_quits_the_game_1"
-			return
-		}
-
-		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))) {
-			set_active_to_power(P_HANOVER)
-			game.state = "france_quits_the_game_1"
-			return
-		}
-	}
-
-	resume_start_turn()
-}
-
-function resume_start_turn() {
 	game.selected = null
 	delete game.ia_lost
 
@@ -1019,21 +837,9 @@ function end_action_stage() {
 	clear_undo()
 
 	if (++game.step === 7)
-		goto_end_of_turn()
+		goto_clock_of_fate()
 	else
 		goto_action_stage()
-}
-
-function goto_end_of_turn() {
-	delete game.ia_attack
-
-	if (game.scenario === 1 || game.scenario === 2) {
-		log("Imaginary player draws 5 TC.")
-		for (let i = 0; i < 5; ++i)
-			draw_next_tc()
-	}
-
-	goto_start_turn()
 }
 
 /* VICTORY */
@@ -1858,6 +1664,20 @@ function has_available_depot() {
 	return false
 }
 
+function can_re_enter_general(to) {
+	if (has_friendly_supply_train(to))
+		return false
+	if (has_any_other_general(to))
+		return false
+	if (1 + count_generals(to) > 3)
+		return false
+	return true
+}
+
+function can_re_enter_supply_train(s) {
+	return !has_any_piece(s)
+}
+
 function goto_recruit() {
 	push_undo()
 	game.count = 0
@@ -2012,20 +1832,6 @@ function end_recruit() {
 	goto_combat()
 }
 
-function can_re_enter_general(to) {
-	if (has_friendly_supply_train(to))
-		return false
-	if (has_any_other_general(to))
-		return false
-	if (1 + count_generals(to) > 3)
-		return false
-	return true
-}
-
-function can_re_enter_supply_train(s) {
-	return !has_any_piece(s)
-}
-
 states.re_enter = {
 	inactive: "recruit",
 	prompt() {
@@ -2053,26 +1859,7 @@ states.re_enter = {
 	},
 }
 
-/* COMBAT */
-
-function format_combat(value) {
-	return format_stack(game.attacker) + " vs " + format_stack(game.defender) + " score " + value
-}
-
-function prompt_combat(value, extra = null) {
-	if (extra)
-		prompt(format_combat(value) + ". " + extra)
-	else
-		prompt(format_combat(value) + ".")
-}
-
-function inactive_attack() {
-	return "combat " + format_combat(game.count)
-}
-
-function inactive_defend() {
-	return "combat " + format_combat(-game.count)
-}
+/* COMBAT (CHOOSE TARGETS) */
 
 function goto_combat() {
 	set_clear(game.moved)
@@ -2112,6 +1899,20 @@ function goto_combat() {
 		goto_retroactive_conquest()
 }
 
+function next_combat() {
+	clear_undo()
+	log_br()
+	set_active_to_current_action_step()
+	game.count = 0
+	delete game.attacker
+	delete game.defender
+	if (game.combat.length > 0)
+		game.state = "combat"
+	else
+		game.state = "combat_done"
+}
+
+
 states.combat = {
 	inactive: "attack",
 	prompt() {
@@ -2123,6 +1924,17 @@ states.combat = {
 		push_undo()
 		game.attacker = game.pos[p]
 		game.state = "combat_target"
+	},
+}
+
+states.combat_done = {
+	inactive: "attack",
+	prompt() {
+		prompt("Combat done.")
+		view.actions.end_combat = 1
+	},
+	end_combat() {
+		goto_retroactive_conquest()
 	},
 }
 
@@ -2146,19 +1958,11 @@ states.combat_target = {
 			}
 		}
 
-		goto_combat_play()
+		goto_resolve_combat()
 	},
 }
 
-function set_active_attacker() {
-	set_active_to_power(get_stack_power(game.attacker))
-}
-
-function set_active_defender() {
-	set_active_to_power(get_stack_power(game.defender))
-}
-
-function goto_combat_play() {
+function goto_resolve_combat() {
 	let a_troops = 0
 	let d_troops = 0
 
@@ -2185,6 +1989,61 @@ function goto_combat_play() {
 		set_active_defender()
 		game.state = "combat_defend"
 	}
+}
+
+function end_resolve_combat() {
+	if (must_reach_positive_score())
+		clear_fate_effect()
+
+	if (game.fx === NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL)
+		if (get_supreme_commander(game.attacker) === GEN_HILDBURGHAUSEN)
+			game.ia_attack = get_space_suit(game.attacker)
+
+	if (game.count === 0) {
+		log("Tie.")
+		next_combat()
+	} else if (game.count > 0) {
+		if (get_supreme_commander(game.defender) == GEN_HILDBURGHAUSEN)
+			game.ia_lost = 1
+		game.vg = get_supreme_commander(game.attacker)
+		game.selected = select_stack(game.defender)
+		goto_retreat()
+	} else {
+		if (get_supreme_commander(game.attacker) == GEN_HILDBURGHAUSEN)
+			game.ia_lost = 1
+		game.vg = get_supreme_commander(game.defender)
+		game.selected = select_stack(game.attacker)
+		goto_retreat()
+	}
+}
+
+/* COMBAT (CARD PLAY) */
+
+function format_combat(value) {
+	return format_stack(game.attacker) + " vs " + format_stack(game.defender) + " score " + value
+}
+
+function inactive_attack() {
+	return "combat " + format_combat(game.count)
+}
+
+function inactive_defend() {
+	return "combat " + format_combat(-game.count)
+}
+
+function prompt_combat(value, extra = null) {
+	if (extra)
+		prompt(format_combat(value) + ". " + extra)
+	else
+		prompt(format_combat(value) + ".")
+}
+
+function set_active_attacker() {
+	set_active_to_power(get_stack_power(game.attacker))
+}
+
+function set_active_defender() {
+	set_active_to_power(get_stack_power(game.defender))
 }
 
 function resume_combat_attack() {
@@ -2357,7 +2216,7 @@ states.combat_attack = {
 	},
 	pass() {
 		clear_undo()
-		resolve_combat()
+		end_resolve_combat()
 	},
 }
 
@@ -2373,7 +2232,7 @@ states.combat_defend = {
 	},
 	pass() {
 		clear_undo()
-		resolve_combat()
+		end_resolve_combat()
 	},
 }
 
@@ -2428,64 +2287,6 @@ states.combat_defend_swap = {
 		clear_undo()
 		set_active_attacker()
 		game.state = "combat_attack"
-	},
-}
-
-function select_stack(s) {
-	let list = []
-	for (let p of all_generals)
-		if (game.pos[p] === s)
-			list.push(p)
-	return list
-}
-
-function resolve_combat() {
-	if (must_reach_positive_score())
-		clear_fate_effect()
-
-	if (game.fx === NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL)
-		if (get_supreme_commander(game.attacker) === GEN_HILDBURGHAUSEN)
-			game.ia_attack = get_space_suit(game.attacker)
-
-	if (game.count === 0) {
-		log("Tie.")
-		next_combat()
-	} else if (game.count > 0) {
-		if (get_supreme_commander(game.defender) == GEN_HILDBURGHAUSEN)
-			game.ia_lost = 1
-		game.vg = get_supreme_commander(game.attacker)
-		game.selected = select_stack(game.defender)
-		goto_retreat()
-	} else {
-		if (get_supreme_commander(game.attacker) == GEN_HILDBURGHAUSEN)
-			game.ia_lost = 1
-		game.vg = get_supreme_commander(game.defender)
-		game.selected = select_stack(game.attacker)
-		goto_retreat()
-	}
-}
-
-function next_combat() {
-	clear_undo()
-	log_br()
-	set_active_to_current_action_step()
-	game.count = 0
-	delete game.attacker
-	delete game.defender
-	if (game.combat.length > 0)
-		game.state = "combat"
-	else
-		game.state = "combat_done"
-}
-
-states.combat_done = {
-	inactive: "attack",
-	prompt() {
-		prompt("Combat done.")
-		view.actions.end_combat = 1
-	},
-	end_combat() {
-		goto_retroactive_conquest()
 	},
 }
 
@@ -2923,6 +2724,93 @@ function end_supply() {
 	end_action_stage()
 }
 
+/* THE CLOCK OF FATE */
+
+function goto_clock_of_fate() {
+	delete game.ia_attack
+
+	if (game.scenario === 1 || game.scenario === 2) {
+		log("Imaginary player draws 5 TC.")
+		for (let i = 0; i < 5; ++i)
+			draw_next_tc()
+	}
+
+	// Check before drawing a fate card.
+	if (check_victory())
+		return
+
+	if (game.turn <= 5) {
+		log("# \u2014 " + game.turn + " \u2014")
+		log("$" + (game.turn + 48 + 6))
+	} else {
+		// remove non-stroke of fate card from last turn
+		for (let i = 1; i <= 12; ++i)
+			set_delete(game.fate, i)
+
+		let fc = game.clock.pop()
+
+		let fs = SPADES
+		if (game.scenario >= 3)
+			fs = get_space_suit(game.pos[game.vg])
+
+		if (fc > 12) {
+			log("# " + strokes_of_fate_name[fc-13])
+			log("$" + (fc - 13 + 48))
+			game.fx = 0
+		} else {
+			game.fx = (fc - 1) * 4 + fs
+			log("# Card of Fate " + fc + suit_name[fs])
+			log("$" + game.fx)
+		}
+
+		set_add(game.fate, fc)
+
+		// Check again in case of eased victory conditions.
+		if (check_victory())
+			return
+
+		if (fate_effect_immediate[game.fx]) {
+			fate_effect_immediate[game.fx]()
+			return
+		}
+
+		// dropped out powers are virtual in 2p scenarios
+		if (game.scenario === 1 || game.scenario === 2) {
+			goto_start_turn()
+			return
+		}
+
+		// eased victory conditions
+		if (has_russia_dropped_out()) {
+			remove_secondary_objectives(P_SWEDEN)
+		}
+		if (has_imperial_army_switched_players()) {
+			remove_secondary_objectives(P_AUSTRIA)
+			remove_secondary_objectives(P_IMPERIAL)
+		}
+
+		if (fc === FC_ELISABETH) {
+			set_active_to_power(P_PRUSSIA)
+			game.state = "russia_quits_the_game_1"
+			return
+		}
+
+		if (fc === FC_SWEDEN) {
+			set_active_to_power(P_PRUSSIA)
+			game.state = "sweden_quits_the_game_1"
+			return
+		}
+
+		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))) {
+			set_active_to_power(P_HANOVER)
+			game.state = "france_quits_the_game_1"
+			return
+		}
+	}
+
+	goto_start_turn()
+}
+
 /* STROKES OF FATE */
 
 const strokes_of_fate_name = [
@@ -2975,7 +2863,7 @@ states.russia_quits_the_game_3 = {
 	},
 	done() {
 		remove_power_from_play(P_RUSSIA)
-		resume_start_turn()
+		goto_start_turn()
 	},
 }
 
@@ -3020,7 +2908,7 @@ states.sweden_quits_the_game_3 = {
 	},
 	done() {
 		remove_power_from_play(P_SWEDEN)
-		resume_start_turn()
+		goto_start_turn()
 	},
 }
 
@@ -3051,7 +2939,7 @@ states.france_quits_the_game_2 = {
 	piece(p) {
 		retire_general(p)
 		remove_power_from_play(P_FRANCE)
-		resume_start_turn()
+		goto_start_turn()
 	},
 }
 
@@ -3168,7 +3056,7 @@ function austria_may_flip_any_one_prussian_general_or_stack_in_austria_or_saxony
 	if (game.selected.length > 0) {
 		game.state = "flip_any_one_prussian_general_or_stack_in_austria_or_saxony"
 	} else {
-		resume_start_turn()
+		goto_start_turn()
 	}
 }
 
@@ -3177,7 +3065,7 @@ function austria_and_russia_may_exchange_one_tc_with_each_other() {
 	if (!has_power_dropped_out(P_RUSSIA))
 		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_1"
 	else
-		resume_start_turn()
+		goto_start_turn()
 }
 
 function france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck() {
@@ -3185,7 +3073,7 @@ function france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck() {
 	if (!has_power_dropped_out(P_FRANCE))
 		game.state = "france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck"
 	else
-		resume_start_turn()
+		goto_start_turn()
 }
 
 function prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria() {
@@ -3199,7 +3087,7 @@ function austria_may_move_laudon_by_one_city_immediately() {
 		game.state = "austria_may_move_laudon_by_one_city_immediately"
 		game.selected = [ GEN_LAUDON ]
 	} else {
-		resume_start_turn()
+		goto_start_turn()
 	}
 }
 
@@ -3208,7 +3096,7 @@ function if_hildburghausen_has_lost_a_battle_this_turn_prussia_may_move_him_2_ci
 	if (game.ia_lost)
 		game.state = "prussia_may_move_hildburghausen_2_cities_westwards"
 	else
-		resume_start_turn()
+		goto_start_turn()
 }
 
 function can_add_troop_to_stack(s) {
@@ -3222,7 +3110,7 @@ function goto_receive_a_new_troop(power, list) {
 	set_active_to_power(power)
 
 	if (count_used_troops() === max_power_troops(power)) {
-		resume_start_turn()
+		goto_start_turn()
 		return
 	}
 
@@ -3234,7 +3122,7 @@ function goto_receive_a_new_troop(power, list) {
 	if (game.selected.length > 0) {
 		game.state = "receive_a_new_troop"
 	} else {
-		resume_start_turn()
+		goto_start_turn()
 	}
 }
 
@@ -3247,7 +3135,7 @@ states.receive_a_new_troop = {
 	},
 	piece(p) {
 		add_one_troop(p)
-		resume_start_turn()
+		goto_start_turn()
 	}
 }
 
@@ -3269,7 +3157,7 @@ function goto_lose_one_troop(power, list) {
 	if (game.selected.length > 0) {
 		game.state = "lose_one_troop"
 	} else {
-		resume_start_turn()
+		goto_start_turn()
 	}
 }
 
@@ -3282,7 +3170,7 @@ states.lose_one_troop = {
 	},
 	piece(p) {
 		remove_one_troop(p)
-		resume_start_turn()
+		goto_start_turn()
 	}
 }
 
@@ -3302,7 +3190,7 @@ function goto_flip_5_or_6_from_nearest_train(power, list) {
 	if (game.selected.length > 0) {
 		game.state = "flip_5_or_6_from_nearest_train"
 	} else {
-		resume_start_turn()
+		goto_start_turn()
 	}
 }
 
@@ -3316,7 +3204,7 @@ states.flip_5_or_6_from_nearest_train = {
 	piece(p) {
 		flip_stack_out_of_supply(p)
 		if (game.selected.length === 0)
-			resume_start_turn()
+			goto_start_turn()
 	}
 }
 
@@ -3329,7 +3217,7 @@ states.flip_any_one_prussian_general_or_stack_in_austria_or_saxony = {
 	},
 	piece(p) {
 		flip_stack_out_of_supply(p)
-		resume_start_turn()
+		goto_start_turn()
 	}
 }
 
@@ -3360,7 +3248,7 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_1 = {
 		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_2"
 	},
 	pass() {
-		resume_start_turn()
+		goto_start_turn()
 	},
 }
 
@@ -3381,13 +3269,13 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
 		set_add(game.hand[P_AUSTRIA], c)
 
 		log("Austria and Russia exchanged TC.")
-		resume_start_turn()
+		goto_start_turn()
 	},
 	pass() {
 		log("Austria and Russia did not exchange TC.")
 		set_add(game.hand[P_AUSTRIA], game.exchange)
 		delete game.exchange
-		resume_start_turn()
+		goto_start_turn()
 	},
 }
 
@@ -3407,10 +3295,10 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 		c = draw_next_tc()
 		if (c >= 0)
 			set_add(game.hand[P_FRANCE], c)
-		resume_start_turn()
+		goto_start_turn()
 	},
 	pass() {
-		resume_start_turn()
+		goto_start_turn()
 	},
 }
 
@@ -3435,10 +3323,10 @@ states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_o
 		set_delete(game.hand[P_AUSTRIA], c)
 		set_add(game.hand[P_PRUSSIA], c)
 
-		resume_start_turn()
+		goto_start_turn()
 	},
 	pass() {
-		resume_start_turn()
+		goto_start_turn()
 	},
 }
 
@@ -3493,7 +3381,7 @@ states.laudon_done = {
 	},
 	done() {
 		clear_undo()
-		resume_start_turn()
+		goto_start_turn()
 	},
 }
 
@@ -3521,10 +3409,124 @@ states.prussia_may_move_hildburghausen_2_cities_westwards = {
 	space(s) {
 		log("P" + GEN_HILDBURGHAUSEN + " to S" + s)
 		game.pos[GEN_HILDBURGHAUSEN] = s
-		resume_start_turn()
+		goto_start_turn()
 	},
 	pass() {
-		resume_start_turn()
+		goto_start_turn()
+	},
+}
+
+/* CARDS OF FATE (PASSIVE) */
+
+const NEXT_TURN_IF_FERMOR_STARTS_HIS_MOVE_IN_KUSTRIN_OR_IN_AN_ADJACENT_CITY_HE_MAY_NOT_MOVE = 5
+
+const NEXT_TURN_SALTIKOV_MAY_MOVE_ONLY_2_CITIES = 7
+const NEXT_TURN_RICHELIEU_MAY_MOVE_2_CITIES_ONLY = 18
+const NEXT_TURN_DAUN_MAY_MOVE_ONLY_2_CITIES = 44
+const NEXT_TURN_FRIEDRICH_MAY_MOVE_4_CITIES_EVEN_AS_A_STACK = 33
+
+const NEXT_TURN_CHEVERT_MAY_NOT_UNSTACK = 19
+const NEXT_TURN_FRIEDRICH_MAY_NOT_RECEIVE_ANY_NEW_TROOPS = 26
+const NEXT_TURN_EVERY_PRUSSIAN_GENERAL_WHO_RECEIVES_NEW_TROOPS_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 36
+
+const NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL = 10
+const NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE = 11
+const NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 15
+const NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 16
+const NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION = 24
+
+const NEXT_TURN_PRINZ_HEINRICH_PROTECTS_OBJECTIVES_UP_TO_4_CITIES_DISTANT = 42
+
+const NEXT_TURN_IF_PRUSSIA_AND_FRANCE_FIGHT_EACH_OTHER_THEY_MAY_NOT_USE_TCS_WITH_VALUES_OF_10_OR_MORE = 9
+const NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE = 27
+
+const NEXT_TURN_THE_FIRST_TC_PLAYED_BY_FRANCE_IS_WORTH_AN_ADDITIONAL_POINT = 12
+const NEXT_TURN_IF_FRIEDRICH_ATTACKS_HIS_FIRST_TC_IS_WORTH_5_ADDITIONAL_POINTS = 31
+const NEXT_TURN_IF_FRIEDRICH_IS_ATTACKED_THE_FIRST_TC_PLAYED_BY_PRUSSIA_IS_WORTH_NOTHING_0_POINTS = 38
+const NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_ONCE_AT_DOUBLE_VALUE = 40
+
+const NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY = 29
+
+function clear_fate_effect() {
+	game.fx = 0
+}
+
+function forbid_play_value_10_or_more() {
+	if (game.fx === NEXT_TURN_IF_PRUSSIA_AND_FRANCE_FIGHT_EACH_OTHER_THEY_MAY_NOT_USE_TCS_WITH_VALUES_OF_10_OR_MORE) {
+		let a = get_stack_power(game.attacker)
+		let d = get_stack_power(game.defender)
+		if ((a === P_PRUSSIA && d === P_FRANCE) || (a === P_FRANCE && d === P_PRUSSIA))
+			return true
+	}
+	return false
+}
+
+function must_reach_positive_score() {
+	if (game.fx === NEXT_TURN_IF_FRIEDRICH_IS_INVOLVED_IN_COMBAT_PRUSSIA_MUST_REACH_A_POSITIVE_SCORE) {
+		if (game.power === P_PRUSSIA)
+			return (game.pos[GEN_FRIEDRICH] === game.attacker || game.pos[GEN_FRIEDRICH] === game.defender)
+	}
+	return false
+}
+
+function has_empty_adjacent_city(here) {
+	for (let next of data.cities.adjacent[here])
+		if (!has_any_piece(next))
+			return true
+	return false
+}
+
+function are_prussians_attacked_by_daun() {
+	let from = game.pos[GEN_DAUN]
+	if (game.power === P_AUSTRIA && from < ELIMINATED) {
+		for (let p of all_power_generals[P_PRUSSIA])
+			if (set_has(data.cities.adjacent[from], game.pos[p]) && has_empty_adjacent_city(game.pos[p]))
+				return true
+	}
+	return false
+}
+
+states.prussians_who_are_attacked_by_daun_may_move = {
+	inactive: "move Prussians who are attacked by Daun",
+	prompt() {
+		prompt("Any Prussians who are attacked by Daun may move to any empty adjacent city.")
+		let daun = game.pos[GEN_DAUN]
+		for (let p of all_power_generals[P_PRUSSIA])
+			if (set_has(data.cities.adjacent[daun], game.pos[p]))
+				gen_action_supreme_commander(game.pos[p])
+		view.actions.next = 1
+	},
+	piece(p) {
+		push_undo()
+		remove_stack_from_combat(game.pos[p])
+		game.selected = select_stack(game.pos[p])
+		game.state = "move_to_any_empty_adjacent_city"
+	},
+	next() {
+		clear_undo()
+		set_active_to_power(P_AUSTRIA)
+		if (game.combat.length > 0)
+			game.state = "combat"
+		else
+			goto_retroactive_conquest()
+	},
+}
+
+states.move_to_any_empty_adjacent_city = {
+	inactive: "move Prussians who are attacked by Daun",
+	prompt() {
+		prompt(format_selected() + " may move to any empty adjacent city.")
+		let here = game.pos[game.selected[0]]
+		for (let next of data.cities.adjacent[here])
+			if (!has_any_piece(next))
+				gen_action_space(next)
+	},
+	space(s) {
+		for (let p of game.selected) {
+			log("P" + p + " to S" + s)
+			game.pos[p] = s
+		}
+		game.state = "prussians_who_are_attacked_by_daun_may_move"
 	},
 }
 
@@ -3730,15 +3732,13 @@ exports.setup = function (seed, scenario, options) {
 	}
 
 	if (game.scenario === 1)
-		log("# The War in the West")
-	if (game.scenario === 2)
-		log("# The Austrian Theatre")
-
-	if (game.scenario === 1)
 		setup_the_war_in_the_west()
-
-	if (game.scenario === 2)
+	else if (game.scenario === 2)
 		setup_the_austrian_theatre()
+	else
+		log("# Friedrich")
+
+	log("$54")
 
 	return game
 }
@@ -3758,6 +3758,8 @@ function remove_power_from_play(pow) {
 }
 
 function setup_the_war_in_the_west() {
+	log("# The War in the West")
+
 	remove_power_from_play(P_RUSSIA)
 	remove_power_from_play(P_SWEDEN)
 	remove_power_from_play(P_AUSTRIA)
@@ -3770,6 +3772,8 @@ function setup_the_war_in_the_west() {
 }
 
 function setup_the_austrian_theatre() {
+	log("# The Austrian Theatre")
+
 	remove_power_from_play(P_HANOVER)
 	remove_power_from_play(P_RUSSIA)
 	remove_power_from_play(P_SWEDEN)

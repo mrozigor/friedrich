@@ -159,6 +159,7 @@ const fate_flavor_text = [
 	"Robert Clive’s fantastic victory at Plassey means the complete loss of India for France. Moreover the state is on the verge of bankruptcy. Louis XV overrules Madame Pompadour and reduces spending on the war and subsidies.",
 	"In the war for the colonies France loses a wide range of possessions along the Ohio and Mississippi rivers, and in Quebec. Tax income decreases drastically. The Duc de Choiseul advises that military expenditure and subsidies be reduced.",
 
+	"It is the summer of 1756. Frederick the Great faces the grim fact that half of Europe has formed an alliance. He is in deep sorrow: It seems to him that their aim is the annihilation of Prussia.",
 	"1756, August 29. Frederick is convinced that war cannot be avoided. So he strikes ﬁrst and invades Saxony with his armies under his personal command.",
 	"Escaping the Prussians, Minister Brühl has to leave behind 802 bathrobes, 28 coaches, 67 vinaigrettes and 1500 wigs.",
 	"Saxony has surrendered, and now Frederick demands an alliance! – “That never happened in world’s history before!” – Frederick: “I attach importance to being inventive.”",
