@@ -268,6 +268,7 @@ function sort_power_panel() {
 
 const ui = {
 	prompt: document.getElementById("prompt"),
+	status: document.getElementById("status"),
 	header: document.querySelector("header"),
 	roads_element: document.getElementById("roads"),
 	spaces_element: document.getElementById("spaces"),
@@ -520,7 +521,6 @@ function on_init() {
 		//e.classList.add("hide")
 		e.style.left = x + "px"
 		e.style.top = y + "px"
-		e.title = cities.name[a]
 
 		ui.spaces_element.appendChild(e)
 	}
@@ -559,15 +559,19 @@ function on_blur_piece_tip(s) {
 }
 
 function on_focus_city(evt) {
+	ui.status.textContent = data.cities.name[evt.target.my_id]
 }
 
 function on_blur_city() {
+	ui.status.textContent = ""
 }
 
 function on_focus_piece(evt) {
+	ui.status.textContent = piece_tooltip_name[evt.target.my_id]
 }
 
 function on_blur_piece() {
+	ui.status.textContent = ""
 }
 
 /* UPDATE UI */
@@ -855,15 +859,42 @@ const piece_log_name = [
 	"French supply train", "French supply train",
 ]
 
-const piece_name = [
-	"P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8",
-	"H1", "H2",
-	"R1", "R2", "R3", "R4",
-	"S1",
-	"A1", "A2", "A3", "A4", "A5",
-	"IA1",
-	"F1", "F2", "F3",
-	"PT1", "PT2", "HT", "RT1", "RT2", "ST", "AT1", "AT2", "IAT", "FT1", "FT2",
+const piece_tooltip_name = [
+	"P1 Friedrich",
+	"P2 Winterfeldt",
+	"P3 Heinrich",
+	"P4 Schwerin",
+	"P5 Keith",
+	"P6 Seydlitz",
+	"P7 Dohna",
+	"P8 Lehwaldt",
+	"H1 Ferdinand",
+	"H2 Cumberland",
+	"R1 Saltikov",
+	"R2 Fermor",
+	"R3 Apraxin",
+	"R4 Tottleben",
+	"S1 Ehrensvärd",
+	"A1 Daun",
+	"A2 Browne",
+	"A3 Karl",
+	"A4 Laudon",
+	"A5 Lacy",
+	"IA1 Hildburghausen",
+	"F1 Richelieu",
+	"F2 Soubise",
+	"F3 Chevert",
+	"Prussian supply train",
+	"Prussian supply train",
+	"Hanoverian supply train",
+	"Russian supply train",
+	"Russian supply train",
+	"Swedish supply train",
+	"Austrian supply train",
+	"Austrian supply train",
+	"Imperial Army supply train",
+	"French supply train",
+	"French supply train",
 ]
 
 function sub_piece(match, p1) {

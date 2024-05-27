@@ -224,6 +224,7 @@ TWOD.piece.cylinder {
 #hand_france_header { background-color: var(--color-dark-france); color: black; }
 
 .marker {
+	pointer-events: none;
 	position: absolute;
 	width: 30px;
 	height: 30px;
