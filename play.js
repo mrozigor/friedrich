@@ -691,8 +691,8 @@ function layout_train(id, s) {
 function layout_combat_marker() {
 	let x = (data.cities.x[view.attacker] + data.cities.x[view.defender]) >> 1
 	let y = (data.cities.y[view.attacker] + data.cities.y[view.defender]) >> 1
-	ui.combat.style.left = x - 30 + "px"
-	ui.combat.style.top = y - 30 + "px"
+	ui.combat.style.left = x - 20 + "px"
+	ui.combat.style.top = y - 20 + "px"
 	ui.combat.style.zIndex = y
 }
 

@@ -235,11 +235,11 @@ TWOD.piece.cylinder {
 
 #combat {
 	position: absolute;
-	width: 52px;
-	height: 52px;
-	border: 4px solid #c00;
-	background-color: #c008;
-	border-radius: 50%;
+	width: 36px;
+	height: 36px;
+	background-image: url(images/bang.svg);
+	background-size: contain;
+	background-repeat: no-repeat;
 }
 
 .panel {
