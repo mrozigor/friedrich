@@ -276,6 +276,16 @@ const ui = {
 	markers_element: document.getElementById("markers"),
 	clock_of_fate: document.getElementById("clock_of_fate"),
 	power_panel_list: document.getElementById("power_panel_list"),
+	power_header: [
+		document.getElementById("hand_prussia_header"),
+		document.getElementById("hand_hanover_header"),
+		document.getElementById("hand_russia_header"),
+		document.getElementById("hand_sweden_header"),
+		document.getElementById("hand_austria_header"),
+		document.getElementById("hand_imperial_header"),
+		document.getElementById("hand_france_header"),
+		document.getElementById("clock_of_fate_header"),
+	],
 	power_panel: [
 		document.getElementById("hand_prussia_panel"),
 		document.getElementById("hand_hanover_panel"),
@@ -779,6 +789,7 @@ function on_update() {
 		ui.turns[i].classList.toggle("hide", (typeof view.fate === "object") || (i + 1 < view.fate))
 
 	for (let pow = 0; pow < 7; ++pow) {
+		ui.power_header[pow].textContent = power_name[pow] + " - " + view.pt[pow] + " troops"
 		ui.power_panel[pow].classList.toggle("hide", has_removed_all_pieces(pow))
 
 		ui.hand[pow].replaceChildren()

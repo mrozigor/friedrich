@@ -2,6 +2,7 @@
 
 // TODO: prussian offensive (no capture when not offensive)
 // TODO: final score summary at game end (FWC rules)
+// TODO: show running tally of troops/objectives
 
 const R_FREDERICK = "Frederick"
 const R_ELISABETH = "Elisabeth"
@@ -999,28 +1000,33 @@ function next_tactics_deck() {
 	shuffle_bigint(game.deck)
 }
 
-function draw_next_tc() {
-	if (game.deck.length === 0)
-		next_tactics_deck()
-	if (game.deck.length === 0)
-		return -1
-	return game.deck.pop()
+function draw_tc(n) {
+	let draw = []
+
+	let k = 0
+	while (n > 0) {
+		if (game.deck.length === 0) {
+			if (k > 0)
+				log("Drew " + k + " TC.")
+			k = 0
+			next_tactics_deck()
+			if (game.deck.length === 0) {
+				log("The cards ran out!")
+				break
+			}
+		}
+		set_add(draw, game.deck.pop())
+		++k
+		--n
+	}
+
+	return draw
 }
 
 function goto_tactical_cards() {
 	let n = turn_power_draw()
 
-	game.draw = []
-	for (let i = 0; i < n; ++i) {
-		let c = draw_next_tc()
-		if (c >= 0)
-			set_add(game.draw, c)
-	}
-
-	if (game.draw.length < n)
-		log("Drew " + game.draw.length + " / " + n + " TC.")
-	else
-		log("Drew " + n + " TC.")
+	game.draw = draw_tc(turn_power_draw())
 
 	if (should_power_discard_tc() && game.draw.length > 0)
 		game.state = "tactical_cards_discard"
@@ -2880,8 +2886,7 @@ function goto_clock_of_fate() {
 
 	if (game.scenario === 1 || game.scenario === 2) {
 		log("Imaginary player drew 5 TC.")
-		for (let i = 0; i < 5; ++i)
-			draw_next_tc()
+		draw_tc(5)
 	}
 
 	// Check before drawing a fate card.
@@ -3441,8 +3446,8 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 		log("France discarded one TC.")
 		log("France drew one TC.")
 		set_delete(game.hand[P_FRANCE], c)
-		c = draw_next_tc()
-		if (c >= 0)
+		let draw = draw_tc(1)
+		for (let c of draw)
 			set_add(game.hand[P_FRANCE], c)
 		goto_start_turn()
 	},
@@ -4047,6 +4052,17 @@ function mask_hand(player) {
 	return view_hand
 }
 
+function total_troops_list() {
+	let list = []
+	for (let pow of all_powers) {
+		let n = 0
+		for (let p of all_power_generals)
+			n += game.troops[p]
+		list[pow] = n
+	}
+	return list
+}
+
 exports.view = function (state, player) {
 	game = state
 	view = {
@@ -4060,6 +4076,7 @@ exports.view = function (state, player) {
 		conquest: game.conquest,
 		troops: mask_troops(player),
 		hand: mask_hand(player),
+		pt: total_troops_list(),
 
 		power: game.power,
 		retro: game.retro,
