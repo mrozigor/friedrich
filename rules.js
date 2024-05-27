@@ -2416,14 +2416,13 @@ function remove_stack_from_combat(s) {
 }
 
 function goto_retreat() {
-	let hits = Math.abs(game.count)
+	let lost = Math.abs(game.count)
+	let hits = lost
 
 	let loser = get_loser()
 
 	// no more fighting for the loser
 	remove_stack_from_combat(loser)
-
-	log("P" + get_supreme_commander(loser) + " lost " + hits + " troops.")
 
 	// apply hits
 	for (let i = game.selected.length - 1; i >= 0 && hits > 0; --i) {
@@ -2441,6 +2440,8 @@ function goto_retreat() {
 			--hits
 		}
 	}
+
+	log("P" + get_supreme_commander(loser) + " lost " + (lost-hits) + " troops")
 
 	resume_retreat()
 }
