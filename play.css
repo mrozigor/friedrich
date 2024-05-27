@@ -34,6 +34,16 @@
 	--color-light-austria: hsl(0, 0%, 97%);
 	--color-light-imperial: hsl(55, 85%, 75%);
 	--color-light-france: hsl(0, 70%, 80%);
+	--color-light-clock: hsl(52, 37%, 80%);
+
+	--color-medium-prussia: hsl(210, 30%, 60%);
+	--color-medium-hanover: hsl(200, 25%, 65%);
+	--color-medium-russia: hsl(120, 20%, 55%);
+	--color-medium-sweden: hsl(80, 25%, 55%);
+	--color-medium-austria: hsl(0, 0%, 90%);
+	--color-medium-imperial: hsl(55, 35%, 60%);
+	--color-medium-france: hsl(0, 35%, 70%);
+	--color-medium-clock: hsl(52, 25%, 70%);
 
 	--color-dark-prussia: hsl(198, 100%, 24%);
 	--color-dark-hanover: hsl(203, 72%, 75%);
@@ -118,7 +128,6 @@ span.suit.reserve { color: var(--color-reserve); font-size: 18px; font-weight: b
 #mapwrap {
 	width: 2485px;
 	height: 1654px;
-	margin-bottom: 30px;
 }
 
 #map {
@@ -215,13 +224,23 @@ TWOD.piece.cylinder {
 .number.france { background-color: var(--color-france); }
 */
 
-#hand_prussia_header { background-color: var(--color-dark-prussia); color: white; }
-#hand_hanover_header { background-color: var(--color-dark-hanover); color: black; }
-#hand_russia_header { background-color: var(--color-dark-russia); color: white; }
-#hand_sweden_header { background-color: var(--color-dark-sweden); color: black; }
-#hand_austria_header { background-color: var(--color-dark-austria); color: black; }
-#hand_imperial_header { background-color: var(--color-dark-imperial); color: black; }
-#hand_france_header { background-color: var(--color-dark-france); color: black; }
+#hand_prussia_header { background-color: var(--color-light-prussia); }
+#hand_hanover_header { background-color: var(--color-light-hanover); }
+#hand_russia_header { background-color: var(--color-light-russia); }
+#hand_sweden_header { background-color: var(--color-light-sweden); }
+#hand_austria_header { background-color: var(--color-light-austria); }
+#hand_imperial_header { background-color: var(--color-light-imperial); }
+#hand_france_header { background-color: var(--color-light-france); }
+#clock_of_fate_header { background-color: var(--color-light-clock); }
+
+#hand_prussia_panel { background-color: var(--color-medium-prussia); }
+#hand_hanover_panel { background-color: var(--color-medium-hanover); }
+#hand_russia_panel { background-color: var(--color-medium-russia); }
+#hand_sweden_panel { background-color: var(--color-medium-sweden); }
+#hand_austria_panel { background-color: var(--color-medium-austria); }
+#hand_imperial_panel { background-color: var(--color-medium-imperial); }
+#hand_france_panel { background-color: var(--color-medium-france); }
+#clock_of_fate_panel { background-color: var(--color-medium-clock); }
 
 .marker {
 	pointer-events: none;
@@ -243,23 +262,22 @@ TWOD.piece.cylinder {
 }
 
 .panel {
-	background-color: #444;
-	width: clamp(824px, calc(100% - 30px), 1636px);
-	margin: 12px auto 36px auto;
-	box-shadow: 1px 2px 6px #0004;
+	background-color: darkgray;
+	width: clamp(500px, calc(100% - 48px), 2485px);
+	margin: 24px auto;
+	box-shadow: 2px 2px 4px #0006;
 	border: 1px solid #0008;
+	padding: 4px;
 }
 
 .panel_header {
-	color: white;
-	font-weight: bold;
+	border: 1px solid #000a;
+	box-shadow: 1px 1px 4px #0003;
 	text-align: center;
-	padding: 3px 1em;
-	border-bottom: 1px solid #0008;
+	padding: 2px 0;
 }
 
 .panel_body {
-	background-color: #555;
 	display: flex;
 	justify-content: start;
 	flex-wrap: wrap;

@@ -15,6 +15,8 @@ function toggle_pieces() {
 
 /* DATA */
 
+const max_power_troops = [ 32, 12, 16, 4, 30, 6, 20 ]
+
 const P_PRUSSIA = 0
 const P_HANOVER = 1
 const P_RUSSIA = 2
@@ -25,6 +27,13 @@ const P_FRANCE = 6
 
 const cities = data.cities
 const last_city = cities.name.length - 1
+
+const FC_POEMS = 13
+const FC_LORD_BUTE = 14
+const FC_ELISABETH = 15
+const FC_SWEDEN = 16
+const FC_INDIA = 17
+const FC_AMERICA = 18
 
 const ELIMINATED = data.cities.name.length
 const REMOVED = ELIMINATED + 1
@@ -98,6 +107,49 @@ function to_suit(c) {
 
 function to_value(c) {
 	return c & 15
+}
+
+function count_captured_objectives(pow) {
+	let n = 0
+	for (let s of objective1[pow])
+		if (set_has(view.conquest, s))
+			++n
+	for (let s of objective2[pow])
+		if (set_has(view.conquest, s))
+			++n
+	return n
+}
+
+function has_russia_dropped_out() {
+	return set_has(view.fate, FC_ELISABETH)
+}
+
+function has_sweden_dropped_out() {
+	return set_has(view.fate, FC_SWEDEN)
+}
+
+function has_france_dropped_out() {
+	return set_has(view.fate, FC_INDIA) && set_has(view.fate, FC_AMERICA)
+}
+
+function has_imperial_army_switched_players() {
+	return (has_russia_dropped_out() && has_sweden_dropped_out()) || has_france_dropped_out()
+}
+
+function has_eased_victory(power) {
+	if (power === P_SWEDEN)
+		return has_russia_dropped_out()
+	if (power === P_AUSTRIA)
+		return has_imperial_army_switched_players()
+	if (power === P_IMPERIAL)
+		return has_imperial_army_switched_players()
+	return false
+}
+
+function count_total_objectives(pow) {
+	if (has_eased_victory(pow))
+		return objective1[pow].length
+	return objective1[pow].length + objective2[pow].length
 }
 
 /* CARD TEXTS */
@@ -252,16 +304,64 @@ const fate_effect_text = [
 /* PANEL ORDER */
 
 const panel_order = [ P_PRUSSIA, P_HANOVER, P_RUSSIA, P_SWEDEN, P_AUSTRIA, P_IMPERIAL, P_FRANCE, P_FRANCE+1 ]
+const panel_start = {
+	"Frederick": P_PRUSSIA,
+	"Elisabeth": P_RUSSIA,
+	"Maria Theresa": P_AUSTRIA,
+	"Pompadour": P_FRANCE,
+}
 
-function sort_power_panel() {
-	let start = 0
-	if (view)
-		start = view.power
+function remember_position(e) {
+	if (e.parentElement) {
+		let rect = e.getBoundingClientRect()
+		e.my_parent = e.parentElement
+		e.my_x = rect.x
+		e.my_y = rect.y
+	} else {
+		e.my_parent = null
+		e.my_x = 0
+		e.my_y = 0
+	}
+}
+
+function animate_position(e) {
+	if (e.parentElement) {
+		if (e.my_parent) {
+			let rect = e.getBoundingClientRect()
+			let dx = e.my_x - rect.x
+			let dy = e.my_y - rect.y
+			if (dx !== 0 || dy !== 0) {
+				e.animate(
+					[
+						{ transform: `translate(${dx}px, ${dy}px)`, },
+						{ transform: "translate(0, 0)", },
+					],
+					{ duration: 333, easing: "ease" }
+				)
+			}
+		}
+	}
+}
+
+function sort_power_panel(animate) {
+	let start = panel_start[params.role]
+
+	if (animate)
+		for (let i = 0; i < 8; ++i)
+			remember_position(ui.power_panel[i])
+
 	ui.power_panel_list.replaceChildren()
 	for (let i = 0; i < 8; ++i) {
 		let p = panel_order[(i + start) % 8]
 		ui.power_panel_list.appendChild(ui.power_panel[p])
 	}
+
+	if (view && view.actions)
+		ui.power_panel_list.prepend(ui.power_panel[view.power])
+
+	if (animate)
+		for (let i = 0; i < 8; ++i)
+			animate_position(ui.power_panel[i])
 }
 
 /* BUILD UI */
@@ -542,7 +642,7 @@ function on_init() {
 		ui.spaces_element.appendChild(e)
 	}
 
-	sort_power_panel()
+	sort_power_panel(false)
 
 	update_favicon()
 }
@@ -776,7 +876,7 @@ function on_update() {
 	ui.header.classList.toggle("imperial", view.power === P_IMPERIAL)
 	ui.header.classList.toggle("france", view.power === P_FRANCE)
 
-	sort_power_panel()
+	sort_power_panel(true)
 
 	for (let g = 0; g <= 23; ++g)
 		layout_general(g, view.pos[g])
@@ -789,7 +889,15 @@ function on_update() {
 		ui.turns[i].classList.toggle("hide", (typeof view.fate === "object") || (i + 1 < view.fate))
 
 	for (let pow = 0; pow < 7; ++pow) {
-		ui.power_header[pow].textContent = power_name[pow] + " - " + view.pt[pow] + " troops"
+		// let banner = `${power_name[pow]} \u2013 ${view.pt[pow]}/${max_power_troops[pow]} troops`
+		let banner = `${power_name[pow]} \u2014 ${view.pt[pow]} troops`
+		let m_obj = count_total_objectives(pow)
+		if (m_obj > 0) {
+			let n_obj = count_captured_objectives(pow)
+			banner += ` \u2014 ${n_obj} of ${m_obj} objectives`
+		}
+
+		ui.power_header[pow].textContent = banner
 		ui.power_panel[pow].classList.toggle("hide", has_removed_all_pieces(pow))
 
 		ui.hand[pow].replaceChildren()

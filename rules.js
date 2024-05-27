@@ -4056,7 +4056,7 @@ function total_troops_list() {
 	let list = []
 	for (let pow of all_powers) {
 		let n = 0
-		for (let p of all_power_generals)
+		for (let p of all_power_generals[pow])
 			n += game.troops[p]
 		list[pow] = n
 	}
