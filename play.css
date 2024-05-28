@@ -76,6 +76,34 @@
 	font-variant-numeric: tabular-nums;
 }
 
+header.your_turn.prussia { background-color: var(--color-light-prussia); }
+header.your_turn.hanover { background-color: var(--color-light-hanover); }
+header.your_turn.russia { background-color: var(--color-light-russia); }
+header.your_turn.sweden { background-color: var(--color-light-sweden); }
+header.your_turn.austria { background-color: var(--color-light-austria); }
+header.your_turn.imperial { background-color: var(--color-light-imperial); }
+header.your_turn.france { background-color: var(--color-light-france); }
+
+#mapwrap {
+	width: 2485px;
+	height: 1654px;
+}
+
+#map {
+	position: absolute;
+	width: 2485px;
+	height: 1654px;
+	background-size: cover;
+	background-image: url(Fried.Gameboard.075.jpg);
+	background-color: #ece1a9;
+}
+
+body {
+	background-color: slategray;
+}
+
+/* LOG */
+
 #log {
 	font-family: "Suit Symbols", var(--font-small);
 	font-variant-numeric: tabular-nums;
@@ -119,140 +147,20 @@
 
 #log .q { font-style: italic; }
 
-
-
 #log .i { padding-left: 20px }
 #log .ii { padding-left: 32px }
 
-header.your_turn.prussia { background-color: var(--color-light-prussia); }
-header.your_turn.hanover { background-color: var(--color-light-hanover); }
-header.your_turn.russia { background-color: var(--color-light-russia); }
-header.your_turn.sweden { background-color: var(--color-light-sweden); }
-header.your_turn.austria { background-color: var(--color-light-austria); }
-header.your_turn.imperial { background-color: var(--color-light-imperial); }
-header.your_turn.france { background-color: var(--color-light-france); }
-
 #log span.suit { font-size: 11px; }
+
+span.suit.reserve { padding: 0 1px; }
+
 span.suit.spades { color: var(--color-spades) }
 span.suit.clubs { color: var(--color-clubs) }
 span.suit.hearts { color: var(--color-hearts) }
 span.suit.diamonds { color: var(--color-diamonds) }
-span.suit.reserve { color: var(--color-reserve); font-size: 18px; font-weight: bold; font-family: "Source Serif SmText"; }
+span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family: "Source Serif SmText"; }
 
-#mapwrap {
-	width: 2485px;
-	height: 1654px;
-}
-
-#map {
-	position: absolute;
-	width: 2485px;
-	height: 1654px;
-	background-size: cover;
-	background-image: url(Fried.Gameboard.075.jpg);
-	background-color: #ece1a9;
-}
-
-body {
-	background-color: slategray;
-}
-
-.turn.marker.T1 { top: 64px; left: 264px; }
-.turn.marker.T2 { top: 64px; left: 416px; }
-.turn.marker.T3 { top: 68px; left: 596px; }
-.turn.marker.T4 { top: 138px; left: 416px; }
-.turn.marker.T5 { top: 138px; left: 264px; }
-
-.piece {
-	position: absolute;
-	transition-property: top, left;
-	transition-duration: 700ms;
-	transition-timing-function: ease;
-	background-repeat: no-repeat;
-}
-
-TWOD.piece.cylinder {
-	width: 40px;
-	height: 40px;
-	background-size: 40px 40px;
-	border-radius: 50%;
-	border: 1px solid black;
-}
-
-.piece.cylinder {
-	width: 42px;
-	height: 47px;
-}
-
-.piece.cube {
-	width: 31px;
-	height: 39px;
-}
-
-.piece.action {
-	filter:
-		drop-shadow(2px 0px 0px white)
-		drop-shadow(0px 2px 0px white)
-		drop-shadow(0px -2px 0px white)
-		drop-shadow(-2px 0px 0px white);
-}
-
-.piece.selected {
-	filter:
-		drop-shadow(2px 0px 0px orange)
-		drop-shadow(0px 2px 0px orange)
-		drop-shadow(0px -2px 0px orange)
-		drop-shadow(-2px 0px 0px orange);
-}
-
-.piece.tip {
-	filter:
-		drop-shadow(2px 0px 0px red)
-		drop-shadow(0px 2px 0px red)
-		drop-shadow(0px -2px 0px red)
-		drop-shadow(-2px 0px 0px red);
-}
-
-.piece.france.tip, .piece.prussia.tip {
-	filter:
-		drop-shadow(2px 0px 0px yellow)
-		drop-shadow(0px 2px 0px yellow)
-		drop-shadow(0px -2px 0px yellow)
-		drop-shadow(-2px 0px 0px yellow);
-}
-
-.number {
-	width: 14px;
-	height: 14px;
-	background-size: 800% 100%;
-	pointer-events: none;
-}
-
-.number { background-image: url(images/numbers.png); }
-.number.prussia { background-image: url(images/numbers_rev.png); }
-.number.russia { background-image: url(images/numbers_rev.png); }
-
-.number.france { background-color: #ff3534; border-radius: 50%; }
-
-.number.n0 { visibility: hidden; }
-.number.n1 { background-position: 0px 0px; }
-.number.n2 { background-position: -14px 0px; }
-.number.n3 { background-position: -28px 0px; }
-.number.n4 { background-position: -42px 0px; }
-.number.n5 { background-position: -56px 0px; }
-.number.n6 { background-position: -70px 0px; }
-.number.n7 { background-position: -84px 0px; }
-.number.n8 { background-position: -98px 0px; }
-
-/*
-.number.prussia { background-color: var(--color-prussia); }
-.number.hanover { background-color: var(--color-hanover); }
-.number.russia { background-color: var(--color-russia); }
-.number.sweden { background-color: var(--color-sweden); }
-.number.austria { background-color: var(--color-austria); }
-.number.imperial { background-color: var(--color-imperial); }
-.number.france { background-color: var(--color-france); }
-*/
+/* PANELS */
 
 #hand_prussia_header { background-color: var(--color-light-prussia); }
 #hand_hanover_header { background-color: var(--color-light-hanover); }
@@ -271,25 +179,6 @@ TWOD.piece.cylinder {
 #hand_imperial_panel { background-color: var(--color-medium-imperial); }
 #hand_france_panel { background-color: var(--color-medium-france); }
 #clock_of_fate_panel { background-color: var(--color-medium-clock); }
-
-.marker {
-	pointer-events: none;
-	position: absolute;
-	width: 30px;
-	height: 30px;
-	background-size: 30px 30px;
-	background-position: center;
-	border: 1px solid black;
-}
-
-#combat {
-	position: absolute;
-	width: 36px;
-	height: 36px;
-	background-image: url(images/bang.svg);
-	background-size: contain;
-	background-repeat: no-repeat;
-}
 
 .panel {
 	background-color: darkgray;
@@ -315,6 +204,50 @@ TWOD.piece.cylinder {
 	gap: 18px;
 	min-height: 256px;
 }
+
+/* MARKERS */
+
+.turn.marker.T1 { top: 64px; left: 264px; }
+.turn.marker.T2 { top: 64px; left: 416px; }
+.turn.marker.T3 { top: 68px; left: 596px; }
+.turn.marker.T4 { top: 138px; left: 416px; }
+.turn.marker.T5 { top: 138px; left: 264px; }
+
+#combat {
+	position: absolute;
+	width: 36px;
+	height: 36px;
+	background-image: url(images/bang.svg);
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+.marker {
+	pointer-events: none;
+	position: absolute;
+	width: 30px;
+	height: 30px;
+	background-size: 30px 30px;
+	background-position: center;
+	border: 1px solid black;
+}
+
+.marker.conquest.austria { background-image: url(images/conquest_austria.2x.png) }
+.marker.conquest.france { background-image: url(images/conquest_france.2x.png) }
+.marker.conquest.imperial { background-image: url(images/conquest_imperial.2x.png) }
+.marker.conquest.prussia { background-image: url(images/conquest_prussia.2x.png) }
+.marker.conquest.russia { background-image: url(images/conquest_russia.2x.png) }
+.marker.conquest.sweden { background-image: url(images/conquest_sweden.2x.png) }
+.marker.retroactive.austria { background-image: url(images/retroactive_austria.2x.png) }
+.marker.retroactive.france { background-image: url(images/retroactive_france.2x.png) }
+.marker.retroactive.imperial { background-image: url(images/retroactive_imperial.2x.png) }
+.marker.retroactive.prussia { background-image: url(images/retroactive_prussia.2x.png) }
+.marker.retroactive.russia { background-image: url(images/retroactive_russia.2x.png) }
+.marker.retroactive.sweden { background-image: url(images/retroactive_sweden.2x.png) }
+.marker.turn { background-image: url(images/turn.2x.png) }
+
+
+/* SPACES */
 
 .space {
 	position: absolute;
@@ -347,23 +280,25 @@ TWOD.piece.cylinder {
 .space.country_saxony.tip { border-color: chocolate; }
 .space.country_empire.tip { border-color: darkgoldenrod; }
 
+/*
+.space.country_austria.action { border-color: gray; }
+.space.country_sweden.action { border-color: forestgreen; }
+.space.country_poland.action { border-color: indianred; }
+.space.country_prussia.action { border-color: royalblue; }
+.space.country_hanover.action { border-color: cornflowerblue; }
+.space.country_saxony.action { border-color: chocolate; }
+.space.country_empire.action { border-color: darkgoldenrod; }
+*/
+
 .space.action {
 	border-color: white;
 	z-index: 2000;
 }
 
-.space.city.action {
-	background-color: #fff8;
-}
-
-.space.depot.action {
-	background-color: #fff4;
-}
-
-.space.objective.action {
-	background-color: #fff4;
-}
-
+/*
+.space.city.action { background-color: #fff8; }
+.space.depot.action { background-color: #fff4; }
+.space.objective.action { background-color: #fff4; }
 .space.objective.action.prussia { background-color: #00547880; }
 .space.objective.action.hanover { background-color: #91c9ed80; }
 .space.objective.action.russia { background-color: #147d3680; }
@@ -371,20 +306,59 @@ TWOD.piece.cylinder {
 .space.objective.action.austria { background-color: #f5f5f580; }
 .space.objective.action.imperial { background-color: #fbe30080; }
 .space.objective.action.france { background-color: #ed1c2380; }
+*/
 
-.marker.conquest.austria { background-image: url(images/conquest_austria.2x.png) }
-.marker.conquest.france { background-image: url(images/conquest_france.2x.png) }
-.marker.conquest.imperial { background-image: url(images/conquest_imperial.2x.png) }
-.marker.conquest.prussia { background-image: url(images/conquest_prussia.2x.png) }
-.marker.conquest.russia { background-image: url(images/conquest_russia.2x.png) }
-.marker.conquest.sweden { background-image: url(images/conquest_sweden.2x.png) }
-.marker.retroactive.austria { background-image: url(images/retroactive_austria.2x.png) }
-.marker.retroactive.france { background-image: url(images/retroactive_france.2x.png) }
-.marker.retroactive.imperial { background-image: url(images/retroactive_imperial.2x.png) }
-.marker.retroactive.prussia { background-image: url(images/retroactive_prussia.2x.png) }
-.marker.retroactive.russia { background-image: url(images/retroactive_russia.2x.png) }
-.marker.retroactive.sweden { background-image: url(images/retroactive_sweden.2x.png) }
-.marker.turn { background-image: url(images/turn.2x.png) }
+/* PIECES */
+
+.piece {
+	position: absolute;
+	transition-property: top, left;
+	transition-duration: 700ms;
+	transition-timing-function: ease;
+	background-repeat: no-repeat;
+}
+
+.piece.cylinder {
+	width: 42px;
+	height: 47px;
+}
+
+.piece.cube {
+	width: 31px;
+	height: 39px;
+}
+
+.piece.action {
+	filter:
+		drop-shadow(2px 0px 0px white)
+		drop-shadow(0px 2px 0px white)
+		drop-shadow(0px -2px 0px white)
+		drop-shadow(-2px 0px 0px white);
+}
+
+.piece.selected {
+	filter:
+		drop-shadow(2px 0px 0px yellow)
+		drop-shadow(0px 2px 0px yellow)
+		drop-shadow(0px -2px 0px yellow)
+		drop-shadow(-2px 0px 0px yellow);
+}
+
+.piece.austria.selected, .piece.imperial.selected {
+	filter:
+		drop-shadow(2px 0px 0px hotpink)
+		drop-shadow(0px 2px 0px hotpink)
+		drop-shadow(0px -2px 0px hotpink)
+		drop-shadow(-2px 0px 0px hotpink);
+}
+
+.piece.tip {
+	filter:
+		drop-shadow(2px 0px 0px lime)
+		drop-shadow(0px 2px 0px lime)
+		drop-shadow(0px -2px 0px lime)
+		drop-shadow(-2px 0px 0px lime);
+}
 
 .piece.cube.austria { background-image: url(images/cube_austria.svg) }
 .piece.cube.france { background-image: url(images/cube_france.svg) }
@@ -426,6 +400,40 @@ TWOD.piece.cylinder {
 .piece.cylinder.prussia.oos { background-image: url(images/cylinder_prussia_oos.svg) }
 .piece.cylinder.russia.oos { background-image: url(images/cylinder_russia_oos.svg) }
 .piece.cylinder.sweden.oos { background-image: url(images/cylinder_sweden_oos.svg) }
+
+/* TROOP NUMBER BADGE */
+
+.number {
+	width: 14px;
+	height: 14px;
+	background-size: 800% 100%;
+	pointer-events: none;
+}
+
+.number { background-image: url(images/numbers.2x.png); }
+.number.prussia, .number.russia, .number.france { background-image: url(images/numbers_rev.2x.png); }
+
+.number.n0 { visibility: hidden; }
+.number.n1 { background-position: 0px 0px; }
+.number.n2 { background-position: -14px 0px; }
+.number.n3 { background-position: -28px 0px; }
+.number.n4 { background-position: -42px 0px; }
+.number.n5 { background-position: -56px 0px; }
+.number.n6 { background-position: -70px 0px; }
+.number.n7 { background-position: -84px 0px; }
+.number.n8 { background-position: -98px 0px; }
+
+/*
+.number.prussia { background-color: var(--color-prussia); }
+.number.hanover { background-color: var(--color-hanover); }
+.number.russia { background-color: var(--color-russia); }
+.number.sweden { background-color: var(--color-sweden); }
+.number.austria { background-color: var(--color-austria); }
+.number.imperial { background-color: var(--color-imperial); }
+.number.france { background-color: var(--color-france); }
+*/
+
+/* CARDS */
 
 .card {
 	width: 165px;

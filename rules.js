@@ -312,6 +312,12 @@ function to_value(c) {
 	return c & 15
 }
 
+function format_card(c) {
+	if (is_reserve(c))
+		return "10R"
+	return to_value(c) + suit_name[to_suit(c)]
+}
+
 function is_reserve(c) {
 	return to_suit(c) === RESERVE
 }
@@ -328,7 +334,7 @@ function is_west_of(here, there) {
 }
 
 function format_cards(list) {
-	return list.map(c => is_reserve(c) ? suit_name[RESERVE] : to_value(c) + suit_name[to_suit(c)]).join(", ")
+	return list.map(format_card).join(", ")
 }
 
 function format_selected() {
@@ -1464,7 +1470,6 @@ function can_move_general_to(to) {
 	if (game.selected.length + count_generals(to) > 3)
 		return false
 
-	// TODO: in search_move apply this as a post-process filter on the list of destinations
 	if (forbid_stopping_at(to)) {
 		let from = game.pos[game.selected[0]]
 		if (!can_continue_general_from(to))
@@ -1743,6 +1748,7 @@ states.move_take = {
 	inactive: "move",
 	prompt() {
 		prompt("Transfer troops to " + format_selected() + ".")
+		view.selected = game.selected
 		let take = count_stacked_take()
 		let give = count_unstacked_give()
 		let n = Math.min(take, give)
@@ -1763,6 +1769,7 @@ states.move_give = {
 	inactive: "move",
 	prompt() {
 		prompt("Transfer troops from " + format_selected() + ".")
+		view.selected = game.selected
 		let take = count_unstacked_take()
 		let give = count_stacked_give()
 		let n = Math.min(take, give)
@@ -2026,7 +2033,7 @@ function end_recruit() {
 		if (game.recruit.used.length > 0) {
 			log_br()
 			log("Recruited")
-			log(">" + game.recruit.used.map(c => "C" + c).join(", "))
+			log(">" + game.recruit.used.map(format_card).join(", "))
 			map_for_each(game.recruit.pieces, (p,s) => {
 				log(">P" + p + " at S" + s)
 			})
@@ -2367,7 +2374,7 @@ function fate_card_bonus(c) {
 
 function play_card(c, sign) {
 	if (fate_card_zero()) {
-		log(">" + POWER_NAME[game.power] + " C" + c + " - " + to_value(c) + " to " + (sign * game.count))
+		log(`>${POWER_NAME[game.power]} ${format_card(c)} = 0 to ${sign * game.count}`)
 		clear_fate_effect()
 		return
 	}
@@ -2377,16 +2384,16 @@ function play_card(c, sign) {
 	else
 		game.count += to_value(c) + bonus
 	if (bonus > 0)
-		log(">" + POWER_NAME[game.power] + " C" + c + " + " + bonus + " to " + (sign * game.count))
+		log(`>${POWER_NAME[game.power]} ${format_card(c)} + ${bonus} to ${sign * game.count}`)
 	else
-		log(">" + POWER_NAME[game.power] + " C" + c + " to " + (sign * game.count))
+		log(`>${POWER_NAME[game.power]} ${format_card(c)} to ${sign * game.count}`)
 	if (bonus > 0)
 		clear_fate_effect()
 }
 
 function play_reserve(v, sign) {
 	if (fate_card_zero()) {
-		log(">" + POWER_NAME[game.power] + " 0 C" + C + " to " + (sign * game.count))
+		log(`>${POWER_NAME[game.power]} 0R to ${sign * game.count}`)
 		clear_fate_effect()
 		return
 	}
@@ -2396,9 +2403,9 @@ function play_reserve(v, sign) {
 	else
 		game.count += v
 	if (bonus > 0)
-		log(">" + POWER_NAME[game.power] + " " + (v-bonus) + " C" + c + " + " + bonus + " to " + (sign * game.count))
+		log(`>${POWER_NAME[game.power]} ${v-bonus}R + ${bonus} to ${sign * game.count}`)
 	else
-		log(">" + POWER_NAME[game.power] + " " + (v) + " C" + c + " to " + (sign * game.count))
+		log(`>${POWER_NAME[game.power]} ${v}R to ${sign * game.count}`)
 	if (bonus > 0)
 		clear_fate_effect()
 }
@@ -3862,7 +3869,7 @@ states.declare_offensive_option = {
 		push_undo()
 		log_br()
 		log("Declared Offensive Option.")
-		log("Set aside C" + c + " for Austria.")
+		log("Set aside " + format_card(c) + " for Austria.")
 		game.oo = c
 		goto_movement()
 	},
@@ -3901,7 +3908,7 @@ states.pick_up_oo_card_after_supply = {
 
 function pick_up_set_aside_tc() {
 	log_br()
-	log("Austria picked up set-aside C" + game.oo + ".")
+	log("Austria picked up set-aside " + format_card(game.oo) + ".")
 	set_add(game.hand[P_AUSTRIA], game.oo)
 	game.oo = -1
 	trigger_offensive_option_failed()
@@ -4116,9 +4123,10 @@ exports.setup = function (seed, scenario, options) {
 	else if (game.scenario === 2)
 		setup_the_austrian_theatre()
 	else
-		log("# Friedrich")
+		log("# \u2014 " + 1756 + " \u2014")
 
 	log("$54")
+
 
 	return game
 }

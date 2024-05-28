@@ -4,11 +4,6 @@
 /* globals data, view, action_button, action_button_with_argument, confirm_action_button, send_action
 */
 
-// TODO: sort selected generals above deselected generals when detaching?
-// TODO: show battle icon overlay (instead of roads)
-// TODO: remove roads and path highlighting code
-// TODO: tooltips
-
 function toggle_pieces() {
 	document.getElementById("pieces").classList.toggle("hide")
 }
@@ -1129,11 +1124,6 @@ function sub_space(match, p1) {
 }
 
 function sub_tc(match, p1) {
-	let x = p1 | 0
-	let suit = to_suit(x)
-	let value = to_value(x)
-	if (suit === RESERVE)
-		return suit_text[suit]
 	return value + suit_text[suit]
 }
 
@@ -1155,8 +1145,8 @@ function on_log(text) {
 	text = text.replace(/>/g, "&gt;")
 
 	text = text.replace(/S(\d+)/g, sub_space)
-	text = text.replace(/C(\d+)/g, sub_tc)
 	text = text.replace(/P(\d+)/g, sub_piece)
+	text = colorize(text)
 
 	if (text.match(/^\$(\d+)/)) {
 		let fx = parseInt(text.substring(1))
