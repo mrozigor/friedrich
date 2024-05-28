@@ -3928,6 +3928,7 @@ states.declare_offensive_option = {
 		log_br()
 		log("Declared Offensive Option.")
 		log("Set aside " + format_card(c) + " for Austria.")
+		set_delete(game.hand[P_PRUSSIA], c)
 		game.oo = c
 		goto_movement()
 	},
