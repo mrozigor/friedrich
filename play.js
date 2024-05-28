@@ -305,6 +305,7 @@ const fate_effect_text = [
 
 const panel_order = [ P_PRUSSIA, P_HANOVER, P_RUSSIA, P_SWEDEN, P_AUSTRIA, P_IMPERIAL, P_FRANCE, P_FRANCE+1 ]
 const panel_start = {
+	"Observer": P_PRUSSIA,
 	"Frederick": P_PRUSSIA,
 	"Elisabeth": P_RUSSIA,
 	"Maria Theresa": P_AUSTRIA,
@@ -344,7 +345,7 @@ function animate_position(e) {
 }
 
 function sort_power_panel(animate) {
-	let start = panel_start[params.role]
+	let start = panel_start[params.role] | 0
 
 	if (animate)
 		for (let i = 0; i < 8; ++i)

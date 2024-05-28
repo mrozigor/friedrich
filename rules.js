@@ -1508,10 +1508,9 @@ states.move_supply_train = {
 				if (!has_any_piece(next))
 					gen_action_space(next)
 
-		if (game.count > 0) {
+		if (game.count > 0)
 			gen_action_piece(who)
-			view.actions.stop = 1
-		}
+		view.actions.stop = 1
 	},
 	piece(_) {
 		this.stop()
@@ -1579,6 +1578,12 @@ states.move_general = {
 				view.actions.take = 1
 			if (s_give > 0 && u_take > 0)
 				view.actions.give = 1
+
+			if (forbid_stopping_at(here)) {
+				view.actions.stop = 0
+			} else {
+				view.actions.stop = 1
+			}
 		} else {
 			if (forbid_stopping_at(here)) {
 				view.actions.stop = 0
@@ -1760,18 +1765,18 @@ function can_re_enter_supply_train(s) {
 function goto_recruit() {
 	game.count = 0
 
-	// TODO: reveal too much if we skip recruitment phase?
-	if (!can_recruit_anything()) {
-		end_recruit()
-		return
-	}
-
 	game.recruit = {
 		pool: [],
 		used: [],
 		pieces: [],
 		re_enter: ELIMINATED,
 		troops: 0,
+	}
+
+	// TODO: reveal too much if we skip recruitment phase?
+	if (!can_recruit_anything()) {
+		end_recruit()
+		return
 	}
 
 	// if all depots have enemy pieces, choose ONE city in given sector and COST is 8
