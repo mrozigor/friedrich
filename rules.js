@@ -2450,7 +2450,6 @@ states.combat_attack = {
 	},
 	pass() {
 		clear_undo()
-		log(`>${POWER_NAME[game.power]} passed`)
 		end_resolve_combat()
 	},
 }
@@ -2466,7 +2465,6 @@ states.combat_defend = {
 	},
 	pass() {
 		clear_undo()
-		log(`>${POWER_NAME[game.power]} passed`)
 		end_resolve_combat()
 	},
 }
