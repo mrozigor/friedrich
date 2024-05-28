@@ -90,7 +90,8 @@ const all_power_trains = [
 ]
 
 const RESERVE = 4
-let suit_class = [ "S", "C", "H", "D", "R" ]
+let suit_class = [ "spades", "clubs", "hearts", "diamonds", "reserve" ]
+let suit_letter = [ "S", "C", "H", "D", "R" ]
 
 function to_deck(c) {
 	return c >> 7
@@ -465,12 +466,12 @@ function make_tc_deck(n) {
 	for (let suit = 0; suit <= 3; ++suit) {
 		for (let value = 2; value <= 13; ++value) {
 			let c = (n << 7) | (suit << 4) | value
-			ui.tc[c] = create_element("card", c, "card tc deck_" + (n+1) + " " + suit_class[suit] + value)
+			ui.tc[c] = create_element("card", c, "card tc deck_" + (n+1) + " " + suit_class[suit] + " " + suit_letter[suit] + value)
 		}
 	}
 	for (let value = 2; value <= 3; ++value) {
 		let c = (n << 7) | (4 << 4) | value
-		ui.tc[c] = create_element("card", c, "card tc deck_" + (n+1) + " R")
+		ui.tc[c] = create_element("card", c, "card tc deck_" + (n+1) + " reserve R")
 	}
 }
 

@@ -272,6 +272,7 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 	border-radius: 50%;
 }
 
+.space.tip { z-index: 3000 }
 .space.country_austria.tip { border-color: gray; }
 .space.country_sweden.tip { border-color: forestgreen; }
 .space.country_poland.tip { border-color: indianred; }
@@ -292,6 +293,7 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 
 .space.action {
 	border-color: white;
+	box-shadow: 0 0 2px black, inset 0 0 2px black;
 	z-index: 2000;
 }
 
@@ -333,7 +335,9 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 		drop-shadow(2px 0px 0px white)
 		drop-shadow(0px 2px 0px white)
 		drop-shadow(0px -2px 0px white)
-		drop-shadow(-2px 0px 0px white);
+		drop-shadow(-2px 0px 0px white)
+		drop-shadow(0 0 1px black)
+		;
 }
 
 .piece.selected {
@@ -341,15 +345,9 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 		drop-shadow(2px 0px 0px yellow)
 		drop-shadow(0px 2px 0px yellow)
 		drop-shadow(0px -2px 0px yellow)
-		drop-shadow(-2px 0px 0px yellow);
-}
-
-.piece.austria.selected, .piece.imperial.selected {
-	filter:
-		drop-shadow(2px 0px 0px hotpink)
-		drop-shadow(0px 2px 0px hotpink)
-		drop-shadow(0px -2px 0px hotpink)
-		drop-shadow(-2px 0px 0px hotpink);
+		drop-shadow(-2px 0px 0px yellow)
+		drop-shadow(0 0 1px black)
+		;
 }
 
 .piece.tip {
@@ -357,7 +355,9 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 		drop-shadow(2px 0px 0px lime)
 		drop-shadow(0px 2px 0px lime)
 		drop-shadow(0px -2px 0px lime)
-		drop-shadow(-2px 0px 0px lime);
+		drop-shadow(-2px 0px 0px lime)
+		drop-shadow(0 0 1px black)
+		;
 }
 
 .piece.cube.austria { background-image: url(images/cube_austria.svg) }
@@ -445,17 +445,22 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 }
 
 .card.action {
-	box-shadow: 0 0 0 4px white;
+	box-shadow: 0 0 0 3px white;
+	border-color: white;
 }
+
+/*
+.card.diamonds.action { box-shadow: 0 0 0 2px var(--color-diamonds); border-color: var(--color-diamonds); }
+.card.hearts.action { box-shadow: 0 0 0 2px var(--color-hearts); border-color: var(--color-hearts); }
+.card.clubs.action { box-shadow: 0 0 0 2px var(--color-clubs); border-color: var(--color-clubs); }
+.card.spades.action { box-shadow: 0 0 0 2px var(--color-spades); border-color: var(--color-spades); }
+.card.reserve.action { box-shadow: 0 0 0 2px var(--color-reserve); border-color: var(--color-reserve); }
+*/
 
 .card.action:hover {
 	margin-top: -10px;
 	margin-bottom: 10px;
 }
-
-/*
-.card.tc.reverse + .card.tc.reverse { margin-left: -200px; }
-*/
 
 .draw-break { margin-left: 145px; }
 .card.tc { margin-right: -145px; }
