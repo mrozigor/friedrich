@@ -115,6 +115,7 @@
 #log .h.austria { background-color: var(--color-light-austria); }
 #log .h.imperial { background-color: var(--color-light-imperial); }
 #log .h.france { background-color: var(--color-light-france); }
+#log .h.imaginary { background-color: var(--color-light-clock); }
 
 #log .q { font-style: italic; }
 

@@ -67,8 +67,8 @@ for (let s of data.type.objective1_imperial) set_add(objective1[P_IMPERIAL], s)
 for (let s of data.type.objective2_imperial) set_add(objective2[P_IMPERIAL], s)
 for (let s of data.type.objective_france) set_add(objective1[P_FRANCE], s)
 
-const power_class = [ "prussia", "hanover", "russia", "sweden", "austria", "imperial", "france" ]
-const power_name = [ "Prussia", "Hanover", "Russia", "Sweden", "Austria", "Imperial Army", "France" ]
+const power_class = [ "prussia", "hanover", "russia", "sweden", "austria", "imperial", "france", "imaginary" ]
+const power_name = [ "Prussia", "Hanover", "Russia", "Sweden", "Austria", "Imperial Army", "France", "Imaginary" ]
 
 const GENERAL_POWER = [ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 5, 6, 6, 6 ]
 

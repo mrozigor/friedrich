@@ -1781,8 +1781,6 @@ states.move_give = {
 
 function end_move_piece() {
 	game.selected = null
-	delete game.move_major
-	delete game.move_minor
 	game.state = "movement"
 }
 
@@ -3015,7 +3013,7 @@ function goto_clock_of_fate() {
 	delete game.ia_attack
 
 	if (game.scenario === 1 || game.scenario === 2) {
-		log("Imaginary player drew 5 TC.")
+		log("=7")
 		draw_tc(5)
 	}
 
