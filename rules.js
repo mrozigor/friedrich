@@ -921,7 +921,7 @@ function check_offensive_option_victory() {
 function check_power_victory(victory, city_list, power) {
 	if (power === P_AUSTRIA && is_offensive_option()) {
 		let n = count_captured_objectives(power)
-		if (n >= city_list.length - 4 && has_conquered_one_of(data.country.Saxony))
+		if (n >= city_list[power].length - 4 && has_conquered_one_of(data.country.Saxony))
 			set_add(victory, power)
 		return
 	}
