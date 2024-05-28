@@ -152,6 +152,7 @@ const all_power_depots = [
 	find_city_list([ "Koblenz", "Gemünden" ]),
 ]
 
+const COORDINATE_LINE_5 = 935
 const MUNSTER_Y = data.cities.y[find_city("Munster")]
 const HALLE = find_city("Halle")
 const KUSTRIN = find_city("Küstrin")
@@ -317,6 +318,17 @@ function is_reserve(c) {
 	return to_suit(c) === RESERVE
 }
 
+function is_south_of_line_5(s) {
+	return data.cities.y[s] > COORDINATE_LINE_5
+}
+
+function is_west_of(here, there) {
+	let dx = data.cities.x[there] - data.cities.x[here]
+	let dy = data.cities.y[there] - data.cities.y[here]
+	// more west than north/south
+	return dx < 0 && Math.abs(dx) >= Math.abs(dy)
+}
+
 function format_cards(list) {
 	return list.map(c => is_reserve(c) ? suit_name[RESERVE] : to_value(c) + suit_name[to_suit(c)]).join(", ")
 }
@@ -404,7 +416,11 @@ make_protect(P_HANOVER, data.country.Hanover)
 make_protect(P_AUSTRIA, data.country.Austria)
 
 function is_conquest_space(pow, s) {
-	// TODO: prussian offensive option
+	if (pow === P_PRUSSIA) {
+		if (is_offensive_option() || game.turn < 3)
+			return set_has(primary_objective[pow], s)
+		return false
+	}
 	if (has_eased_victory(pow))
 		return set_has(primary_objective[pow], s)
 	return set_has(full_objective[pow], s)
@@ -452,9 +468,14 @@ function remove_secondary_objectives(power) {
 		set_delete(game.conquest, s)
 }
 
+function remove_offensive_option_objectives() {
+	for (let s of primary_objective[P_PRUSSIA])
+		set_delete(game.conquest, s)
+}
+
 /* STATE */
 
-function turn_power_draw() {
+function tc_per_turn() {
 	let n = 0
 
 	if (game.scenario === 1 && game.power === P_PRUSSIA) {
@@ -506,6 +527,15 @@ function turn_power_draw() {
 			break
 	}
 	return n
+}
+
+function is_offensive_option() {
+	return !!game.oo
+}
+
+function is_offensive_option_failed() {
+	// if Austria has picked up the card AND subsidy reduction event has triggered
+	return game.oo < 0 && (set_has(game.fate, FC_POEMS) || set_has(game.fate, FC_LORD_BUTE))
 }
 
 function has_power_dropped_out(pow) {
@@ -843,6 +873,9 @@ function goto_action_stage() {
 function end_action_stage() {
 	clear_undo()
 
+	if (check_offensive_option_victory())
+		return
+
 	if (++game.step === 7)
 		goto_clock_of_fate()
 	else
@@ -858,7 +891,31 @@ function has_conquered_all_of(list) {
 	return true
 }
 
+function has_conquered_one_of(list) {
+	for (let s of list)
+		if (set_has(game.conquest, s))
+			return true
+	return false
+}
+
+function check_offensive_option_victory() {
+	if (game.power === P_PRUSSIA && !is_offensive_option_failed()) {
+		if (has_conquered_all_of(primary_objective[P_PRUSSIA])) {
+			goto_game_over(R_FREDERICK, "Prussia won with offensive option.")
+			return true
+		}
+	}
+	return false
+}
+
 function check_power_victory(victory, city_list, power) {
+	if (power === P_AUSTRIA && is_offensive_option()) {
+		let n = count_captured_objectives(power)
+		if (n >= city_list.length - 4 && has_conquered_one_of(data.country.Saxony))
+			set_add(victory, power)
+		return
+	}
+		
 	if (has_conquered_all_of(city_list[power]))
 		set_add(victory, power)
 }
@@ -920,6 +977,14 @@ function has_eased_victory(power) {
 	return false
 }
 
+function count_captured_objectives(pow) {
+	let n = 0
+	for (let s of full_objective[pow])
+		if (set_has(view.conquest, s))
+			++n
+	return n
+}
+
 function check_victory_4() {
 	// Prussian victory
 	if (has_russia_dropped_out() && has_sweden_dropped_out() && has_france_dropped_out()) {
@@ -969,6 +1034,8 @@ function next_tactics_deck() {
 	if (game.draw)
 		for (let c of game.draw)
 			held[to_deck(c)]++
+	if (game.oo > 0)
+		held[to_deck(game.oo)]++
 
 	// find next unused deck
 	for (let i = 1; i < 5; ++i) {
@@ -1020,13 +1087,14 @@ function draw_tc(n) {
 		--n
 	}
 
+	if (k > 0)
+		log("Drew " + k + " TC.")
+
 	return draw
 }
 
 function goto_tactical_cards() {
-	let n = turn_power_draw()
-
-	game.draw = draw_tc(turn_power_draw())
+	game.draw = draw_tc(tc_per_turn())
 
 	if (should_power_discard_tc() && game.draw.length > 0)
 		game.state = "tactical_cards_discard"
@@ -1086,6 +1154,11 @@ function end_tactical_cards() {
 	for (let c of game.draw)
 		set_add(game.hand[game.power], c)
 	delete game.draw
+
+	if (game.scenario >= 3 && game.turn === 3 && game.power === P_PRUSSIA) {
+		goto_declare_offensive_option()
+		return
+	}
 
 	// MARIA: supply is before movement
 
@@ -1765,18 +1838,17 @@ function can_re_enter_supply_train(s) {
 function goto_recruit() {
 	game.count = 0
 
+	if (!can_recruit_anything_in_theory()) {
+		end_recruit()
+		return
+	}
+
 	game.recruit = {
 		pool: [],
 		used: [],
 		pieces: [],
 		re_enter: ELIMINATED,
 		troops: 0,
-	}
-
-	// TODO: reveal too much if we skip recruitment phase?
-	if (!can_recruit_anything()) {
-		end_recruit()
-		return
 	}
 
 	// if all depots have enemy pieces, choose ONE city in given sector and COST is 8
@@ -1816,6 +1888,11 @@ function is_attack_position(s) {
 		if (set_has(data.cities.adjacent[s], game.pos[p]))
 			return true
 	return false
+}
+
+function can_recruit_anything_in_theory() {
+	let unused_everywhere = max_power_troops(game.power) - count_used_troops()
+	return unused_everywhere > 0 || count_eliminated_trains() > 0
 }
 
 function can_recruit_anything() {
@@ -2289,7 +2366,7 @@ function play_card(c, sign) {
 
 function play_reserve(v, sign) {
 	if (fate_card_zero()) {
-		log(">" + POWER_NAME[game.power] + " 0R to " + (sign * game.count))
+		log(">" + POWER_NAME[game.power] + " 0 C" + C + " to " + (sign * game.count))
 		clear_fate_effect()
 		return
 	}
@@ -2299,9 +2376,9 @@ function play_reserve(v, sign) {
 	else
 		game.count += v
 	if (bonus > 0)
-		log(">" + POWER_NAME[game.power] + " " + (v-bonus) + "R +" + bonus + " to " + (sign * game.count))
+		log(">" + POWER_NAME[game.power] + " " + (v-bonus) + " C" + c + " + " + bonus + " to " + (sign * game.count))
 	else
-		log(">" + POWER_NAME[game.power] + " " + (v) + "R to " + (sign * game.count))
+		log(">" + POWER_NAME[game.power] + " " + (v) + " C" + c + " to " + (sign * game.count))
 	if (bonus > 0)
 		clear_fate_effect()
 }
@@ -2420,6 +2497,13 @@ function set_active_winner() {
 		set_active_defender()
 }
 
+function set_active_loser() {
+	if (game.count > 0)
+		set_active_defender()
+	else
+		set_active_attacker()
+}
+
 function remove_stack_from_combat(s) {
 	for (let i = game.combat.length - 2; i >= 0; i -= 2)
 		if (game.combat[i] === s || game.combat[i + 1] === s)
@@ -2431,6 +2515,8 @@ function goto_retreat() {
 	let hits = lost
 
 	let loser = get_loser()
+	let loser_power = get_stack_power(loser)
+	let winner_power = get_stack_power(get_winner())
 
 	// no more fighting for the loser
 	remove_stack_from_combat(loser)
@@ -2452,7 +2538,14 @@ function goto_retreat() {
 		}
 	}
 
-	log("P" + get_supreme_commander(loser) + " lost " + (lost-hits) + " troops.")
+	log(POWER_NAME[loser_power] + " lost " + (lost-hits) + " troops.")
+
+	// OO and Prussia loses vs Austria with at least -3
+	if (game.oo > 0 && loser_power === P_PRUSSIA && winner_power === P_AUSTRIA && lost >= 3) {
+		set_active_to_power(P_AUSTRIA)
+		game.state = "pick_up_oo_card_after_retreat"
+		return
+	}
 
 	resume_retreat()
 }
@@ -2837,6 +2930,10 @@ states.supply_eliminate = {
 	},
 	piece(x) {
 		let s = game.pos[x]
+
+		if (game.oo > 0 && game.power === P_PRUSSIA && is_south_of_line_5(s))
+			game.pick_up_oo = 1
+
 		for (let p of all_power_generals[game.power])
 			if (game.pos[p] === s)
 				eliminate_general(p)
@@ -2880,6 +2977,12 @@ states.supply_done = {
 
 function end_supply() {
 	delete game.supply
+
+	if (game.pick_up_oo) {
+		set_active_to_power(P_AUSTRIA)
+		game.state = "pick_up_oo_card_after_supply"
+		return
+	}
 
 	end_action_stage()
 }
@@ -3544,13 +3647,6 @@ states.laudon_done = {
 	},
 }
 
-function is_west_of(here, there) {
-	let dx = data.cities.x[there] - data.cities.x[here]
-	let dy = data.cities.y[there] - data.cities.y[here]
-	// more west than north/south
-	return dx < 0 && Math.abs(dx) >= Math.abs(dy)
-}
-
 states.prussia_may_move_hildburghausen_2_cities_westwards = {
 	inactive: "move Hildburghausen two cities westwards",
 	prompt() {
@@ -3689,6 +3785,71 @@ states.move_to_any_empty_adjacent_city = {
 		for (let p of game.selected)
 			game.pos[p] = s
 		game.state = "prussians_who_are_attacked_by_daun_may_move"
+	},
+}
+
+/* OFFENSIVE OPTION */
+
+function goto_declare_offensive_option() {
+	set_active_to_power(P_PRUSSIA)
+	game.state = "declare_offensive_option"
+}
+
+states.declare_offensive_option = {
+	inactive: "declare offensive option",
+	prompt() {
+		prompt("You may use the Offensive Option by setting aside a TC.")
+		for (let c of game.hand[game.power])
+			gen_action_card(c)
+		view.actions.pass = 1
+	},
+	card(c) {
+		push_undo()
+		log_br()
+		log("Declared Offensive Option.")
+		log("Set aside C" + c + " for Austria.")
+		game.oo = c
+		goto_movement()
+	},
+	pass() {
+		push_undo()
+		remove_offensive_option_objectives()
+		goto_movement()
+	},
+}
+
+states.pick_up_oo_card_after_retreat = {
+	inactive: "pick up set-aside TC",
+	prompt() {
+		prompt("Pick up the set-aside TC.")
+		gen_action_card(game.oo)
+	},
+	card(_) {
+		log_br()
+		log("Austria picked up set-aside C" + game.oo + ".")
+		set_add(game.hand[P_AUSTRIA], game.oo)
+		game.oo = -1
+
+		// control back to loser for retreat
+		set_active_loser()
+		resume_retreat()
+	},
+}
+
+states.pick_up_oo_card_after_supply = {
+	inactive: "pick up set-aside TC",
+	prompt() {
+		prompt("Pick up the set-aside TC.")
+		gen_action_card(game.oo)
+	},
+	card(_) {
+		log_br()
+		log("Austria picked up set-aside C" + game.oo + ".")
+		set_add(game.hand[P_AUSTRIA], game.oo)
+		game.oo = -1
+
+		delete game.pick_up_oo
+		end_action_stage()
 	},
 }
 
@@ -3836,6 +3997,8 @@ function make_tactics_deck(n) {
 
 function make_tactics_discard(n) {
 	return make_tactics_deck(n).filter(c => {
+		if (c === game.oo)
+			return false
 		if (game.draw && set_has(game.draw, c))
 			return false
 		for (let pow of all_powers)
@@ -3860,6 +4023,7 @@ exports.setup = function (seed, scenario, options) {
 		step: 0,
 		clock: null,
 		fate: [],
+		oo: 0, // offensive option
 		vg: 0, // last victorious general for fate effect selection
 		fx: 0, // current card of fate effect
 		deck: null,
@@ -4081,6 +4245,7 @@ exports.view = function (state, player) {
 		conquest: game.conquest,
 		troops: mask_troops(player),
 		hand: mask_hand(player),
+		oo: game.oo,
 		pt: total_troops_list(),
 
 		power: game.power,

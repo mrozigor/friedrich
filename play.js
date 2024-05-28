@@ -147,9 +147,14 @@ function has_eased_victory(power) {
 }
 
 function count_total_objectives(pow) {
-	if (has_eased_victory(pow))
-		return objective1[pow].length
-	return objective1[pow].length + objective2[pow].length
+	let n = objective1[pow].length
+	if (!has_eased_victory(pow))
+		n += objective2[pow].length
+	if (pow === P_PRUSSIA && !view.oo)
+		n = 0
+	if (pow === P_AUSTRIA && view.oo)
+		n -= 4
+	return n
 }
 
 /* CARD TEXTS */
@@ -890,11 +895,12 @@ function on_update() {
 		ui.turns[i].classList.toggle("hide", (typeof view.fate === "object") || (i + 1 < view.fate))
 
 	for (let pow = 0; pow < 7; ++pow) {
-		// let banner = `${power_name[pow]} \u2013 ${view.pt[pow]}/${max_power_troops[pow]} troops`
 		let banner = `${power_name[pow]} \u2014 ${view.pt[pow]} troops`
 		let m_obj = count_total_objectives(pow)
 		if (m_obj > 0) {
 			let n_obj = count_captured_objectives(pow)
+			if (pow === P_AUSTRIA && view.oo)
+				m_obj += "*"
 			banner += ` \u2014 ${n_obj} of ${m_obj} objectives`
 		}
 
@@ -920,6 +926,8 @@ function on_update() {
 	}
 
 	ui.clock_of_fate.replaceChildren()
+	if (view.oo > 0)
+		ui.clock_of_fate.appendChild(ui.tc[view.oo])
 	ui.clock_of_fate.appendChild(ui.fate[0])
 	if (typeof view.fate === "object")
 		for (let c of view.fate)
