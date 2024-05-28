@@ -345,14 +345,6 @@ function format_selected() {
 	return game.selected.map(p => piece_name[p]).join(" and ")
 }
 
-function format_stack(s) {
-	let list = []
-	for (let p of all_pieces)
-		if (game.pos[p] === s)
-			list.push(p)
-	return suit_name[get_space_suit(s)] + " " + list.map(p => piece_name[p]).join(" and ")
-}
-
 function log_selected() {
 	log(game.selected.map(p => "P" + p).join(" and "))
 }
@@ -2195,12 +2187,11 @@ function goto_resolve_combat() {
 
 	log_br()
 
+	game.count = a_troops - d_troops
+
 	let a = get_supreme_commander(game.attacker)
 	let d = get_supreme_commander(game.defender)
-	log(`P${a} (${a_troops}) at S${game.attacker}`)
-	log(`P${d} (${d_troops}) at S${game.defender}`)
-
-	game.count = a_troops - d_troops
+	log(`P${a} at S${game.attacker} with ${a_troops} troops attacked P${d} at S${game.defender} with ${d_troops} troops at ${signed_number(game.count)}.`)
 
 	if (game.count <= 0) {
 		set_active_attacker()
@@ -2239,8 +2230,23 @@ function end_resolve_combat() {
 
 /* COMBAT (CARD PLAY) */
 
+function format_combat_stack(s) {
+	let p = get_supreme_commander(s)
+	return suit_name[get_space_suit(s)] + " " + piece_name[p]
+}
+
+function signed_number(v) {
+	if (v > 0)
+		return "+" + v
+	return v
+}
+
 function format_combat(value) {
-	return format_stack(game.attacker) + " vs " + format_stack(game.defender) + " score " + value
+	let a = format_combat_stack(game.attacker)
+	let d = format_combat_stack(game.defender)
+	let s = signed_number(value)
+	let p = POWER_NAME[game.power]
+	return `${a} vs ${d}. ${p} is at ${s}`
 }
 
 function inactive_attack() {
@@ -2252,10 +2258,10 @@ function inactive_defend() {
 }
 
 function prompt_combat(value, extra = null) {
+	let text = "Combat " + format_combat(value) + "."
 	if (extra)
-		prompt(format_combat(value) + ". " + extra)
-	else
-		prompt(format_combat(value) + ".")
+		text += " " + extra
+	prompt(text)
 }
 
 function set_active_attacker() {
@@ -2376,7 +2382,8 @@ function fate_card_bonus(c) {
 
 function play_card(c, sign) {
 	if (fate_card_zero()) {
-		log(`>${POWER_NAME[game.power]} ${format_card(c)} = 0 to ${sign * game.count}`)
+		let score = signed_number(sign * game.count)
+		log(`>${POWER_NAME[game.power]} ${format_card(c)} = 0 to ${score}`)
 		clear_fate_effect()
 		return
 	}
@@ -2385,17 +2392,19 @@ function play_card(c, sign) {
 		game.count -= to_value(c) + bonus
 	else
 		game.count += to_value(c) + bonus
+	let score = signed_number(sign * game.count)
 	if (bonus > 0)
-		log(`>${POWER_NAME[game.power]} ${format_card(c)} + ${bonus} to ${sign * game.count}`)
+		log(`>${POWER_NAME[game.power]} ${format_card(c)} + ${bonus} to ${score}`)
 	else
-		log(`>${POWER_NAME[game.power]} ${format_card(c)} to ${sign * game.count}`)
+		log(`>${POWER_NAME[game.power]} ${format_card(c)} to ${score}`)
 	if (bonus > 0)
 		clear_fate_effect()
 }
 
 function play_reserve(v, sign) {
 	if (fate_card_zero()) {
-		log(`>${POWER_NAME[game.power]} 0R to ${sign * game.count}`)
+		let score = signed_number(sign * game.count)
+		log(`>${POWER_NAME[game.power]} 0R to ${score}`)
 		clear_fate_effect()
 		return
 	}
@@ -2404,10 +2413,11 @@ function play_reserve(v, sign) {
 		game.count -= v
 	else
 		game.count += v
+	let score = signed_number(sign * game.count)
 	if (bonus > 0)
-		log(`>${POWER_NAME[game.power]} ${v-bonus}R + ${bonus} to ${sign * game.count}`)
+		log(`>${POWER_NAME[game.power]} ${v-bonus}R + ${bonus} to ${score}`)
 	else
-		log(`>${POWER_NAME[game.power]} ${v}R to ${sign * game.count}`)
+		log(`>${POWER_NAME[game.power]} ${v}R to ${score}`)
 	if (bonus > 0)
 		clear_fate_effect()
 }
@@ -2427,7 +2437,6 @@ states.combat_attack = {
 	inactive: inactive_attack,
 	prompt() {
 		prompt_combat(game.count)
-		view.selected = [ get_supreme_commander(game.attacker) ]
 		gen_play_card(get_space_suit(game.attacker))
 	},
 	card(c) {
@@ -2435,6 +2444,7 @@ states.combat_attack = {
 	},
 	pass() {
 		clear_undo()
+		log(`>${POWER_NAME[game.power]} passed`)
 		end_resolve_combat()
 	},
 }
@@ -2443,7 +2453,6 @@ states.combat_defend = {
 	inactive: inactive_defend,
 	prompt() {
 		prompt_combat(-game.count)
-		view.selected = [ get_supreme_commander(game.defender) ]
 		gen_play_card(get_space_suit(game.defender))
 	},
 	card(c) {
@@ -2451,6 +2460,7 @@ states.combat_defend = {
 	},
 	pass() {
 		clear_undo()
+		log(`>${POWER_NAME[game.power]} passed`)
 		end_resolve_combat()
 	},
 }
@@ -2459,7 +2469,6 @@ states.combat_attack_reserve = {
 	inactive: inactive_attack,
 	prompt() {
 		prompt_combat(game.count, "Choose value.")
-		view.selected = [ get_supreme_commander(game.attacker)]
 		gen_play_reserve()
 	},
 	value(v) {
@@ -2472,7 +2481,6 @@ states.combat_defend_reserve = {
 	inactive: inactive_defend,
 	prompt() {
 		prompt_combat(-game.count, "Choose value.")
-		view.selected = [ get_supreme_commander(game.defender) ]
 		gen_play_reserve()
 	},
 	value(v) {
@@ -2485,7 +2493,6 @@ states.combat_attack_swap = {
 	inactive: inactive_attack,
 	prompt() {
 		prompt_combat(game.count)
-		view.selected = [ get_supreme_commander(game.attacker) ]
 		view.actions.next = 1
 	},
 	next() {
@@ -2499,7 +2506,6 @@ states.combat_defend_swap = {
 	inactive: inactive_defend,
 	prompt() {
 		prompt_combat(-game.count)
-		view.selected = [ get_supreme_commander(game.defender) ]
 		view.actions.next = 1
 	},
 	next() {
