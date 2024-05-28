@@ -2049,6 +2049,8 @@ states.re_enter = {
 	inactive: "recruit",
 	prompt() {
 		prompt("Re-enter " + format_selected() + ".")
+		view.selected = game.selected
+
 		let p = game.selected[0]
 		let can_re_enter_at = is_general(p) ? can_re_enter_general : can_re_enter_supply_train
 
@@ -2191,7 +2193,11 @@ function goto_resolve_combat() {
 
 	let a = get_supreme_commander(game.attacker)
 	let d = get_supreme_commander(game.defender)
-	log(`P${a} at S${game.attacker} with ${a_troops} troops attacked P${d} at S${game.defender} with ${d_troops} troops at ${signed_number(game.count)}.`)
+	//log(`P${a} at S${game.attacker} with ${a_troops} troops attacked P${d} at S${game.defender} with ${d_troops} troops at ${signed_number(game.count)}.`)
+	log("Combat")
+	log(`>P${a} at S${game.attacker}`)
+	log(`>P${d} at S${game.defender}`)
+	log(`>Troops ${a_troops} - ${d_troops} = ${game.count}`)
 
 	if (game.count <= 0) {
 		set_active_attacker()
@@ -2383,7 +2389,7 @@ function fate_card_bonus(c) {
 function play_card(c, sign) {
 	if (fate_card_zero()) {
 		let score = signed_number(sign * game.count)
-		log(`>${POWER_NAME[game.power]} ${format_card(c)} = 0 to ${score}`)
+		log(`>${POWER_NAME[game.power]} ${format_card(c)} for 0 = ${score}`)
 		clear_fate_effect()
 		return
 	}
@@ -2394,9 +2400,9 @@ function play_card(c, sign) {
 		game.count += to_value(c) + bonus
 	let score = signed_number(sign * game.count)
 	if (bonus > 0)
-		log(`>${POWER_NAME[game.power]} ${format_card(c)} + ${bonus} to ${score}`)
+		log(`>${POWER_NAME[game.power]} ${format_card(c)} + ${bonus} = ${score}`)
 	else
-		log(`>${POWER_NAME[game.power]} ${format_card(c)} to ${score}`)
+		log(`>${POWER_NAME[game.power]} ${format_card(c)} = ${score}`)
 	if (bonus > 0)
 		clear_fate_effect()
 }
@@ -2404,7 +2410,7 @@ function play_card(c, sign) {
 function play_reserve(v, sign) {
 	if (fate_card_zero()) {
 		let score = signed_number(sign * game.count)
-		log(`>${POWER_NAME[game.power]} 0R to ${score}`)
+		log(`>${POWER_NAME[game.power]} 0R = ${score}`)
 		clear_fate_effect()
 		return
 	}
@@ -2415,9 +2421,9 @@ function play_reserve(v, sign) {
 		game.count += v
 	let score = signed_number(sign * game.count)
 	if (bonus > 0)
-		log(`>${POWER_NAME[game.power]} ${v-bonus}R + ${bonus} to ${score}`)
+		log(`>${POWER_NAME[game.power]} ${v-bonus}R + ${bonus} = ${score}`)
 	else
-		log(`>${POWER_NAME[game.power]} ${v}R to ${score}`)
+		log(`>${POWER_NAME[game.power]} ${v}R = ${score}`)
 	if (bonus > 0)
 		clear_fate_effect()
 }
