@@ -1639,17 +1639,26 @@ states.move_general = {
 					// two options: leave alone, or leave with chevert
 					// to leave with chevert, detach non-chevert
 					// to leave alone, detach non-chevert, then detach chevert
-					if (game.selected.length === 3)
-						for (let p of game.selected)
-							if (p !== GEN_CHEVERT)
+					if (game.selected.length === 3) {
+						for (let p of game.selected) {
+							if (p !== GEN_CHEVERT) {
 								gen_action_piece(p)
-					if (game.selected.length === 2)
+								gen_action_detach(p)
+							}
+						}
+					}
+					if (game.selected.length === 2) {
 						gen_action_piece(GEN_CHEVERT)
+						gen_action_detach(GEN_CHEVERT)
+					}
 				}
 			} else {
-				if (game.selected.length > 1)
-					for (let p of game.selected)
+				if (game.selected.length > 1) {
+					for (let p of game.selected) {
 						gen_action_piece(p)
+						gen_action_detach(p)
+					}
+				}
 			}
 
 			let s_take = count_stacked_take()
@@ -1691,6 +1700,9 @@ states.move_general = {
 	},
 	give() {
 		game.state = "move_give"
+	},
+	detach(p) {
+		set_delete(game.selected, p)
 	},
 	piece(p) {
 		if (game.count === 0) {
@@ -4386,6 +4398,10 @@ function gen_action_space_or_piece(s) {
 
 function gen_action_card(c) {
 	gen_action("card", c)
+}
+
+function gen_action_detach(p) {
+	gen_action("detach", p)
 }
 
 function log(msg) {

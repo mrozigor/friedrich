@@ -704,15 +704,26 @@ function on_blur_piece() {
 /* UPDATE UI */
 
 function layout_general_offset(g, s) {
-	let n = 0
-	for (let i = g+1; i < 24; ++i) {
-		if (view.pos[i] === s) {
-			++n
-			if (is_action("piece", i))
+	// if not selected: number of unselected generals below us
+	// if not selected: (number of unselected generals + 1) + number of selected generals below us
+	if (!set_has(view.selected, g)) {
+		let n = 0
+		for (let i = g+1; i < 24; ++i)
+			if (view.pos[i] === s && !set_has(view.selected, i))
 				++n
-		}
+		return n
+	} else {
+		let n = 0
+		for (let i = 0; i < 24; ++i)
+			if (view.pos[i] === s && !set_has(view.selected, i))
+				++n
+		if (n > 0)
+			++n
+		for (let i = g+1; i < 24; ++i)
+			if (view.pos[i] === s && set_has(view.selected, i))
+				++n
+		return n
 	}
-	return n
 }
 
 function layout_general_count(g, s) {
@@ -952,11 +963,13 @@ function on_update() {
 	for (let v = 16; v >= 0; --v)
 		action_button_with_argument("value", v, v)
 
+	for (let p = 0; p < 24; ++p)
+		action_button_with_argument("detach", p, "Detach " + piece_button_name[p])
+
 	action_button("take", "Take")
 	action_button("give", "Give")
 	action_button("recruit", "Recruit")
 	action_button("transfer", "Transfer")
-	action_button("detach", "Detach")
 
 	action_button("stop", "Stop")
 	action_button("pass", "Pass")
@@ -1034,6 +1047,33 @@ const piece_power = [
 	P_IMPERIAL,
 	P_FRANCE,
 	P_FRANCE,
+]
+
+const piece_button_name = [
+	"P1",
+	"P2",
+	"P3",
+	"P4",
+	"P5",
+	"P6",
+	"P7",
+	"P8",
+	"H1",
+	"H2",
+	"R1",
+	"R2",
+	"R3",
+	"R4",
+	"S1",
+	"A1",
+	"A2",
+	"A3",
+	"A4",
+	"A5",
+	"IA1",
+	"F1",
+	"F2",
+	"F3",
 ]
 
 const piece_tooltip_name = [
