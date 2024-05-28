@@ -89,6 +89,17 @@
 
 #log .city_tip:hover { cursor: pointer; text-decoration: underline; }
 
+#log .piece_tip:hover { cursor: pointer; text-decoration: underline; }
+/*
+#log .piece_tip.prussia:hover { background-color: var(--color-light-prussia); }
+#log .piece_tip.hanover:hover { background-color: var(--color-light-hanover); }
+#log .piece_tip.russia:hover { background-color: var(--color-light-russia); }
+#log .piece_tip.sweden:hover { background-color: var(--color-light-sweden); }
+#log .piece_tip.austria:hover { background-color: var(--color-light-austria); }
+#log .piece_tip.imperial:hover { background-color: var(--color-light-imperial); }
+#log .piece_tip.france:hover { background-color: var(--color-light-france); }
+*/
+
 #log .h {
 	background-color: tan;
 	border-top: 1px solid black; border-bottom: 1px solid black;
@@ -106,6 +117,8 @@
 #log .h.france { background-color: var(--color-light-france); }
 
 #log .q { font-style: italic; }
+
+
 
 #log .i { padding-left: 20px }
 #log .ii { padding-left: 32px }
@@ -189,6 +202,22 @@ TWOD.piece.cylinder {
 		drop-shadow(0px 2px 0px orange)
 		drop-shadow(0px -2px 0px orange)
 		drop-shadow(-2px 0px 0px orange);
+}
+
+.piece.tip {
+	filter:
+		drop-shadow(2px 0px 0px red)
+		drop-shadow(0px 2px 0px red)
+		drop-shadow(0px -2px 0px red)
+		drop-shadow(-2px 0px 0px red);
+}
+
+.piece.france.tip, .piece.prussia.tip {
+	filter:
+		drop-shadow(2px 0px 0px yellow)
+		drop-shadow(0px 2px 0px yellow)
+		drop-shadow(0px -2px 0px yellow)
+		drop-shadow(-2px 0px 0px yellow);
 }
 
 .number {

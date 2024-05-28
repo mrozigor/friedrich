@@ -985,6 +985,44 @@ const piece_log_name = [
 	"French supply train", "French supply train",
 ]
 
+const piece_power = [
+	P_PRUSSIA,
+	P_PRUSSIA,
+	P_PRUSSIA,
+	P_PRUSSIA,
+	P_PRUSSIA,
+	P_PRUSSIA,
+	P_PRUSSIA,
+	P_PRUSSIA,
+	P_HANOVER,
+	P_HANOVER,
+	P_RUSSIA,
+	P_RUSSIA,
+	P_RUSSIA,
+	P_RUSSIA,
+	P_SWEDEN,
+	P_AUSTRIA,
+	P_AUSTRIA,
+	P_AUSTRIA,
+	P_AUSTRIA,
+	P_AUSTRIA,
+	P_IMPERIAL,
+	P_FRANCE,
+	P_FRANCE,
+	P_FRANCE,
+	P_PRUSSIA,
+	P_PRUSSIA,
+	P_HANOVER,
+	P_RUSSIA,
+	P_RUSSIA,
+	P_SWEDEN,
+	P_AUSTRIA,
+	P_AUSTRIA,
+	P_IMPERIAL,
+	P_FRANCE,
+	P_FRANCE,
+]
+
 const piece_tooltip_name = [
 	"P1 Friedrich",
 	"P2 Winterfeldt",
@@ -1026,7 +1064,8 @@ const piece_tooltip_name = [
 function sub_piece(match, p1) {
 	let x = p1 | 0
 	let n = piece_log_name[x]
-	return `<span class="piece_tip" onclick="on_click_piece_tip(${x})" onmouseenter="on_focus_piece_tip(${x})" onmouseleave="on_blur_piece_tip(${x})">${n}</span>`
+	let p = power_class[piece_power[x]]
+	return `<span class="piece_tip ${p}" onclick="on_click_piece_tip(${x})" onmouseenter="on_focus_piece_tip(${x})" onmouseleave="on_blur_piece_tip(${x})">${n}</span>`
 	return n
 }
 
