@@ -349,11 +349,6 @@ function log_selected() {
 	log(game.selected.map(p => "P" + p).join(" and "))
 }
 
-function log_selected_move_path() {
-	log(game.selected.map(p => "P" + p).join(" and "))
-	log(">" + game.move_path.map(s => "S" + s).join(" \u2192 "))
-}
-
 /* OBJECTIVES */
 
 const all_objectives = []
@@ -1368,7 +1363,6 @@ states.movement = {
 		else
 			game.major = 0
 
-		game.move_path = [ here ]
 		if (is_supply_train(p))
 			game.state = "move_supply_train"
 		else
@@ -1532,7 +1526,7 @@ function move_general_to(to) {
 		}
 	}
 
-	game.move_path.push(to)
+	log(">to S" + to)
 
 	// eliminate supply train
 	for (let p of all_enemy_trains[pow]) {
@@ -1611,7 +1605,12 @@ states.move_supply_train = {
 		let who = game.selected[0]
 		let from = game.pos[who]
 
-		game.move_path.push(to)
+		if (game.count === 0) {
+			log_selected()
+			log(">from S" + from)
+		}
+
+		log(">to S" + to)
 
 		if (!set_has(data.cities.major_roads[from], to))
 			game.major = 0
@@ -1727,6 +1726,11 @@ states.move_general = {
 		let who = game.selected[0]
 		let from = game.pos[who]
 
+		if (game.count === 0) {
+			log_selected()
+			log(">from S" + from)
+		}
+
 		if (!set_has(data.cities.major_roads[from], to))
 			game.major = 0
 
@@ -1776,9 +1780,6 @@ states.move_give = {
 }
 
 function end_move_piece() {
-	log_selected_move_path()
-
-	delete game.move_path
 	game.selected = null
 	game.state = "movement"
 }
