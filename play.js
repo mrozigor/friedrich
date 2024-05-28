@@ -150,8 +150,12 @@ function count_total_objectives(pow) {
 	let n = objective1[pow].length
 	if (!has_eased_victory(pow))
 		n += objective2[pow].length
-	if (pow === P_PRUSSIA && !view.oo)
-		n = 0
+	if (pow === P_PRUSSIA) {
+		if (view.oo === 0)
+			n = 0
+		if (view.oo < 0 && set_has(view.fate, FC_POEMS) && set_has(view.fate, FC_LORD_BUTE))
+			n = 0
+	}
 	if (pow === P_AUSTRIA && view.oo)
 		n -= 4
 	return n

@@ -1,8 +1,6 @@
 "use strict"
 
-// TODO: prussian offensive (no capture when not offensive)
 // TODO: final score summary at game end (FWC rules)
-// TODO: show running tally of troops/objectives
 
 const R_FREDERICK = "Frederick"
 const R_ELISABETH = "Elisabeth"
@@ -533,7 +531,7 @@ function is_offensive_option() {
 	return !!game.oo
 }
 
-function is_offensive_option_failed() {
+function has_offensive_option_failed() {
 	// if Austria has picked up the card AND subsidy reduction event has triggered
 	return game.oo < 0 && (set_has(game.fate, FC_POEMS) || set_has(game.fate, FC_LORD_BUTE))
 }
@@ -565,6 +563,18 @@ function has_france_dropped_out() {
 
 function has_imperial_army_switched_players() {
 	return (has_russia_dropped_out() && has_sweden_dropped_out()) || has_france_dropped_out()
+}
+
+function did_imperial_army_switch_players_now(fc) {
+	if (fc === FC_SWEDEN && set_has(game.fate, FC_ELISABETH))
+		return true
+	if (fc === FC_ELISABETH && set_has(game.fate, FC_SWEDEN))
+		return true
+	if (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))
+		return true
+	if (fc === FC_INDIA && set_has(game.fate, FC_AMERICA))
+		return true
+	return false
 }
 
 function has_removed_all_pieces(pow) {
@@ -899,7 +909,7 @@ function has_conquered_one_of(list) {
 }
 
 function check_offensive_option_victory() {
-	if (game.power === P_PRUSSIA && !is_offensive_option_failed()) {
+	if (game.power === P_PRUSSIA && !has_offensive_option_failed()) {
 		if (has_conquered_all_of(primary_objective[P_PRUSSIA])) {
 			goto_game_over(R_FREDERICK, "Prussia won with offensive option.")
 			return true
@@ -3027,6 +3037,11 @@ function goto_clock_of_fate() {
 
 		set_add(game.fate, fc)
 
+		if (fc === FC_POEMS && !set_has(game.fate, FC_LORD_BUTE))
+			trigger_offensive_option_failed()
+		if (fc === FC_LORD_BUTE && !set_has(game.fate, FC_POEMS))
+			trigger_offensive_option_failed()
+
 		// Check again in case of eased victory conditions.
 		if (check_victory())
 			return
@@ -3040,6 +3055,27 @@ function goto_clock_of_fate() {
 		if (game.scenario === 1 || game.scenario === 2) {
 			goto_start_turn()
 			return
+		}
+
+		if (fc === FC_ELISABETH) {
+			let n = count_captured_objectives(P_RUSSIA)
+			log("Russia dropped out with " + n + " objectives.")
+		}
+
+		if (fc === FC_SWEDEN) {
+			let n = count_captured_objectives(P_SWEDEN)
+			log("Sweden dropped out with " + n + " objectives.")
+		}
+
+		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))) {
+			let n = count_captured_objectives(P_FRANCE)
+			log("France dropped out with " + n + " objectives.")
+		}
+
+		if (did_imperial_army_switch_players_now(fc)) {
+			let n = count_captured_objectives(P_IMPERIAL)
+			log_br()
+			log("Pompadour took over the Imperial Army with " + n + " objectives.")
 		}
 
 		// eased victory conditions
@@ -3790,6 +3826,15 @@ states.move_to_any_empty_adjacent_city = {
 
 /* OFFENSIVE OPTION */
 
+function trigger_offensive_option_failed() {
+	if (has_offensive_option_failed()) {
+		log_br()
+		log("Prussian offensive failed.")
+		log_br()
+		remove_offensive_option_objectives()
+	}
+}
+
 function goto_declare_offensive_option() {
 	set_active_to_power(P_PRUSSIA)
 	game.state = "declare_offensive_option"
@@ -3825,12 +3870,7 @@ states.pick_up_oo_card_after_retreat = {
 		gen_action_card(game.oo)
 	},
 	card(_) {
-		log_br()
-		log("Austria picked up set-aside C" + game.oo + ".")
-		set_add(game.hand[P_AUSTRIA], game.oo)
-		game.oo = -1
-
-		// control back to loser for retreat
+		pick_up_set_aside_tc()
 		set_active_loser()
 		resume_retreat()
 	},
@@ -3843,14 +3883,18 @@ states.pick_up_oo_card_after_supply = {
 		gen_action_card(game.oo)
 	},
 	card(_) {
-		log_br()
-		log("Austria picked up set-aside C" + game.oo + ".")
-		set_add(game.hand[P_AUSTRIA], game.oo)
-		game.oo = -1
-
+		pick_up_set_aside_tc()
 		delete game.pick_up_oo
 		end_action_stage()
 	},
+}
+
+function pick_up_set_aside_tc() {
+	log_br()
+	log("Austria picked up set-aside C" + game.oo + ".")
+	set_add(game.hand[P_AUSTRIA], game.oo)
+	game.oo = -1
+	trigger_offensive_option_failed()
 }
 
 /* SETUP */
