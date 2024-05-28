@@ -334,7 +334,9 @@ function is_west_of(here, there) {
 }
 
 function format_cards(list) {
-	return list.map(format_card).join(", ")
+	if (list.length > 0)
+		return list.map(format_card).join(", ")
+	return "nothing"
 }
 
 function format_selected() {
@@ -1553,8 +1555,8 @@ function move_general_to(to) {
 }
 
 function move_general_immediately(to) {
-	log("P" + p)
-	log(">from S" + game.pos[p])
+	log_selected()
+	log(">from S" + game.pos[game.selected[0]])
 	log(">to S", to)
 
 	for (let p of game.selected)
@@ -3547,7 +3549,6 @@ function flip_stack_out_of_supply(p) {
 	}
 }
 
-// TODO: pause to show received cards
 states.austria_and_russia_may_exchange_one_tc_with_each_other_1 = {
 	inactive: "exchange TC with Russia",
 	prompt() {
@@ -3558,16 +3559,16 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_1 = {
 	},
 	card(c) {
 		set_delete(game.hand[P_AUSTRIA], c)
-		game.exchange = c
+		game.exchange_a = c
 		set_active_to_power(P_RUSSIA)
 		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_2"
 	},
 	pass() {
+		log("Austria and Russia did not exchange TC.")
 		goto_start_turn()
 	},
 }
 
-// TODO: pause to show received cards
 states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
 	inactive: "exchange TC with Austria",
 	prompt() {
@@ -3577,24 +3578,48 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
 		view.actions.pass = 1
 	},
 	card(c) {
-		set_add(game.hand[P_RUSSIA], game.exchange)
-		delete game.exchange
-
 		set_delete(game.hand[P_RUSSIA], c)
-		set_add(game.hand[P_AUSTRIA], c)
-
-		log("Austria and Russia exchanged TC.")
-		goto_start_turn()
+		game.exchange_r = c
+		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_3"
 	},
 	pass() {
 		log("Austria and Russia did not exchange TC.")
-		set_add(game.hand[P_AUSTRIA], game.exchange)
-		delete game.exchange
+		set_add(game.hand[P_AUSTRIA], game.exchange_a)
+		delete game.exchange_a
 		goto_start_turn()
 	},
 }
 
-// TODO: pause to show received cards
+states.austria_and_russia_may_exchange_one_tc_with_each_other_3 = {
+	inactive: "exchange TC with Austria",
+	prompt() {
+		prompt("You received " + format_card(game.exchange_a) + " from Austria.")
+		view.draw = [ game.exchange_a ]
+		view.actions.done = 1
+	},
+	done() {
+		log("Austria and Russia exchanged TC.")
+		set_add(game.hand[P_RUSSIA], game.exchange_a)
+		delete game.exchange_a
+		set_active_to_power(P_AUSTRIA)
+		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_4"
+	},
+}
+
+states.austria_and_russia_may_exchange_one_tc_with_each_other_4 = {
+	inactive: "exchange TC with Russia",
+	prompt() {
+		prompt("You received " + format_card(game.exchange_r) + " from Russia.")
+		view.draw = [ game.exchange_r ]
+		view.actions.done = 1
+	},
+	done() {
+		set_add(game.hand[P_AUSTRIA], game.exchange_r)
+		delete game.exchange_r
+		goto_start_turn()
+	},
+}
+
 states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 	inactive: "discard a TC for a new one",
 	prompt() {
@@ -3605,19 +3630,30 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 	},
 	card(c) {
 		log("France discarded one TC.")
-		log("France drew one TC.")
 		set_delete(game.hand[P_FRANCE], c)
-		let draw = draw_tc(1)
-		for (let c of draw)
-			set_add(game.hand[P_FRANCE], c)
-		goto_start_turn()
+		game.draw = draw_tc(1)
+		game.state = "france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_2"
 	},
 	pass() {
 		goto_start_turn()
 	},
 }
 
-// TODO: pause to show received cards
+states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_2 = {
+	inactive: "discard a TC for a new one",
+	prompt() {
+		prompt("You drew " + format_cards(game.draw) + " from the draw deck.")
+		view.draw = game.draw
+		view.actions.done = 1
+	},
+	done() {
+		for (let c of game.draw)
+			set_add(game.hand[P_FRANCE], c)
+		delete game.draw
+		goto_start_turn()
+	},
+}
+
 states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria = {
 	inactive: "give one TC to Austria",
 	prompt() {
@@ -3636,16 +3672,28 @@ states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_o
 		let x = random_bigint(game.hand[P_AUSTRIA].length)
 		c = game.hand[P_AUSTRIA][x]
 		set_delete(game.hand[P_AUSTRIA], c)
-		set_add(game.hand[P_PRUSSIA], c)
 
-		goto_start_turn()
+		game.draw = c
+		game.state = "prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_2"
 	},
 	pass() {
 		goto_start_turn()
 	},
 }
 
-// TODO: inactive: "randomly draw one TC from Austria",
+states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_2 = {
+	inactive: "randomly draw one TC from Austria",
+	prompt() {
+		prompt("You randomly drew " + format_card(game.draw) + " from Austria.")
+		view.draw = [ game.draw ]
+		view.actions.done = 1
+	},
+	done() {
+		set_add(game.hand[P_PRUSSIA], game.draw)
+		delete game.draw
+		goto_start_turn()
+	},
+}
 
 states.austria_may_move_laudon_by_one_city_immediately = {
 	inactive: "move Laudon by one city",
