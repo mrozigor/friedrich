@@ -2238,7 +2238,9 @@ function format_combat_stack(s) {
 function signed_number(v) {
 	if (v > 0)
 		return "+" + v
-	return v
+	if (v < 0)
+		return "\u2212" + (-v)
+	return "0"
 }
 
 function format_combat(value) {
@@ -2907,7 +2909,7 @@ function resume_supply_restore() {
 	else if (should_supply_flip())
 		goto_supply_flip()
 	else
-		end_supply()
+		game.state = "supply_done"
 }
 
 function resume_supply_eliminate() {
@@ -2916,7 +2918,7 @@ function resume_supply_eliminate() {
 	else if (should_supply_flip())
 		goto_supply_flip()
 	else
-		end_supply()
+		game.state = "supply_done"
 }
 
 function resume_supply_flip() {
