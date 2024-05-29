@@ -2188,7 +2188,7 @@ function goto_resolve_combat() {
 	let a = get_supreme_commander(game.attacker)
 	let d = get_supreme_commander(game.defender)
 	//log(`P${a} at S${game.attacker} with ${a_troops} troops attacked P${d} at S${game.defender} with ${d_troops} troops at ${signed_number(game.count)}.`)
-	log("Combat")
+	log("!")
 	log(`>P${a} at S${game.attacker}`)
 	log(`>P${d} at S${game.defender}`)
 	log(`>Troops ${a_troops} - ${d_troops} = ${game.count}`)

@@ -142,16 +142,26 @@ function has_eased_victory(power) {
 	return false
 }
 
+function is_war_in_the_west() {
+	return !roles["Elisabeth"] && !roles["Maria Theresa"]
+}
+
+function is_4p_scenario() {
+	return !!roles["Frederick"] && !!roles["Elisabeth"] && !!roles["Maria Theresa"]
+}
+
 function count_total_objectives(pow) {
 	let n = objective1[pow].length
 	if (!has_eased_victory(pow))
 		n += objective2[pow].length
-	if (pow === P_PRUSSIA) {
+	if (pow === P_PRUSSIA && is_4p_scenario()) {
 		if (view.oo === 0)
 			n = 0
 		if (view.oo < 0 && set_has(view.fate, FC_POEMS) && set_has(view.fate, FC_LORD_BUTE))
 			n = 0
 	}
+	if (pow === P_PRUSSIA && is_war_in_the_west())
+		n = 0
 	if (pow === P_AUSTRIA && view.oo)
 		n -= 4
 	return n
@@ -1139,6 +1149,11 @@ function on_log(text) {
 	if (text.match(/^>/)) {
 		text = text.substring(1)
 		p.className = "i"
+	}
+
+	if (text.match(/^!/)) {
+		text = "Combat"
+		p.className = "combat"
 	}
 
 	text = text.replace(/&/g, "&amp;")

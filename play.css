@@ -138,6 +138,8 @@ body {
 #log .h.fate::before { content: "\2014  " }
 #log .h.fate::after { content: " \2014" }
 
+#log .combat { background-color: #d7cfb8; }
+
 #log .h.prussia { background-color: var(--color-light-prussia); }
 #log .h.hanover { background-color: var(--color-light-hanover); }
 #log .h.russia { background-color: var(--color-light-russia); }
