@@ -414,7 +414,7 @@ make_protect(P_HANOVER, data.country.Hanover)
 make_protect(P_AUSTRIA, data.country.Austria)
 
 function is_conquest_space(pow, s) {
-	if (pow === P_PRUSSIA) {
+	if (pow === P_PRUSSIA && game.scenario >= 3) {
 		if (is_offensive_option() || game.turn < 3)
 			return set_has(primary_objective[pow], s)
 		return false
