@@ -1523,8 +1523,6 @@ function move_general_to(to) {
 		}
 	}
 
-	log(">to S" + to)
-
 	// eliminate supply train
 	for (let p of all_enemy_trains[pow]) {
 		if (game.pos[p] === to) {
@@ -1545,10 +1543,6 @@ function move_general_to(to) {
 }
 
 function move_general_immediately(to) {
-	log_selected()
-	log(">from S" + game.pos[game.selected[0]])
-	log(">to S", to)
-
 	for (let p of game.selected)
 		game.pos[p] = to
 
@@ -1727,6 +1721,8 @@ states.move_general = {
 			log_selected()
 			log(">from S" + from)
 		}
+
+		log(">to S" + to)
 
 		if (!set_has(data.cities.major_roads[from], to))
 			game.major = 0
@@ -3712,7 +3708,6 @@ states.austria_may_move_laudon_by_one_city_immediately = {
 
 		let here = game.pos[GEN_LAUDON]
 		for (let next of data.cities.adjacent[here])
-			// TODO: may capture supply trains?
 			if (can_move_general_to(next))
 				gen_action_space(next)
 
@@ -3735,7 +3730,11 @@ states.austria_may_move_laudon_by_one_city_immediately = {
 	},
 	space(s) {
 		push_undo()
-		// no conquest, but may capture supply trains?
+
+		log_selected()
+		log(">from S" + game.pos[game.selected[0]])
+		log(">to S", to)
+
 		move_general_immediately(s)
 		game.state = "laudon_done"
 	},
