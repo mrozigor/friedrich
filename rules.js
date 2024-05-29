@@ -2829,8 +2829,6 @@ function set_in_supply(p) {
 }
 
 function has_supply_line(p) {
-	if (!game.supply)
-		return false
 	let s = game.pos[p]
 	if (set_has(all_home_or_depot_cities[game.power], s))
 		return true
@@ -3038,7 +3036,7 @@ function goto_clock_of_fate() {
 		return
 
 	if (game.turn <= 5) {
-		log("# End of Turn " + game.turn)
+		log("# Fate")
 		log("$" + (game.turn + 48 + 6))
 	} else {
 		// remove non-stroke of fate card from last turn
