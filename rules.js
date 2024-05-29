@@ -803,8 +803,6 @@ function remove_one_troop(p) {
 }
 
 function retire_general(p) {
-	log("P" + p + " retired.")
-
 	// save troops if possible
 	let s = game.pos[p]
 	let n = game.troops[p]
@@ -820,8 +818,14 @@ function retire_general(p) {
 				n -= x
 			}
 		}
-		if (n > 0)
-			log("Lost " + n + " troops.")
+		if (n > 1)
+			log("P" + p + " retired with " + n + " troops.")
+		else if (n === 1)
+			log("P" + p + " retired with 1 troop.")
+		else
+			log("P" + p + " retired.")
+	} else {
+		log("P" + p + " retired.")
 	}
 }
 

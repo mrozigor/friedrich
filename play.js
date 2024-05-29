@@ -1167,9 +1167,9 @@ function on_log(text) {
 	if (text.match(/^\$(\d+)/)) {
 		let fx = parseInt(text.substring(1))
 		if (fx < 48 + 6)
-			text = `<p class="q">${fate_flavor_text[fx]}<p>${fate_effect_text[fx]}`
+			text = `<div class="q">${fate_flavor_text[fx]}</div><div></div><div>${fate_effect_text[fx]}</div><div></div>`
 		else
-			text = `<p class="q">${fate_flavor_text[fx]}`
+			text = `<div class="q">${fate_flavor_text[fx]}</div><div></div>`
 	}
 	else if (text.match(/^# /)) {
 		p.className = "h fate"
