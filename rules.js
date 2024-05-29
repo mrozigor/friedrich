@@ -990,7 +990,7 @@ function has_eased_victory(power) {
 function count_captured_objectives(pow) {
 	let n = 0
 	for (let s of full_objective[pow])
-		if (set_has(view.conquest, s))
+		if (set_has(game.conquest, s))
 			++n
 	return n
 }
@@ -1078,7 +1078,7 @@ function next_tactics_deck() {
 }
 
 function draw_tc(n) {
-	let draw = []
+	game.draw = []
 
 	let k = 0
 	while (n > 0) {
@@ -1092,19 +1092,17 @@ function draw_tc(n) {
 				break
 			}
 		}
-		set_add(draw, game.deck.pop())
+		set_add(game.draw, game.deck.pop())
 		++k
 		--n
 	}
 
 	if (k > 0)
 		log("Drew " + k + " TC.")
-
-	return draw
 }
 
 function goto_tactical_cards() {
-	game.draw = draw_tc(tc_per_turn())
+	draw_tc(tc_per_turn())
 
 	if (should_power_discard_tc() && game.draw.length > 0)
 		game.state = "tactical_cards_discard"
@@ -3034,6 +3032,7 @@ function goto_clock_of_fate() {
 	if (game.scenario === 1 || game.scenario === 2) {
 		log("=7")
 		draw_tc(5)
+		delete game.draw
 	}
 
 	// Check before drawing a fate card.
@@ -3641,7 +3640,7 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 	card(c) {
 		log("France discarded one TC.")
 		set_delete(game.hand[P_FRANCE], c)
-		game.draw = draw_tc(1)
+		draw_tc(1)
 		game.state = "france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_2"
 	},
 	pass() {
