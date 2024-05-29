@@ -3036,7 +3036,7 @@ function goto_clock_of_fate() {
 		return
 
 	if (game.turn <= 5) {
-		log("# \u2014 " + game.turn + " \u2014")
+		log("# End of Turn " + game.turn)
 		log("$" + (game.turn + 48 + 6))
 	} else {
 		// remove non-stroke of fate card from last turn
@@ -4180,7 +4180,7 @@ exports.setup = function (seed, scenario, options) {
 	else if (game.scenario === 2)
 		setup_the_austrian_theatre()
 	else
-		log("# \u2014 " + 1756 + " \u2014")
+		log("# 1756")
 
 	log("$54")
 

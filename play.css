@@ -135,6 +135,8 @@ body {
 }
 
 #log .h.fate { text-align: center; }
+#log .h.fate::before { content: "\2014  " }
+#log .h.fate::after { content: " \2014" }
 
 #log .h.prussia { background-color: var(--color-light-prussia); }
 #log .h.hanover { background-color: var(--color-light-hanover); }
