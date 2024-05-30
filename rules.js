@@ -2121,7 +2121,9 @@ function next_combat() {
 	if (game.combat.length > 0)
 		game.state = "combat"
 	else
-		game.state = "combat_done"
+		// TODO: a bit abrupt, but saves time if
+		// game.state = "combat_done"
+		goto_retroactive_conquest()
 }
 
 
@@ -2139,6 +2141,7 @@ states.combat = {
 	},
 }
 
+// TODO: unused for now
 states.combat_done = {
 	inactive: "attack",
 	prompt() {
