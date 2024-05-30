@@ -609,6 +609,7 @@ function on_init() {
 
 	ui.combat = document.createElement("div")
 	ui.combat.id = "combat"
+	ui.combat.style.zIndex = 2000
 
 	ui.tcbreak = document.createElement("div")
 	ui.tcbreak.className = "draw-break"
@@ -848,7 +849,6 @@ function layout_combat_marker() {
 	let y = (data.cities.y[view.attacker] + data.cities.y[view.defender]) >> 1
 	ui.combat.style.left = x - 20 + "px"
 	ui.combat.style.top = y - 20 + "px"
-	ui.combat.style.zIndex = y
 }
 
 function create_conquest(style, s) {
