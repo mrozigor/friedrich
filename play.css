@@ -1,0 +1,542 @@
+/*
+	Friedrich
+*/
+
+:root {
+	--color-prussia: #005478;
+	--color-hanover: #91c9ed;
+	--color-russia: #147d36;
+	--color-sweden: #b2d233;
+	--color-austria: #f5f5f5;
+	--color-imperial: #fbe300;
+	--color-france: #ed1c23;
+}
+
+:root {
+	--color-prussia: hsl(198, 100%, 24%);
+	--color-hanover: hsl(203, 72%, 75%);
+	--color-russia: hsl(139, 72%, 28%);
+	--color-sweden: hsl(72, 64%, 51%);
+	--color-austria: hsl(0, 0%, 96%);
+	--color-imperial: hsl(54, 100%, 49%);
+	--color-france: hsl(358, 85%, 52%);
+
+	--color-light-prussia: hsl(210, 80%, 75%);
+	--color-light-hanover: hsl(200, 75%, 75%);
+	--color-light-russia: hsl(120, 50%, 70%);
+	--color-light-sweden: hsl(80, 60%, 75%);
+	--color-light-austria: hsl(0, 0%, 100%);
+	--color-light-imperial: hsl(55, 85%, 75%);
+	--color-light-france: hsl(0, 70%, 80%);
+
+	--color-dark-prussia: hsl(198, 100%, 24%);
+	--color-dark-hanover: hsl(203, 72%, 75%);
+	--color-dark-russia: hsl(139, 72%, 28%);
+	--color-dark-sweden: hsl(72, 64%, 51%);
+	--color-dark-austria: hsl(0, 0%, 96%);
+	--color-dark-imperial: hsl(54, 100%, 49%);
+	--color-dark-france: hsl(358, 85%, 52%);
+
+	--color-role-prussia: hsl(210, 80%, 75%);
+	--color-role-russia: hsl(120, 50%, 70%);
+	--color-role-austria: hsl(0, 0%, 98%);
+	--color-role-france: hsl(0, 70%, 80%);
+}
+
+#role_Frederick { background-color: var(--color-role-prussia) }
+#role_Elisabeth { background-color: var(--color-role-russia) }
+#role_Maria_Theresa { background-color: var(--color-role-austria) }
+#role_Pompadour { background-color: var(--color-role-france) }
+
+#log { background-color: #f3ebd4 }
+
+#log .h {
+	background-color: tan;
+	border-top: 1px solid black; border-bottom: 1px solid black;
+	margin: 4px 0;
+}
+
+#log .h.prussia { background-color: var(--color-light-prussia); }
+#log .h.hanover { background-color: var(--color-light-hanover); }
+#log .h.russia { background-color: var(--color-light-russia); }
+#log .h.sweden { background-color: var(--color-light-sweden); }
+#log .h.austria { background-color: var(--color-light-austria); }
+#log .h.imperial { background-color: var(--color-light-imperial); }
+#log .h.france { background-color: var(--color-light-france); }
+
+header.your_turn.prussia { background-color: var(--color-light-prussia); }
+header.your_turn.hanover { background-color: var(--color-light-hanover); }
+header.your_turn.russia { background-color: var(--color-light-russia); }
+header.your_turn.sweden { background-color: var(--color-light-sweden); }
+header.your_turn.austria { background-color: var(--color-light-austria); }
+header.your_turn.imperial { background-color: var(--color-light-imperial); }
+header.your_turn.france { background-color: var(--color-light-france); }
+
+
+#mapwrap {
+	width: 2485px;
+	height: 1654px;
+	margin-bottom: 30px;
+}
+
+#map {
+	position: absolute;
+	width: 2485px;
+	height: 1654px;
+	background-size: cover;
+	background-image: url(Fried.Gameboard.075.jpg);
+	background-color: #ece1a9;
+}
+
+body {
+	background-color: slategray;
+}
+
+.turn.marker.T1 { top: 64px; left: 264px; }
+.turn.marker.T2 { top: 64px; left: 416px; }
+.turn.marker.T3 { top: 68px; left: 596px; }
+.turn.marker.T4 { top: 138px; left: 416px; }
+.turn.marker.T5 { top: 138px; left: 264px; }
+
+.piece {
+	position: absolute;
+	transition-property: top, left;
+	transition-duration: 700ms;
+	transition-timing-function: ease;
+	background-repeat: no-repeat;
+	//background-position: center;
+}
+
+TWOD.piece.cylinder {
+	width: 40px;
+	height: 40px;
+	background-size: 40px 40px;
+	border-radius: 50%;
+	border: 1px solid black;
+}
+
+.piece.cylinder {
+	width: 42px;
+	height: 47px;
+}
+
+.piece.cube {
+	width: 31px;
+	height: 39px;
+}
+
+.piece.action {
+	filter:
+		drop-shadow(2px 0px 0px white)
+		drop-shadow(0px 2px 0px white)
+		drop-shadow(0px -2px 0px white)
+		drop-shadow(-2px 0px 0px white);
+}
+
+.piece.selected {
+	filter:
+		drop-shadow(2px 0px 0px orange)
+		drop-shadow(0px 2px 0px orange)
+		drop-shadow(0px -2px 0px orange)
+		drop-shadow(-2px 0px 0px orange);
+}
+
+.number {
+	width: 14px;
+	height: 14px;
+	background-size: 800% 100%;
+	pointer-events: none;
+}
+
+.number { background-image: url(images/numbers.png); }
+.number.prussia { background-image: url(images/numbers_rev.png); }
+.number.russia { background-image: url(images/numbers_rev.png); }
+
+.number.france { background-color: #ff3534; border-radius: 50%; }
+
+.number.n0 { visibility: hidden; }
+.number.n1 { background-position: 0px 0px; }
+.number.n2 { background-position: -14px 0px; }
+.number.n3 { background-position: -28px 0px; }
+.number.n4 { background-position: -42px 0px; }
+.number.n5 { background-position: -56px 0px; }
+.number.n6 { background-position: -70px 0px; }
+.number.n7 { background-position: -84px 0px; }
+.number.n8 { background-position: -98px 0px; }
+
+/*
+.number.prussia { background-color: var(--color-prussia); }
+.number.hanover { background-color: var(--color-hanover); }
+.number.russia { background-color: var(--color-russia); }
+.number.sweden { background-color: var(--color-sweden); }
+.number.austria { background-color: var(--color-austria); }
+.number.imperial { background-color: var(--color-imperial); }
+.number.france { background-color: var(--color-france); }
+*/
+
+#hand_prussia_header { background-color: var(--color-dark-prussia); color: white; }
+#hand_hanover_header { background-color: var(--color-dark-hanover); color: black; }
+#hand_russia_header { background-color: var(--color-dark-russia); color: white; }
+#hand_sweden_header { background-color: var(--color-dark-sweden); color: black; }
+#hand_austria_header { background-color: var(--color-dark-austria); color: black; }
+#hand_imperial_header { background-color: var(--color-dark-imperial); color: black; }
+#hand_france_header { background-color: var(--color-dark-france); color: black; }
+
+.marker {
+	position: absolute;
+	width: 30px;
+	height: 30px;
+	background-size: 30px 30px;
+	background-position: center;
+	border: 1px solid black;
+}
+
+.panel {
+	background-color: #444;
+	width: clamp(824px, calc(100% - 30px), 1636px);
+	margin: 12px auto 36px auto;
+	box-shadow: 1px 2px 6px #0004;
+	border: 1px solid #0008;
+}
+
+.panel_header {
+	color: white;
+	font-weight: bold;
+	text-align: center;
+	padding: 3px 1em;
+	border-bottom: 1px solid #0008;
+}
+
+.panel_body {
+	background-color: #555;
+	display: flex;
+	justify-content: start;
+	flex-wrap: wrap;
+	padding: 18px;
+	gap: 18px;
+	min-height: 350px;
+}
+
+.space {
+	position: absolute;
+	box-sizing: border-box;
+	border: 4px solid transparent;
+}
+
+.space.city {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+}
+
+.space.objective {
+	width: 40px;
+	height: 40px;
+}
+
+.space.depot {
+	width: 52px;
+	height: 52px;
+	border-radius: 50%;
+}
+
+.space.action {
+	border-color: white;
+	z-index: 2000;
+}
+
+.space.city.action {
+	background-color: #fff8;
+}
+
+.space.depot.action {
+	background-color: #fff4;
+}
+
+/*
+	TODO: only show colors for enemy powers?
+*/
+.space.objective.action.prussia { background-color: #00547880; }
+.space.objective.action.hanover { background-color: #91c9ed80; }
+.space.objective.action.russia { background-color: #147d3680; }
+.space.objective.action.sweden { background-color: #b2d23380; }
+.space.objective.action.austria { background-color: #f5f5f580; }
+.space.objective.action.imperial { background-color: #fbe30080; }
+.space.objective.action.france { background-color: #ed1c2380; }
+
+.major_road {
+	position: absolute;
+	box-sizing: border-box;
+	background-color: black;
+	width: 20px;
+	height: 6px;
+}
+
+.road {
+	position: absolute;
+	box-sizing: border-box;
+	background-color: dimgray;
+	width: 20px;
+	height: 4px;
+}
+
+.marker.conquest.austria { background-image: url(images/conquest_austria.2x.png) }
+.marker.conquest.france { background-image: url(images/conquest_france.2x.png) }
+.marker.conquest.imperial { background-image: url(images/conquest_imperial.2x.png) }
+.marker.conquest.prussia { background-image: url(images/conquest_prussia.2x.png) }
+.marker.conquest.russia { background-image: url(images/conquest_russia.2x.png) }
+.marker.conquest.sweden { background-image: url(images/conquest_sweden.2x.png) }
+.marker.retroactive.austria { background-image: url(images/retroactive_austria.2x.png) }
+.marker.retroactive.france { background-image: url(images/retroactive_france.2x.png) }
+.marker.retroactive.imperial { background-image: url(images/retroactive_imperial.2x.png) }
+.marker.retroactive.prussia { background-image: url(images/retroactive_prussia.2x.png) }
+.marker.retroactive.russia { background-image: url(images/retroactive_russia.2x.png) }
+.marker.retroactive.sweden { background-image: url(images/retroactive_sweden.2x.png) }
+.marker.turn { background-image: url(images/turn.2x.png) }
+
+.piece.cube.austria { background-image: url(images/cube_austria.svg) }
+.piece.cube.france { background-image: url(images/cube_france.svg) }
+.piece.cube.hanover { background-image: url(images/cube_hanover.svg) }
+.piece.cube.imperial { background-image: url(images/cube_imperial.svg) }
+.piece.cube.prussia { background-image: url(images/cube_prussia.svg) }
+.piece.cube.russia { background-image: url(images/cube_russia.svg) }
+.piece.cube.sweden { background-image: url(images/cube_sweden.svg) }
+
+/* 3D
+*/
+.piece.cylinder.austria_1 { background-image: url(images/cylinder_austria_1.svg) }
+.piece.cylinder.austria_2 { background-image: url(images/cylinder_austria_2.svg) }
+.piece.cylinder.austria_3 { background-image: url(images/cylinder_austria_3.svg) }
+.piece.cylinder.austria_4 { background-image: url(images/cylinder_austria_4.svg) }
+.piece.cylinder.austria_5 { background-image: url(images/cylinder_austria_5.svg) }
+.piece.cylinder.france_1 { background-image: url(images/cylinder_france_1.svg) }
+.piece.cylinder.france_2 { background-image: url(images/cylinder_france_2.svg) }
+.piece.cylinder.france_3 { background-image: url(images/cylinder_france_3.svg) }
+.piece.cylinder.hanover_1 { background-image: url(images/cylinder_hanover_1.svg) }
+.piece.cylinder.hanover_2 { background-image: url(images/cylinder_hanover_2.svg) }
+.piece.cylinder.imperial_1 { background-image: url(images/cylinder_imperial_1.svg) }
+.piece.cylinder.prussia_1 { background-image: url(images/cylinder_prussia_1.svg) }
+.piece.cylinder.prussia_2 { background-image: url(images/cylinder_prussia_2.svg) }
+.piece.cylinder.prussia_3 { background-image: url(images/cylinder_prussia_3.svg) }
+.piece.cylinder.prussia_4 { background-image: url(images/cylinder_prussia_4.svg) }
+.piece.cylinder.prussia_5 { background-image: url(images/cylinder_prussia_5.svg) }
+.piece.cylinder.prussia_6 { background-image: url(images/cylinder_prussia_6.svg) }
+.piece.cylinder.prussia_7 { background-image: url(images/cylinder_prussia_7.svg) }
+.piece.cylinder.prussia_8 { background-image: url(images/cylinder_prussia_8.svg) }
+.piece.cylinder.russia_1 { background-image: url(images/cylinder_russia_1.svg) }
+.piece.cylinder.russia_2 { background-image: url(images/cylinder_russia_2.svg) }
+.piece.cylinder.russia_3 { background-image: url(images/cylinder_russia_3.svg) }
+.piece.cylinder.russia_4 { background-image: url(images/cylinder_russia_4.svg) }
+.piece.cylinder.sweden_1 { background-image: url(images/cylinder_sweden_1.svg) }
+
+.piece.cylinder.austria.oos { background-image: url(images/cylinder_austria_oos.svg) }
+.piece.cylinder.france.oos { background-image: url(images/cylinder_france_oos.svg) }
+.piece.cylinder.hanover.oos { background-image: url(images/cylinder_hanover_oos.svg) }
+.piece.cylinder.imperial.oos { background-image: url(images/cylinder_imperial_oos.svg) }
+.piece.cylinder.prussia.oos { background-image: url(images/cylinder_prussia_oos.svg) }
+.piece.cylinder.russia.oos { background-image: url(images/cylinder_russia_oos.svg) }
+.piece.cylinder.sweden.oos { background-image: url(images/cylinder_sweden_oos.svg) }
+
+/* 2D
+.piece.cylinder.austria_1 { background-image: url(images/A1.png) }
+.piece.cylinder.austria_2 { background-image: url(images/A2.png) }
+.piece.cylinder.austria_3 { background-image: url(images/A3.png) }
+.piece.cylinder.austria_4 { background-image: url(images/A4.png) }
+.piece.cylinder.austria_5 { background-image: url(images/A5.png) }
+.piece.cylinder.france_1 { background-image: url(images/F1.png) }
+.piece.cylinder.france_2 { background-image: url(images/F2.png) }
+.piece.cylinder.france_3 { background-image: url(images/F3.png) }
+.piece.cylinder.hanover_1 { background-image: url(images/H1.png) }
+.piece.cylinder.hanover_2 { background-image: url(images/H2.png) }
+.piece.cylinder.imperial_1 { background-image: url(images/I1.png) }
+.piece.cylinder.prussia_1 { background-image: url(images/P1.png) }
+.piece.cylinder.prussia_2 { background-image: url(images/P2.png) }
+.piece.cylinder.prussia_3 { background-image: url(images/P3.png) }
+.piece.cylinder.prussia_4 { background-image: url(images/P4.png) }
+.piece.cylinder.prussia_5 { background-image: url(images/P5.png) }
+.piece.cylinder.prussia_6 { background-image: url(images/P6.png) }
+.piece.cylinder.prussia_7 { background-image: url(images/P7.png) }
+.piece.cylinder.prussia_8 { background-image: url(images/P8.png) }
+.piece.cylinder.russia_1 { background-image: url(images/R1.png) }
+.piece.cylinder.russia_2 { background-image: url(images/R2.png) }
+.piece.cylinder.russia_3 { background-image: url(images/R3.png) }
+.piece.cylinder.russia_4 { background-image: url(images/R4.png) }
+.piece.cylinder.sweden_1 { background-image: url(images/S1.png) }
+*/
+
+.card {
+	width: 220px;
+	height: 342px;
+	background-size: 220px 342px;
+	background-color: #f3ebd5;
+	border-radius: 8px;
+	border: 1px solid black;
+}
+
+.card.action {
+	box-shadow: 0 0 0 4px white;
+}
+
+/*
+.card.tc.reverse + .card.tc.reverse { margin-left: -200px; }
+*/
+
+.card.tc { margin-right: -180px; }
+.panel_body { padding-right: calc(18px + 180px); }
+
+#clock_of_fate .card.tc { margin-right: 0px; }
+
+.card.tc.S13 { background-image: url(cards/Friedrich.TC.01.075.jpg) }
+.card.tc.S12 { background-image: url(cards/Friedrich.TC.02.075.jpg) }
+.card.tc.S11 { background-image: url(cards/Friedrich.TC.03.075.jpg) }
+.card.tc.S10 { background-image: url(cards/Friedrich.TC.04.075.jpg) }
+.card.tc.S9 { background-image: url(cards/Friedrich.TC.05.075.jpg) }
+.card.tc.S8 { background-image: url(cards/Friedrich.TC.06.075.jpg) }
+.card.tc.S7 { background-image: url(cards/Friedrich.TC.07.075.jpg) }
+.card.tc.S6 { background-image: url(cards/Friedrich.TC.08.075.jpg) }
+.card.tc.S5 { background-image: url(cards/Friedrich.TC.09.075.jpg) }
+.card.tc.S4 { background-image: url(cards/Friedrich.TC.10.075.jpg) }
+.card.tc.S3 { background-image: url(cards/Friedrich.TC.11.075.jpg) }
+.card.tc.S2 { background-image: url(cards/Friedrich.TC.12.075.jpg) }
+.card.tc.C13 { background-image: url(cards/Friedrich.TC.13.075.jpg) }
+.card.tc.C12 { background-image: url(cards/Friedrich.TC.14.075.jpg) }
+.card.tc.C11 { background-image: url(cards/Friedrich.TC.15.075.jpg) }
+.card.tc.C10 { background-image: url(cards/Friedrich.TC.16.075.jpg) }
+.card.tc.C9 { background-image: url(cards/Friedrich.TC.17.075.jpg) }
+.card.tc.C8 { background-image: url(cards/Friedrich.TC.18.075.jpg) }
+.card.tc.C7 { background-image: url(cards/Friedrich.TC.19.075.jpg) }
+.card.tc.C6 { background-image: url(cards/Friedrich.TC.20.075.jpg) }
+.card.tc.C5 { background-image: url(cards/Friedrich.TC.21.075.jpg) }
+.card.tc.C4 { background-image: url(cards/Friedrich.TC.22.075.jpg) }
+.card.tc.C3 { background-image: url(cards/Friedrich.TC.23.075.jpg) }
+.card.tc.C2 { background-image: url(cards/Friedrich.TC.24.075.jpg) }
+.card.tc.H13 { background-image: url(cards/Friedrich.TC.25.075.jpg) }
+.card.tc.H12 { background-image: url(cards/Friedrich.TC.26.075.jpg) }
+.card.tc.H11 { background-image: url(cards/Friedrich.TC.27.075.jpg) }
+.card.tc.H10 { background-image: url(cards/Friedrich.TC.28.075.jpg) }
+.card.tc.H9 { background-image: url(cards/Friedrich.TC.29.075.jpg) }
+.card.tc.H8 { background-image: url(cards/Friedrich.TC.30.075.jpg) }
+.card.tc.H7 { background-image: url(cards/Friedrich.TC.31.075.jpg) }
+.card.tc.H6 { background-image: url(cards/Friedrich.TC.32.075.jpg) }
+.card.tc.H5 { background-image: url(cards/Friedrich.TC.33.075.jpg) }
+.card.tc.H4 { background-image: url(cards/Friedrich.TC.34.075.jpg) }
+.card.tc.H3 { background-image: url(cards/Friedrich.TC.35.075.jpg) }
+.card.tc.H2 { background-image: url(cards/Friedrich.TC.36.075.jpg) }
+.card.tc.D13 { background-image: url(cards/Friedrich.TC.37.075.jpg) }
+.card.tc.D12 { background-image: url(cards/Friedrich.TC.38.075.jpg) }
+.card.tc.D11 { background-image: url(cards/Friedrich.TC.39.075.jpg) }
+.card.tc.D10 { background-image: url(cards/Friedrich.TC.40.075.jpg) }
+.card.tc.D9 { background-image: url(cards/Friedrich.TC.41.075.jpg) }
+.card.tc.D8 { background-image: url(cards/Friedrich.TC.42.075.jpg) }
+.card.tc.D7 { background-image: url(cards/Friedrich.TC.43.075.jpg) }
+.card.tc.D6 { background-image: url(cards/Friedrich.TC.44.075.jpg) }
+.card.tc.D5 { background-image: url(cards/Friedrich.TC.45.075.jpg) }
+.card.tc.D4 { background-image: url(cards/Friedrich.TC.46.075.jpg) }
+.card.tc.D3 { background-image: url(cards/Friedrich.TC.47.075.jpg) }
+.card.tc.D2 { background-image: url(cards/Friedrich.TC.48.075.jpg) }
+.card.tc.R { background-image: url(cards/Friedrich.TC.49.075.jpg) }
+.card.tc.reverse.deck_1, body.shift .card.tc.deck_1 { background-image: url(cards/Friedrich.TC.reverse.deck_1.075.jpg) }
+.card.tc.reverse.deck_2, body.shift .card.tc.deck_2 { background-image: url(cards/Friedrich.TC.reverse.deck_2.075.jpg) }
+.card.tc.reverse.deck_3, body.shift .card.tc.deck_3 { background-image: url(cards/Friedrich.TC.reverse.deck_3.075.jpg) }
+.card.tc.reverse.deck_4, body.shift .card.tc.deck_4 { background-image: url(cards/Friedrich.TC.reverse.deck_4.075.jpg) }
+.card.tc.reverse.deck_5, body.shift .card.tc.deck_5 { background-image: url(cards/Friedrich.TC.reverse.deck_5.075.jpg) }
+
+.card.fate.c1 { background-image: url(cards/Friedrich.Fatecard.01.075.jpg) }
+.card.fate.c2 { background-image: url(cards/Friedrich.Fatecard.02.075.jpg) }
+.card.fate.c3 { background-image: url(cards/Friedrich.Fatecard.03.075.jpg) }
+.card.fate.c4 { background-image: url(cards/Friedrich.Fatecard.04.075.jpg) }
+.card.fate.c5 { background-image: url(cards/Friedrich.Fatecard.05.075.jpg) }
+.card.fate.c6 { background-image: url(cards/Friedrich.Fatecard.06.075.jpg) }
+.card.fate.c7 { background-image: url(cards/Friedrich.Fatecard.10.075.jpg) }
+.card.fate.c8 { background-image: url(cards/Friedrich.Fatecard.11.075.jpg) }
+.card.fate.c9 { background-image: url(cards/Friedrich.Fatecard.12.075.jpg) }
+.card.fate.c10 { background-image: url(cards/Friedrich.Fatecard.13.075.jpg) }
+.card.fate.c11 { background-image: url(cards/Friedrich.Fatecard.14.075.jpg) }
+.card.fate.c12 { background-image: url(cards/Friedrich.Fatecard.15.075.jpg) }
+.card.fate.c13 { background-image: url(cards/Friedrich.Fatecard.07.075.jpg) }
+.card.fate.c14 { background-image: url(cards/Friedrich.Fatecard.08.075.jpg) }
+.card.fate.c15 { background-image: url(cards/Friedrich.Fatecard.09.075.jpg) }
+.card.fate.c16 { background-image: url(cards/Friedrich.Fatecard.16.075.jpg) }
+.card.fate.c17 { background-image: url(cards/Friedrich.Fatecard.17.075.jpg) }
+.card.fate.c18 { background-image: url(cards/Friedrich.Fatecard.18.075.jpg) }
+.card.fate.reverse { background-image: url(cards/Friedrich.Fatecard.reverse.075.jpg) }
+
+@media (min-resolution: 97dpi) {
+	#map { background-image: url(Fried.Gameboard.150.jpg);
+
+	.card.tc.S13 { background-image: url(cards/Friedrich.TC.01.150.jpg) }
+	.card.tc.S12 { background-image: url(cards/Friedrich.TC.02.150.jpg) }
+	.card.tc.S11 { background-image: url(cards/Friedrich.TC.03.150.jpg) }
+	.card.tc.S10 { background-image: url(cards/Friedrich.TC.04.150.jpg) }
+	.card.tc.S9 { background-image: url(cards/Friedrich.TC.05.150.jpg) }
+	.card.tc.S8 { background-image: url(cards/Friedrich.TC.06.150.jpg) }
+	.card.tc.S7 { background-image: url(cards/Friedrich.TC.07.150.jpg) }
+	.card.tc.S6 { background-image: url(cards/Friedrich.TC.08.150.jpg) }
+	.card.tc.S5 { background-image: url(cards/Friedrich.TC.09.150.jpg) }
+	.card.tc.S4 { background-image: url(cards/Friedrich.TC.10.150.jpg) }
+	.card.tc.S3 { background-image: url(cards/Friedrich.TC.11.150.jpg) }
+	.card.tc.S2 { background-image: url(cards/Friedrich.TC.12.150.jpg) }
+	.card.tc.C13 { background-image: url(cards/Friedrich.TC.13.150.jpg) }
+	.card.tc.C12 { background-image: url(cards/Friedrich.TC.14.150.jpg) }
+	.card.tc.C11 { background-image: url(cards/Friedrich.TC.15.150.jpg) }
+	.card.tc.C10 { background-image: url(cards/Friedrich.TC.16.150.jpg) }
+	.card.tc.C9 { background-image: url(cards/Friedrich.TC.17.150.jpg) }
+	.card.tc.C8 { background-image: url(cards/Friedrich.TC.18.150.jpg) }
+	.card.tc.C7 { background-image: url(cards/Friedrich.TC.19.150.jpg) }
+	.card.tc.C6 { background-image: url(cards/Friedrich.TC.20.150.jpg) }
+	.card.tc.C5 { background-image: url(cards/Friedrich.TC.21.150.jpg) }
+	.card.tc.C4 { background-image: url(cards/Friedrich.TC.22.150.jpg) }
+	.card.tc.C3 { background-image: url(cards/Friedrich.TC.23.150.jpg) }
+	.card.tc.C2 { background-image: url(cards/Friedrich.TC.24.150.jpg) }
+	.card.tc.H13 { background-image: url(cards/Friedrich.TC.25.150.jpg) }
+	.card.tc.H12 { background-image: url(cards/Friedrich.TC.26.150.jpg) }
+	.card.tc.H11 { background-image: url(cards/Friedrich.TC.27.150.jpg) }
+	.card.tc.H10 { background-image: url(cards/Friedrich.TC.28.150.jpg) }
+	.card.tc.H9 { background-image: url(cards/Friedrich.TC.29.150.jpg) }
+	.card.tc.H8 { background-image: url(cards/Friedrich.TC.30.150.jpg) }
+	.card.tc.H7 { background-image: url(cards/Friedrich.TC.31.150.jpg) }
+	.card.tc.H6 { background-image: url(cards/Friedrich.TC.32.150.jpg) }
+	.card.tc.H5 { background-image: url(cards/Friedrich.TC.33.150.jpg) }
+	.card.tc.H4 { background-image: url(cards/Friedrich.TC.34.150.jpg) }
+	.card.tc.H3 { background-image: url(cards/Friedrich.TC.35.150.jpg) }
+	.card.tc.H2 { background-image: url(cards/Friedrich.TC.36.150.jpg) }
+	.card.tc.D13 { background-image: url(cards/Friedrich.TC.37.150.jpg) }
+	.card.tc.D12 { background-image: url(cards/Friedrich.TC.38.150.jpg) }
+	.card.tc.D11 { background-image: url(cards/Friedrich.TC.39.150.jpg) }
+	.card.tc.D10 { background-image: url(cards/Friedrich.TC.40.150.jpg) }
+	.card.tc.D9 { background-image: url(cards/Friedrich.TC.41.150.jpg) }
+	.card.tc.D8 { background-image: url(cards/Friedrich.TC.42.150.jpg) }
+	.card.tc.D7 { background-image: url(cards/Friedrich.TC.43.150.jpg) }
+	.card.tc.D6 { background-image: url(cards/Friedrich.TC.44.150.jpg) }
+	.card.tc.D5 { background-image: url(cards/Friedrich.TC.45.150.jpg) }
+	.card.tc.D4 { background-image: url(cards/Friedrich.TC.46.150.jpg) }
+	.card.tc.D3 { background-image: url(cards/Friedrich.TC.47.150.jpg) }
+	.card.tc.D2 { background-image: url(cards/Friedrich.TC.48.150.jpg) }
+	.card.tc.R { background-image: url(cards/Friedrich.TC.49.150.jpg) }
+	.card.tc.reverse.deck_1, body.shift .card.tc.deck_1 { background-image: url(cards/Friedrich.TC.reverse.deck_1.150.jpg) }
+	.card.tc.reverse.deck_2, body.shift .card.tc.deck_2 { background-image: url(cards/Friedrich.TC.reverse.deck_2.150.jpg) }
+	.card.tc.reverse.deck_3, body.shift .card.tc.deck_3 { background-image: url(cards/Friedrich.TC.reverse.deck_3.150.jpg) }
+	.card.tc.reverse.deck_4, body.shift .card.tc.deck_4 { background-image: url(cards/Friedrich.TC.reverse.deck_4.150.jpg) }
+	.card.tc.reverse.deck_5, body.shift .card.tc.deck_5 { background-image: url(cards/Friedrich.TC.reverse.deck_5.150.jpg) }
+
+	.card.fate.c1 { background-image: url(cards/Friedrich.Fatecard.01.150.jpg) }
+	.card.fate.c2 { background-image: url(cards/Friedrich.Fatecard.02.150.jpg) }
+	.card.fate.c3 { background-image: url(cards/Friedrich.Fatecard.03.150.jpg) }
+	.card.fate.c4 { background-image: url(cards/Friedrich.Fatecard.04.150.jpg) }
+	.card.fate.c5 { background-image: url(cards/Friedrich.Fatecard.05.150.jpg) }
+	.card.fate.c6 { background-image: url(cards/Friedrich.Fatecard.06.150.jpg) }
+	.card.fate.c7 { background-image: url(cards/Friedrich.Fatecard.10.150.jpg) }
+	.card.fate.c8 { background-image: url(cards/Friedrich.Fatecard.11.150.jpg) }
+	.card.fate.c9 { background-image: url(cards/Friedrich.Fatecard.12.150.jpg) }
+	.card.fate.c10 { background-image: url(cards/Friedrich.Fatecard.13.150.jpg) }
+	.card.fate.c11 { background-image: url(cards/Friedrich.Fatecard.14.150.jpg) }
+	.card.fate.c12 { background-image: url(cards/Friedrich.Fatecard.15.150.jpg) }
+	.card.fate.c13 { background-image: url(cards/Friedrich.Fatecard.07.150.jpg) }
+	.card.fate.c14 { background-image: url(cards/Friedrich.Fatecard.08.150.jpg) }
+	.card.fate.c15 { background-image: url(cards/Friedrich.Fatecard.09.150.jpg) }
+	.card.fate.c16 { background-image: url(cards/Friedrich.Fatecard.16.150.jpg) }
+	.card.fate.c17 { background-image: url(cards/Friedrich.Fatecard.17.150.jpg) }
+	.card.fate.c18 { background-image: url(cards/Friedrich.Fatecard.18.150.jpg) }
+	.card.fate.reverse { background-image: url(cards/Friedrich.Fatecard.reverse.150.jpg) }
+
+}
