@@ -63,7 +63,7 @@ for (let s of data.type.objective2_imperial) set_add(objective2[P_IMPERIAL], s)
 for (let s of data.type.objective_france) set_add(objective1[P_FRANCE], s)
 
 const power_class = [ "prussia", "hanover", "russia", "sweden", "austria", "imperial", "france", "imaginary" ]
-const power_name = [ "Prussia", "Hanover", "Russia", "Sweden", "Austria", "Imperial Army", "France", "Imaginary" ]
+const power_name = [ "Prussia", "Hanover", "Russia", "Sweden", "Austria", "Imperial Army", "France", "Imaginary Player" ]
 
 const GENERAL_POWER = [ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 5, 6, 6, 6 ]
 
@@ -315,6 +315,17 @@ const fate_effect_text = [
 	null,
 	null,
 ]
+
+const the_war_in_the_west_text = `<p>Prussia receives 2 TC per round, but has to discard one of these two immediately. As soon as the first subsidy reduction occurs (due to the Card of Fate “Lord Bute” or “Poems”) Prussia receives only 1 TC per round. The second subsidy reduction has no effect.
+<p>France wins if she controls all of her red objectives.
+<p>Hanover/Prussia wins if the game ends before France has won.
+<p>The game ends when France is kicked out of the game by the Cards of Fate “India” and “America”.
+`
+
+const the_austrian_theater_text = `<p>Prussia receives 5 TC per round. Every subsidy reduction (due to the Card of Fate “Lord Bute” or “Poems”) reduces her income by (only) 1 TC per round.
+<p>Austria wins if she controls all of her objectives. Similarly, the Imperial Army wins if she controls all of her objectives.
+<p>Prussia wins by controlling all of her blue objectives in Bohemia, or if the game ends before Austria or the Imperial Army have won.
+`
 
 /* PANEL ORDER */
 
@@ -1175,6 +1186,10 @@ function on_log(text) {
 		p.className = "h fate"
 		text = text.substring(2)
 	}
+	else if (text.match(/^\.s1/))
+		text = the_war_in_the_west_text
+	else if (text.match(/^\.s2/))
+		text = the_austrian_theater_text
 	else if (text.match(/^=\d/)) {
 		p.className = "h " + power_class[text[1]]
 		text = power_name[text[1]]

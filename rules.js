@@ -4182,14 +4182,14 @@ exports.setup = function (seed, scenario, options) {
 		game.clock = [ 18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1 ]
 	}
 
-	if (game.scenario === 1)
+	if (game.scenario === 1) {
 		setup_the_war_in_the_west()
-	else if (game.scenario === 2)
+	} else if (game.scenario === 2) {
 		setup_the_austrian_theatre()
-	else
+	} else {
 		log("# 1756")
-
-	log("$54")
+		log("$54")
+	}
 
 
 	return game
@@ -4211,6 +4211,7 @@ function remove_power_from_play(pow) {
 
 function setup_the_war_in_the_west() {
 	log("# The War in the West")
+	log(".s1")
 
 	remove_power_from_play(P_RUSSIA)
 	remove_power_from_play(P_SWEDEN)
@@ -4225,6 +4226,7 @@ function setup_the_war_in_the_west() {
 
 function setup_the_austrian_theatre() {
 	log("# The Austrian Theatre")
+	log(".s2")
 
 	remove_power_from_play(P_HANOVER)
 	remove_power_from_play(P_RUSSIA)
