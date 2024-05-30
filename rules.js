@@ -1594,6 +1594,8 @@ states.move_supply_train = {
 		this.stop()
 	},
 	stop() {
+		let who = game.selected[0]
+		set_add(game.moved, who)
 		end_move_piece()
 	},
 	space(to) {
