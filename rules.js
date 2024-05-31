@@ -2196,7 +2196,6 @@ function goto_resolve_combat() {
 
 	let a = get_supreme_commander(game.attacker)
 	let d = get_supreme_commander(game.defender)
-	//log(`P${a} at S${game.attacker} with ${a_troops} troops attacked P${d} at S${game.defender} with ${d_troops} troops at ${signed_number(game.count)}.`)
 	log("!")
 	log(`>P${a} at S${game.attacker}`)
 	log(`>P${d} at S${game.defender}`)
@@ -3068,6 +3067,66 @@ function goto_clock_of_fate() {
 			log("$" + game.fx)
 		}
 
+		switch (fc) {
+			case FC_POEMS:
+			case FC_LORD_BUTE:
+				if (set_has(game.fate, FC_POEMS) || set_has(game.fate, FC_LORD_BUTE)) {
+					if (game.scenario === 1)
+						log("No effect.")
+					if (game.scenario === 2)
+						log("From now on Prussia will receive three Tactical Cards.")
+					if (game.scenario >= 3)
+						log("From now on Prussia will receive four Tactical Cards.")
+				} else {
+					if (game.scenario === 1)
+						log("From now on Prussia will receive one Tactical Card.")
+					if (game.scenario === 2)
+						log("From now on Prussia will receive four Tactical Cards.")
+					if (game.scenario >= 3)
+						log("From now on Prussia will receive five Tactical Cards.")
+				}
+				break
+			case FC_ELISABETH:
+				log("Russia quits the game!")
+				if (game.scenario === 1 || game.scenario === 2)
+					break
+				log_br()
+				log("Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map.")
+				log_br()
+				if (set_has(game.fate, FC_SWEDEN))
+					log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
+				else
+					log("For Sweden eased victory conditions come into effect.")
+				break
+			case FC_SWEDEN:
+				log("Sweden quits the game!")
+				if (game.scenario === 1 || game.scenario === 2)
+					break
+				log_br()
+				log("Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map.")
+				if (set_has(game.fate, FC_ELISABETH)) {
+					log_br()
+					log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
+				}
+				break
+			case FC_AMERICA:
+			case FC_INDIA:
+				if (set_has(game.fate, FC_AMERICA) || set_has(game.fate, FC_INDIA)) {
+					log("France quits the game!")
+					if (game.scenario === 1 || game.scenario === 2)
+						break
+					log_br()
+					log("Cumberland is removed permanently from the game. Hanover receives only 1 TC from now on.")
+					log_br()
+					log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
+				} else {
+					if (game.scenario === 1)
+						break
+					log("From now on Austria receives only 4 TC; France only 3 (which she may all keep).")
+				}
+				break
+		}
+
 		set_add(game.fate, fc)
 
 		if (fc === FC_POEMS && !set_has(game.fate, FC_LORD_BUTE))
@@ -3090,26 +3149,16 @@ function goto_clock_of_fate() {
 			return
 		}
 
-		if (fc === FC_ELISABETH) {
-			let n = count_captured_objectives(P_RUSSIA)
-			log("Russia dropped out with " + n + " objectives.")
-		}
-
-		if (fc === FC_SWEDEN) {
-			let n = count_captured_objectives(P_SWEDEN)
-			log("Sweden dropped out with " + n + " objectives.")
-		}
-
-		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))) {
-			let n = count_captured_objectives(P_FRANCE)
-			log("France dropped out with " + n + " objectives.")
-		}
-
-		if (did_imperial_army_switch_players_now(fc)) {
-			let n = count_captured_objectives(P_IMPERIAL)
-			log_br()
-			log("Pompadour took over the Imperial Army with " + n + " objectives.")
-		}
+		/* TODO: remember score when powers drop out
+		if (fc === FC_ELISABETH)
+			game.score[P_RUSSIA] = count_captured_objectives(P_RUSSIA)
+		if (fc === FC_SWEDEN)
+			game.score[P_SWEDEN] = count_captured_objectives(P_SWEDEN)
+		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA)))
+			game.score[P_FRANCE] = count_captured_objectives(P_FRANCE)
+		if (did_imperial_army_switch_players_now(fc))
+			game.score[P_AUSTRIA] = count_captured_objectives(P_IMPERIAL)
+		*/
 
 		// eased victory conditions
 		if (has_russia_dropped_out()) {

@@ -298,19 +298,6 @@ const fate_effect_text = [
 	// "Sweden quits the game! Also, Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map. If Russia has already quit the game as well, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
 	// "From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game! Cumberland is removed permanently from the game. Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
 	// "From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game. Cumberland is removed permanently from the game. Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
-
-	"From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
-	"From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
-	"Russia quits the game! For Sweden eased victory conditions come into effect. If Sweden has already quit the game, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
-	"Sweden quits the game! If Russia has already quit the game as well, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
-	"From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game! Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
-	"From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game! Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.",
-
-	null,
-	null,
-	null,
-	null,
-	null,
 ]
 
 const the_war_in_the_west_text = `<p>Prussia receives 2 TC per round, but has to discard one of these two immediately. As soon as the first subsidy reduction occurs (due to the Card of Fate “Lord Bute” or “Poems”) Prussia receives only 1 TC per round. The second subsidy reduction has no effect.
@@ -1159,7 +1146,7 @@ function on_log(text) {
 
 	if (text.match(/^\$(\d+)/)) {
 		let fx = parseInt(text.substring(1))
-		if (fx < 48 + 6)
+		if (fx < 48)
 			text = `<div class="q">${fate_flavor_text[fx]}</div><div></div><div>${fate_effect_text[fx]}</div><div></div>`
 		else
 			text = `<div class="q">${fate_flavor_text[fx]}</div><div></div>`
