@@ -87,6 +87,7 @@ header.your_turn.france { background-color: var(--color-light-france); }
 #mapwrap {
 	width: 2485px;
 	height: 1654px;
+	box-shadow: 2px 2px 4px #0006;
 }
 
 #map {
@@ -186,7 +187,7 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 
 .panel {
 	background-color: darkgray;
-	width: clamp(500px, calc(100% - 48px), 2485px);
+	width: clamp(500px, calc(100% - 48px), 2475px);
 	margin: 24px auto;
 	box-shadow: 2px 2px 4px #0006;
 	border: 1px solid #0008;
