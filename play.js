@@ -1,7 +1,7 @@
 "use strict"
 
 // vim: set nowrap:
-/* globals data, view, action_button, action_button_with_argument, confirm_action_button, send_action
+/* globals data, view, action_button, action_button_with_argument, confirm_action_button, send_action, params, roles
 */
 
 function toggle_pieces() {
@@ -9,8 +9,6 @@ function toggle_pieces() {
 }
 
 /* DATA */
-
-const max_power_troops = [ 32, 12, 16, 4, 30, 6, 20 ]
 
 const P_PRUSSIA = 0
 const P_HANOVER = 1
@@ -89,7 +87,6 @@ const all_power_trains = [
 	/* F */ [ 33, 34 ],
 ]
 
-const RESERVE = 4
 let suit_class = [ "spades", "clubs", "hearts", "diamonds", "reserve" ]
 let suit_letter = [ "S", "C", "H", "D", "R" ]
 
@@ -397,7 +394,6 @@ const ui = {
 	prompt: document.getElementById("prompt"),
 	status: document.getElementById("status"),
 	header: document.querySelector("header"),
-	roads_element: document.getElementById("roads"),
 	spaces_element: document.getElementById("spaces"),
 	pieces_element: document.getElementById("pieces"),
 	markers_element: document.getElementById("markers"),
@@ -433,7 +429,6 @@ const ui = {
 		document.getElementById("hand_france"),
 	],
 	cities: [],
-	roads: [],
 	action_register: [],
 }
 
@@ -744,7 +739,7 @@ function layout_general_offset(g, s) {
 	}
 }
 
-function layout_general_count(g, s) {
+function layout_general_count(s) {
 	let n = 0
 	for (let i = 0; i < 24; ++i)
 		if (view.pos[i] === s)
@@ -794,7 +789,7 @@ function layout_general(id, s) {
 		y = ELIMINATED_GENERAL_Y
 	} else {
 		n = layout_general_offset(id, s)
-		if (layout_general_count(id, s) === 3)
+		if (layout_general_count(s) === 3)
 			n -= 1
 		x = data.cities.x[s]
 		y = data.cities.y[s]
@@ -865,10 +860,10 @@ function create_conquest(style, s) {
 function update_favicon() {
 	let favicon = document.querySelector('link[rel="icon"]')
 	switch (params.role) {
-	case "Frederick": favicon.href = "favicon/favicon_frederick.png"; break
-	case "Elisabeth": favicon.href = "favicon/favicon_elisabeth.png"; break
-	case "Maria Theresa": favicon.href = "favicon/favicon_maria_theresa.png"; break
-	case "Pompadour": favicon.href = "favicon/favicon_pompadour.png"; break
+		case "Frederick": favicon.href = "favicon/favicon_frederick.png"; break
+		case "Elisabeth": favicon.href = "favicon/favicon_elisabeth.png"; break
+		case "Maria Theresa": favicon.href = "favicon/favicon_maria_theresa.png"; break
+		case "Pompadour": favicon.href = "favicon/favicon_pompadour.png"; break
 	}
 }
 
@@ -883,14 +878,6 @@ const colorize_C = '<span class="suit clubs">\u2663</span>'
 const colorize_H = '<span class="suit hearts">\u2665</span>'
 const colorize_D = '<span class="suit diamonds">\u2666</span>'
 const colorize_R = '$1<span class="suit reserve">R</span>'
-
-const suit_text = [
-	'<span class="suit spades">\u2660</span>',
-	'<span class="suit clubs">\u2663</span>',
-	'<span class="suit hearts">\u2665</span>',
-	'<span class="suit diamonds">\u2666</span>',
-	'<span class="suit reserve">R</span>'
-]
 
 function colorize(text) {
 	text = text.replaceAll("\u2660", colorize_S)
@@ -1131,22 +1118,17 @@ const piece_tooltip_name = [
 	"French supply train",
 ]
 
-function sub_piece(match, p1) {
+function sub_piece(_match, p1) {
 	let x = p1 | 0
 	let n = piece_log_name[x]
 	let p = power_class[piece_power[x]]
 	return `<span class="piece_tip ${p}" onclick="on_click_piece_tip(${x})" onmouseenter="on_focus_piece_tip(${x})" onmouseleave="on_blur_piece_tip(${x})">${n}</span>`
-	return n
 }
 
-function sub_space(match, p1) {
+function sub_space(_match, p1) {
 	let x = p1 | 0
 	let n = data.cities.name[x]
 	return `<span class="city_tip" onclick="on_click_city_tip(${x})" onmouseenter="on_focus_city_tip(${x})" onmouseleave="on_blur_city_tip(${x})">${n}</span>`
-}
-
-function sub_tc(match, p1) {
-	return value + suit_text[suit]
 }
 
 function on_log(text) {

@@ -3742,7 +3742,7 @@ states.austria_may_move_laudon_by_one_city_immediately = {
 
 		log_selected()
 		log(">from S" + game.pos[game.selected[0]])
-		log(">to S", to)
+		log(">to S", s)
 
 		move_general_immediately(s)
 		game.state = "laudon_done"
@@ -4730,11 +4730,6 @@ function map_set(map, key, value) {
 		}
 	}
 	array_insert_pair(map, a<<1, key, value)
-}
-
-function map_for_each_key(map, f) {
-	for (let i = 0; i < map.length; i += 2)
-		f(map[i])
 }
 
 function map_for_each(map, f) {
