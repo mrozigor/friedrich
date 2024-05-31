@@ -2391,9 +2391,10 @@ function fate_card_bonus(c) {
 }
 
 function play_card(c, sign) {
+	let prefix = (sign < 0 ? ">>" : ">") + POWER_NAME[game.power]
 	if (fate_card_zero()) {
 		let score = signed_number(sign * game.count)
-		log(`>${POWER_NAME[game.power]} ${format_card(c)} for 0 = ${score}`)
+		log(`${prefix} ${format_card(c)} for 0 = ${score}`)
 		clear_fate_effect()
 		return
 	}
@@ -2404,17 +2405,18 @@ function play_card(c, sign) {
 		game.count += to_value(c) + bonus
 	let score = signed_number(sign * game.count)
 	if (bonus > 0)
-		log(`>${POWER_NAME[game.power]} ${format_card(c)} + ${bonus} = ${score}`)
+		log(`${prefix} ${format_card(c)} + ${bonus} = ${score}`)
 	else
-		log(`>${POWER_NAME[game.power]} ${format_card(c)} = ${score}`)
+		log(`${prefix} ${format_card(c)} = ${score}`)
 	if (bonus > 0)
 		clear_fate_effect()
 }
 
 function play_reserve(v, sign) {
+	let prefix = (sign < 0 ? ">>" : ">") + POWER_NAME[game.power]
 	if (fate_card_zero()) {
 		let score = signed_number(sign * game.count)
-		log(`>${POWER_NAME[game.power]} 0R = ${score}`)
+		log(`${prefix} 0R = ${score}`)
 		clear_fate_effect()
 		return
 	}
@@ -2425,9 +2427,9 @@ function play_reserve(v, sign) {
 		game.count += v
 	let score = signed_number(sign * game.count)
 	if (bonus > 0)
-		log(`>${POWER_NAME[game.power]} ${v-bonus}R + ${bonus} = ${score}`)
+		log(`${prefix} ${v-bonus}R + ${bonus} = ${score}`)
 	else
-		log(`>${POWER_NAME[game.power]} ${v}R = ${score}`)
+		log(`${prefix} ${v}R = ${score}`)
 	if (bonus > 0)
 		clear_fate_effect()
 }
