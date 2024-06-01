@@ -1634,26 +1634,26 @@ states.move_general = {
 				view.prompt += " Chevert may not unstack."
 				if (count_generals(here) === 3) {
 					// two options: leave alone, or leave with chevert
-					// to leave with chevert, detach non-chevert
-					// to leave alone, detach non-chevert, then detach chevert
+					// to leave with chevert, unstack non-chevert
+					// to leave alone, unstack non-chevert, then unstack chevert
 					if (game.selected.length === 3) {
 						for (let p of game.selected) {
 							if (p !== GEN_CHEVERT) {
 								gen_action_piece(p)
-								gen_action_detach(p)
+								gen_action_unstack(p)
 							}
 						}
 					}
 					if (game.selected.length === 2) {
 						gen_action_piece(GEN_CHEVERT)
-						gen_action_detach(GEN_CHEVERT)
+						gen_action_unstack(GEN_CHEVERT)
 					}
 				}
 			} else {
 				if (game.selected.length > 1) {
 					for (let p of game.selected) {
 						gen_action_piece(p)
-						gen_action_detach(p)
+						gen_action_unstack(p)
 					}
 				}
 			}
@@ -1698,7 +1698,7 @@ states.move_general = {
 	give() {
 		game.state = "move_give"
 	},
-	detach(p) {
+	unstack(p) {
 		set_delete(game.selected, p)
 	},
 	piece(p) {
@@ -4525,8 +4525,8 @@ function gen_action_card(c) {
 	gen_action("card", c)
 }
 
-function gen_action_detach(p) {
-	gen_action("detach", p)
+function gen_action_unstack(p) {
+	gen_action("unstack", p)
 }
 
 function log(msg) {

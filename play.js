@@ -970,7 +970,7 @@ function on_update() {
 		action_button_with_argument("value", v, v)
 
 	for (let p = 0; p < 24; ++p)
-		action_button_with_argument("detach", p, "Detach " + piece_button_name[p])
+		action_button_with_argument("unstack", p, "Unstack " + piece_button_name[p])
 
 	action_button("take", "Take")
 	action_button("give", "Give")
