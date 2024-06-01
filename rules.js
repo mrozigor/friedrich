@@ -231,10 +231,6 @@ const all_power_trains = [
 
 const TRAIN_IA = 32
 
-function is_general(p) {
-	return p < 24
-}
-
 const all_pieces = [ ...all_power_generals.flat(), ...all_power_trains.flat() ]
 const all_generals = [ ...all_power_generals.flat() ]
 
@@ -293,6 +289,10 @@ const all_enemy_generals = [
 	all_prussia_generals,
 	all_prussia_generals,
 ]
+
+function is_general(p) {
+	return p < 24
+}
 
 function is_supply_train(p) {
 	return p >= 24

@@ -5,7 +5,17 @@
 */
 
 function toggle_pieces() {
-	document.getElementById("pieces").classList.toggle("hide")
+	// Cycle between showing everything, only pieces, and nothing.
+	let hidden_pieces = ui.pieces_element.classList.contains("hide")
+	let hidden_markers = ui.markers_element.classList.contains("hide")
+	if (hidden_pieces && hidden_markers) {
+		ui.pieces_element.classList.remove("hide")
+		ui.markers_element.classList.remove("hide")
+	} else if (hidden_pieces) {
+		ui.markers_element.classList.add("hide")
+	} else {
+		ui.pieces_element.classList.add("hide")
+	}
 }
 
 /* DATA */
