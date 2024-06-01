@@ -20,6 +20,11 @@ function toggle_pieces() {
 
 /* DATA */
 
+const R_FREDERICK = "Frederick"
+const R_ELISABETH = "Elisabeth"
+const R_MARIA_THERESA = "Maria Theresa"
+const R_POMPADOUR = "Pompadour"
+
 const P_PRUSSIA = 0
 const P_HANOVER = 1
 const P_RUSSIA = 2
@@ -70,8 +75,23 @@ for (let s of data.type.objective1_imperial) set_add(objective1[P_IMPERIAL], s)
 for (let s of data.type.objective2_imperial) set_add(objective2[P_IMPERIAL], s)
 for (let s of data.type.objective_france) set_add(objective1[P_FRANCE], s)
 
+function make_badge(power) {
+	let e = document.createElement("div")
+	e.className = "role_marker conquest " + power
+	return e
+}
+
 const power_class = [ "prussia", "hanover", "russia", "sweden", "austria", "imperial", "france", "imaginary" ]
 const power_name = [ "Prussia", "Hanover", "Russia", "Sweden", "Austria", "Imperial Army", "France", "Imaginary Player" ]
+const power_badge = [
+	make_badge("prussia"),
+	make_badge("hanover"),
+	make_badge("russia"),
+	make_badge("sweden"),
+	make_badge("austria"),
+	make_badge("imperial"),
+	make_badge("france"),
+]
 
 const GENERAL_POWER = [ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 5, 6, 6, 6 ]
 
@@ -139,6 +159,19 @@ function has_imperial_army_switched_players() {
 	return (has_russia_dropped_out() && has_sweden_dropped_out()) || has_france_dropped_out()
 }
 
+function has_power_dropped_out(pow) {
+	if (is_war_in_the_west())
+		return pow !== P_PRUSSIA && pow !== P_HANOVER && pow !== P_FRANCE
+	if (is_austrian_theatre())
+		return pow !== P_PRUSSIA && pow !== P_AUSTRIA && pow !== P_IMPERIAL
+	switch (pow) {
+		case P_RUSSIA: return has_russia_dropped_out()
+		case P_SWEDEN: return has_sweden_dropped_out()
+		case P_FRANCE: return has_france_dropped_out()
+	}
+	return false
+}
+
 function has_eased_victory(power) {
 	if (power === P_SWEDEN)
 		return has_russia_dropped_out()
@@ -153,15 +186,23 @@ function is_war_in_the_west() {
 	return !roles["Elisabeth"] && !roles["Maria Theresa"]
 }
 
-function is_4p_scenario() {
+function is_austrian_theatre() {
+	return !roles["Pompadour"] && !roles["Elisabeth"]
+}
+
+function is_34p_scenario() {
 	return !!roles["Frederick"] && !!roles["Elisabeth"] && !!roles["Maria Theresa"]
+}
+
+function is_3p_scenario() {
+	return !!roles["Frederick"] && !!roles["Elisabeth"] && !!roles["Maria Theresa"] && !roles["Pompadour"]
 }
 
 function count_total_objectives(pow) {
 	let n = objective1[pow].length
 	if (!has_eased_victory(pow))
 		n += objective2[pow].length
-	if (pow === P_PRUSSIA && is_4p_scenario()) {
+	if (pow === P_PRUSSIA && is_34p_scenario()) {
 		if (view.oo === 0)
 			n = 0
 		if (view.oo < 0 && set_has(view.fate, FC_POEMS) && set_has(view.fate, FC_LORD_BUTE))
@@ -894,6 +935,56 @@ function colorize(text) {
 	return text
 }
 
+function player_from_power(pow) {
+	let role = null
+
+	if (is_austrian_theatre() && pow === P_IMPERIAL)
+		return R_MARIA_THERESA
+
+	switch (pow) {
+		case P_PRUSSIA:
+		case P_HANOVER:
+			role = R_FREDERICK
+			break
+		case P_RUSSIA:
+		case P_SWEDEN:
+			role = R_ELISABETH
+			break
+		case P_AUSTRIA:
+			role = R_MARIA_THERESA
+			break
+		case P_IMPERIAL:
+			if (has_russia_dropped_out() && has_sweden_dropped_out())
+				role = R_ELISABETH
+			else if (has_france_dropped_out())
+				role = R_POMPADOUR
+			else
+				role = R_MARIA_THERESA
+			break
+		case P_FRANCE:
+			role = R_POMPADOUR
+			break
+	}
+
+	if (is_3p_scenario() && role === R_POMPADOUR)
+		role = R_ELISABETH
+	return role
+}
+
+function update_player_power_list(role, powers) {
+	if (roles[role]) {
+		roles[role].stat.replaceChildren()
+		for (let pow of all_powers)
+			if (!has_power_dropped_out(pow) && player_from_power(pow) === role && power_badge[pow])
+				roles[role].stat.appendChild(power_badge[pow])
+	}
+}
+
+function update_player_active(name) {
+	if (roles[name])
+		roles[name].element.classList.toggle("active", player_from_power(view.power) === name)
+}
+
 function on_update() {
 	let text = colorize(view.prompt)
 	if (text !== view.prompt)
@@ -906,6 +997,16 @@ function on_update() {
 	ui.header.classList.toggle("austria", view.power === P_AUSTRIA)
 	ui.header.classList.toggle("imperial", view.power === P_IMPERIAL)
 	ui.header.classList.toggle("france", view.power === P_FRANCE)
+
+	update_player_power_list("Frederick")
+	update_player_power_list("Elisabeth")
+	update_player_power_list("Maria Theresa")
+	update_player_power_list("Pompadour")
+
+	update_player_active("Frederick")
+	update_player_active("Elisabeth")
+	update_player_active("Maria Theresa")
+	update_player_active("Pompadour")
 
 	sort_power_panel(true)
 

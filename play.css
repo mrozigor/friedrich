@@ -71,6 +71,8 @@
 #role_Maria_Theresa { background-color: var(--color-role-austria) }
 #role_Pompadour { background-color: var(--color-role-france) }
 
+.role.active span { text-decoration: dotted underline; }
+
 #prompt {
 	font-family: "Suit Symbols", var(--font-widget);
 	font-variant-numeric: tabular-nums;
@@ -227,18 +229,37 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 	border: 1px solid black;
 }
 
-.marker.conquest.austria { background-image: url(images/conquest_austria.2x.png) }
-.marker.conquest.france { background-image: url(images/conquest_france.2x.png) }
-.marker.conquest.imperial { background-image: url(images/conquest_imperial.2x.png) }
-.marker.conquest.prussia { background-image: url(images/conquest_prussia.2x.png) }
-.marker.conquest.russia { background-image: url(images/conquest_russia.2x.png) }
-.marker.conquest.sweden { background-image: url(images/conquest_sweden.2x.png) }
-.marker.retroactive.austria { background-image: url(images/retroactive_austria.2x.png) }
-.marker.retroactive.france { background-image: url(images/retroactive_france.2x.png) }
-.marker.retroactive.imperial { background-image: url(images/retroactive_imperial.2x.png) }
-.marker.retroactive.prussia { background-image: url(images/retroactive_prussia.2x.png) }
-.marker.retroactive.russia { background-image: url(images/retroactive_russia.2x.png) }
-.marker.retroactive.sweden { background-image: url(images/retroactive_sweden.2x.png) }
+.role_stat {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: start;
+	gap: 4px;
+	padding-right: 3px;
+}
+
+.role_marker {
+	display: inline-block;
+	width: 30px;
+	height: 22px;
+	background-size: 30px 30px;
+	background-position: center;
+	border: 1px solid black;
+}
+
+.conquest.hanover { background-image: url(images/hanover.png) }
+
+.conquest.austria { background-image: url(images/conquest_austria.2x.png) }
+.conquest.france { background-image: url(images/conquest_france.2x.png) }
+.conquest.imperial { background-image: url(images/conquest_imperial.2x.png) }
+.conquest.prussia { background-image: url(images/conquest_prussia.2x.png) }
+.conquest.russia { background-image: url(images/conquest_russia.2x.png) }
+.conquest.sweden { background-image: url(images/conquest_sweden.2x.png) }
+.retroactive.austria { background-image: url(images/retroactive_austria.2x.png) }
+.retroactive.france { background-image: url(images/retroactive_france.2x.png) }
+.retroactive.imperial { background-image: url(images/retroactive_imperial.2x.png) }
+.retroactive.prussia { background-image: url(images/retroactive_prussia.2x.png) }
+.retroactive.russia { background-image: url(images/retroactive_russia.2x.png) }
+.retroactive.sweden { background-image: url(images/retroactive_sweden.2x.png) }
 .marker.turn { background-image: url(images/turn.2x.png) }
 
 
