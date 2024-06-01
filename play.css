@@ -149,6 +149,8 @@ body {
 
 #log span.suit { font-size: 11px; }
 
+span.value { padding: 0 1px }
+
 span.suit.reserve { padding: 0 1px; }
 
 span.suit.spades { color: var(--color-spades) }
@@ -156,6 +158,7 @@ span.suit.clubs { color: var(--color-clubs) }
 span.suit.hearts { color: var(--color-hearts) }
 span.suit.diamonds { color: var(--color-diamonds) }
 span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family: "Source Serif SmText"; }
+span.suit.reserve { font-weight: bold; font-family: "Source Serif SmText"; }
 
 /* PANELS */
 
@@ -430,6 +433,26 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 		display: none;
 	}
 }
+
+body.shift span.value.deck_1 { background-color: #9513 }
+body.shift span.value.deck_2 { background-color: #04f2 }
+body.shift span.value.deck_3 { background-color: #0f03 }
+body.shift span.value.deck_4 { background-color: #f002 }
+body.shift span.value.deck_5 { background-color: #0002 }
+
+/*
+body.shift .card.tc.face.deck_1 { border-color: #7d643d; }
+body.shift .card.tc.face.deck_2 { border-color: #3e6c8c; }
+body.shift .card.tc.face.deck_3 { border-color: #687e33; }
+body.shift .card.tc.face.deck_4 { border-color: #ac4531; }
+body.shift .card.tc.face.deck_1 { border-color: silver; }
+
+body.shift .card.tc.face.deck_1 { box-shadow: 0 0 0 2px #7d643d; }
+body.shift .card.tc.face.deck_2 { box-shadow: 0 0 0 2px #3e6c8c; }
+body.shift .card.tc.face.deck_3 { box-shadow: 0 0 0 2px #687e33; }
+body.shift .card.tc.face.deck_4 { box-shadow: 0 0 0 2px #ac4531; }
+body.shift .card.tc.face.deck_1 { box-shadow: 0 0 0 2px silver; }
+*/
 
 /* CARDS */
 

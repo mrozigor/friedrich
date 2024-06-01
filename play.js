@@ -133,6 +133,8 @@ function to_suit(c) {
 }
 
 function to_value(c) {
+	if (to_suit(c) === 4)
+		return 10
 	return c & 15
 }
 
@@ -930,12 +932,26 @@ const colorize_H = '<span class="suit hearts">\u2665</span>'
 const colorize_D = '<span class="suit diamonds">\u2666</span>'
 const colorize_R = '$1<span class="suit reserve">R</span>'
 
+const colorize_1 = '<span class="value deck_1">$1</span>'
+const colorize_2 = '<span class="value deck_2">$1</span>'
+const colorize_3 = '<span class="value deck_3">$1</span>'
+const colorize_4 = '<span class="value deck_4">$1</span>'
+const colorize_5 = '<span class="value deck_5">$1</span>'
+
 function colorize(text) {
+	text = text.replace(/1\^(\d+[\u2660\u2663\u2665\u2666R])/g, colorize_1)
+	text = text.replace(/2\^(\d+[\u2660\u2663\u2665\u2666R])/g, colorize_2)
+	text = text.replace(/3\^(\d+[\u2660\u2663\u2665\u2666R])/g, colorize_3)
+	text = text.replace(/4\^(\d+[\u2660\u2663\u2665\u2666R])/g, colorize_4)
+	text = text.replace(/5\^(\d+[\u2660\u2663\u2665\u2666R])/g, colorize_5)
+	text = text.replace(/(\d+)R/g, colorize_R)
 	text = text.replaceAll("\u2660", colorize_S)
 	text = text.replaceAll("\u2663", colorize_C)
 	text = text.replaceAll("\u2665", colorize_H)
 	text = text.replaceAll("\u2666", colorize_D)
-	text = text.replace(/(\d+)R/g, colorize_R)
+
+/*
+	*/
 	return text
 }
 
@@ -1242,6 +1258,22 @@ function sub_space(_match, p1) {
 	return `<span class="city_tip" onclick="on_click_city_tip(${x})" onmouseenter="on_focus_city_tip(${x})" onmouseleave="on_blur_city_tip(${x})">${n}</span>`
 }
 
+const suit_icon = [
+	'<span class="suit spades">\u2660</span>',
+	'<span class="suit clubs">\u2663</span>',
+	'<span class="suit hearts">\u2665</span>',
+	'<span class="suit diamonds">\u2666</span>',
+	'<span class="suit reserve">R</span>',
+]
+
+function sub_tc(_match, p1) {
+	let c = p1 | 0
+	let d = to_deck(c)
+	let v = to_value(c)
+	let s = to_suit(c)
+	return `<span class="value deck_${d+1}">${v}</span>${suit_icon[s]}`
+}
+
 function on_log(text) {
 	let p = document.createElement("div")
 
@@ -1264,9 +1296,10 @@ function on_log(text) {
 	text = text.replace(/</g, "&lt;")
 	text = text.replace(/>/g, "&gt;")
 
+	text = colorize(text)
 	text = text.replace(/S(\d+)/g, sub_space)
 	text = text.replace(/P(\d+)/g, sub_piece)
-	text = colorize(text)
+	text = text.replace(/C(\d+)/g, sub_tc)
 
 	if (text.match(/^\$(\d+)/)) {
 		let fx = parseInt(text.substring(1))

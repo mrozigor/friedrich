@@ -311,10 +311,18 @@ function to_value(c) {
 	return c & 15
 }
 
-function format_card(c) {
+function format_card_prompt(c) {
 	if (is_reserve(c))
 		return "10R"
 	return to_value(c) + suit_name[to_suit(c)]
+}
+
+function format_card(c) {
+	return (to_deck(c)+1) + "^" + format_card_prompt(c)
+}
+
+function format_reserve(c, v) {
+	return (to_deck(c)+1) + "^" + v + "R"
 }
 
 function is_reserve(c) {
@@ -332,9 +340,15 @@ function is_west_of(here, there) {
 	return dx < 0 && Math.abs(dx) >= Math.abs(dy)
 }
 
-function format_cards(list) {
+function format_card_list(list) {
 	if (list.length > 0)
 		return list.map(format_card).join(", ")
+	return "nothing"
+}
+
+function format_card_list_prompt(list) {
+	if (list.length > 0)
+		return list.map(format_card_prompt).join(", ")
 	return "nothing"
 }
 
@@ -1125,7 +1139,7 @@ states.tactical_cards_discard = {
 	inactive: "draw tactical cards",
 	prompt() {
 		view.draw = game.draw
-		prompt("Draw " + format_cards(game.draw) + ". Discard one of them.")
+		prompt("Draw " + format_card_list_prompt(game.draw) + ". Discard one of them.")
 		for (let c of game.draw)
 			gen_action_card(c)
 	},
@@ -1141,7 +1155,7 @@ states.tactical_cards_discard_done = {
 	inactive: "draw tactical cards",
 	prompt() {
 		view.draw = game.draw
-		prompt("Draw " + format_cards(game.draw) + ".")
+		prompt("Draw " + format_card_list_prompt(game.draw) + ".")
 		view.actions.end_cards = 1
 	},
 	end_cards() {
@@ -1153,7 +1167,7 @@ states.tactical_cards_show = {
 	inactive: "draw tactical cards",
 	prompt() {
 		view.draw = game.draw
-		prompt("Draw " + format_cards(game.draw) + ".")
+		prompt("Draw " + format_card_list_prompt(game.draw) + ".")
 		view.actions.end_cards = 1
 	},
 	end_cards() {
@@ -2411,10 +2425,12 @@ function play_card(c, sign) {
 }
 
 function play_reserve(v, sign) {
+	let c = game.reserve
+	delete game.reserve
 	let prefix = (sign < 0 ? ">>" : ">") + POWER_NAME[game.power]
 	if (fate_card_zero()) {
 		let score = signed_number(sign * game.count)
-		log(`${prefix} 0R = ${score}`)
+		log(`${prefix} ${format_reserve(c, 0)} = ${score}`)
 		clear_fate_effect()
 		return
 	}
@@ -2425,9 +2441,9 @@ function play_reserve(v, sign) {
 		game.count += v
 	let score = signed_number(sign * game.count)
 	if (bonus > 0)
-		log(`${prefix} ${v-bonus}R + ${bonus} = ${score}`)
+		log(`${prefix} ${format_reserve(c, v-bonus)} + ${bonus} = ${score}`)
 	else
-		log(`${prefix} ${v}R = ${score}`)
+		log(`${prefix} ${format_reserve(c, v)} = ${score}`)
 	if (bonus > 0)
 		clear_fate_effect()
 }
@@ -2437,6 +2453,7 @@ function play_combat_card(c, sign, resume, next_state) {
 	array_remove_item(game.hand[game.power], c)
 	if (is_reserve(c)) {
 		game.state = next_state
+		game.reserve = c
 	} else {
 		play_card(c, sign)
 		resume()
@@ -2477,6 +2494,7 @@ states.combat_attack_reserve = {
 	inactive: inactive_attack,
 	prompt() {
 		prompt_combat(game.count, "Choose value.")
+		view.draw = [ game.reserve ]
 		gen_play_reserve()
 	},
 	value(v) {
@@ -2489,6 +2507,7 @@ states.combat_defend_reserve = {
 	inactive: inactive_defend,
 	prompt() {
 		prompt_combat(-game.count, "Choose value.")
+		view.draw = [ game.reserve ]
 		gen_play_reserve()
 	},
 	value(v) {
@@ -3656,7 +3675,7 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
 states.austria_and_russia_may_exchange_one_tc_with_each_other_3 = {
 	inactive: "exchange TC with Austria",
 	prompt() {
-		prompt("You received " + format_card(game.exchange_a) + " from Austria.")
+		prompt("You received " + format_card_prompt(game.exchange_a) + " from Austria.")
 		view.draw = [ game.exchange_a ]
 		view.actions.done = 1
 	},
@@ -3672,7 +3691,7 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_3 = {
 states.austria_and_russia_may_exchange_one_tc_with_each_other_4 = {
 	inactive: "exchange TC with Russia",
 	prompt() {
-		prompt("You received " + format_card(game.exchange_r) + " from Russia.")
+		prompt("You received " + format_card_prompt(game.exchange_r) + " from Russia.")
 		view.draw = [ game.exchange_r ]
 		view.actions.done = 1
 	},
@@ -3705,7 +3724,7 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_2 = {
 	inactive: "discard a TC for a new one",
 	prompt() {
-		prompt("You drew " + format_cards(game.draw) + " from the draw deck.")
+		prompt("You drew " + format_card_list_prompt(game.draw) + " from the draw deck.")
 		view.draw = game.draw
 		view.actions.done = 1
 	},
@@ -3747,7 +3766,7 @@ states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_o
 states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_2 = {
 	inactive: "randomly draw one TC from Austria",
 	prompt() {
-		prompt("You randomly drew " + format_card(game.draw) + " from Austria.")
+		prompt("You randomly drew " + format_card_prompt(game.draw) + " from Austria.")
 		view.draw = [ game.draw ]
 		view.actions.done = 1
 	},
