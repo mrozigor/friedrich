@@ -438,6 +438,7 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 .card.tc { margin-right: -145px; }
 .panel_body { padding-right: calc(18px + 145px); }
 
+#clock_of_fate { padding: 18px; }
 #clock_of_fate .card.tc { margin-right: 0px; }
 
 .card.tc.S13 { background-image: url(cards/Friedrich.TC.01.075.jpg) }
