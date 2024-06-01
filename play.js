@@ -575,11 +575,11 @@ function on_init() {
 	}
 
 	ui.turns = [
-		create_marker("marker turn T1"),
-		create_marker("marker turn T2"),
-		create_marker("marker turn T3"),
-		create_marker("marker turn T4"),
-		create_marker("marker turn T5"),
+		create_marker("marker turn T1 hide"),
+		create_marker("marker turn T2 hide"),
+		create_marker("marker turn T3 hide"),
+		create_marker("marker turn T4 hide"),
+		create_marker("marker turn T5 hide"),
 	]
 
 	for (let e of ui.turns)
