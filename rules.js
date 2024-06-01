@@ -12,7 +12,6 @@ const SCENARIO_INDEX = {
 	"3P": 3,
 	"The War in the West": 1,
 	"The Austrian Theatre": 2,
-	"TEST": 4
 }
 
 const ROLE_NAME_1 = [
@@ -1341,8 +1340,7 @@ states.movement = {
 		if (done_trains && done_generals)
 			view.actions.end_movement = 1
 		else
-			// TODO view.actions.confirm_end_movement = 1
-			view.actions.end_movement = 1
+			view.actions.confirm_end_movement = 1
 	},
 	piece(p) {
 		push_undo()
@@ -4229,11 +4227,6 @@ exports.setup = function (seed, scenario, options) {
 	game.deck = make_tactics_deck(0)
 
 	shuffle_bigint(game.deck)
-
-	if (scenario === "TEST") {
-		game.turn = 3
-		game.clock = [ 18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1 ]
-	}
 
 	if (game.scenario === 1) {
 		setup_the_war_in_the_west()
