@@ -418,20 +418,21 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 	border-color: white;
 }
 
-/*
-.card.diamonds.action { box-shadow: 0 0 0 2px var(--color-diamonds); border-color: var(--color-diamonds); }
-.card.hearts.action { box-shadow: 0 0 0 2px var(--color-hearts); border-color: var(--color-hearts); }
-.card.clubs.action { box-shadow: 0 0 0 2px var(--color-clubs); border-color: var(--color-clubs); }
-.card.spades.action { box-shadow: 0 0 0 2px var(--color-spades); border-color: var(--color-spades); }
-.card.reserve.action { box-shadow: 0 0 0 2px var(--color-reserve); border-color: var(--color-reserve); }
-*/
-
 @media (hover: hover) {
 	.card.action:hover {
 		margin-top: -10px;
 		margin-bottom: 10px;
 	}
 }
+
+.card.zoom {
+	width: 330px;
+	height: 514px;
+	border-radius: 16px;
+}
+
+.card.fate { cursor: zoom-in }
+.card.fate.zoom { cursor: zoom-out }
 
 .draw-break { margin-left: 145px; }
 .card.tc { margin-right: -145px; }
@@ -513,6 +514,26 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 .card.fate.c17 { background-image: url(cards/Friedrich.Fatecard.17.075.jpg) }
 .card.fate.c18 { background-image: url(cards/Friedrich.Fatecard.18.075.jpg) }
 .card.fate.reverse { background-image: url(cards/Friedrich.Fatecard.reverse.075.jpg) }
+
+.card.fate.zoom.c1 { background-image: url(cards/Friedrich.Fatecard.01.150.jpg) }
+.card.fate.zoom.c2 { background-image: url(cards/Friedrich.Fatecard.02.150.jpg) }
+.card.fate.zoom.c3 { background-image: url(cards/Friedrich.Fatecard.03.150.jpg) }
+.card.fate.zoom.c4 { background-image: url(cards/Friedrich.Fatecard.04.150.jpg) }
+.card.fate.zoom.c5 { background-image: url(cards/Friedrich.Fatecard.05.150.jpg) }
+.card.fate.zoom.c6 { background-image: url(cards/Friedrich.Fatecard.06.150.jpg) }
+.card.fate.zoom.c7 { background-image: url(cards/Friedrich.Fatecard.10.150.jpg) }
+.card.fate.zoom.c8 { background-image: url(cards/Friedrich.Fatecard.11.150.jpg) }
+.card.fate.zoom.c9 { background-image: url(cards/Friedrich.Fatecard.12.150.jpg) }
+.card.fate.zoom.c10 { background-image: url(cards/Friedrich.Fatecard.13.150.jpg) }
+.card.fate.zoom.c11 { background-image: url(cards/Friedrich.Fatecard.14.150.jpg) }
+.card.fate.zoom.c12 { background-image: url(cards/Friedrich.Fatecard.15.150.jpg) }
+.card.fate.zoom.c13 { background-image: url(cards/Friedrich.Fatecard.07.150.jpg) }
+.card.fate.zoom.c14 { background-image: url(cards/Friedrich.Fatecard.08.150.jpg) }
+.card.fate.zoom.c15 { background-image: url(cards/Friedrich.Fatecard.09.150.jpg) }
+.card.fate.zoom.c16 { background-image: url(cards/Friedrich.Fatecard.16.150.jpg) }
+.card.fate.zoom.c17 { background-image: url(cards/Friedrich.Fatecard.17.150.jpg) }
+.card.fate.zoom.c18 { background-image: url(cards/Friedrich.Fatecard.18.150.jpg) }
+.card.fate.zoom.reverse { background-image: url(cards/Friedrich.Fatecard.reverse.150.jpg) }
 
 @media (min-resolution: 97dpi) {
 	#map { background-image: url(Fried.Gameboard.150.jpg);

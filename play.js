@@ -494,6 +494,7 @@ function make_fate_card(fc) {
 		e.className = "card fate reverse"
 	else
 		e.className = "card fate c" + fc
+	e.onclick = on_click_fate_card
 	return e
 }
 
@@ -699,6 +700,10 @@ function on_focus_piece(evt) {
 
 function on_blur_piece() {
 	ui.status.textContent = ""
+}
+
+function on_click_fate_card(evt) {
+	evt.target.classList.toggle("zoom")
 }
 
 /* UPDATE UI */
