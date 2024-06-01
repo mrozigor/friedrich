@@ -705,7 +705,11 @@ function on_blur_city() {
 }
 
 function on_focus_piece(evt) {
-	ui.status.textContent = piece_tooltip_name[evt.target.my_id]
+	let p = evt.target.my_id
+	if (p < 24 && view.troops[p] > 0)
+		ui.status.textContent = piece_tooltip_name[evt.target.my_id] + " (" + view.troops[p] + " troops)"
+	else
+		ui.status.textContent = piece_tooltip_name[evt.target.my_id]
 }
 
 function on_blur_piece() {
