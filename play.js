@@ -1030,11 +1030,11 @@ function update_player_active(name) {
 		roles[name].element.classList.toggle("active", player_from_power(view.power) === name)
 }
 
-function on_update() {
-	let text = colorize(view.prompt)
-	if (text !== view.prompt)
-		ui.prompt.innerHTML = text
+function on_prompt(text) {
+	return colorize(view.prompt)
+}
 
+function on_update() {
 	ui.header.classList.toggle("prussia", view.power === P_PRUSSIA)
 	ui.header.classList.toggle("hanover", view.power === P_HANOVER)
 	ui.header.classList.toggle("russia", view.power === P_RUSSIA)

@@ -205,7 +205,6 @@ span.suit.reserve { font-weight: bold; font-family: "Source Serif SmText"; }
 	justify-content: start;
 	flex-wrap: wrap;
 	padding: 18px;
-	gap: 18px;
 	min-height: calc(257px + 4px);
 }
 
@@ -444,20 +443,6 @@ body.shift span.value.deck_3 { background-color: #0f03 }
 body.shift span.value.deck_4 { background-color: #f002 }
 body.shift span.value.deck_5 { background-color: #0002 }
 
-/*
-body.shift .card.tc.face.deck_1 { border-color: #7d643d; }
-body.shift .card.tc.face.deck_2 { border-color: #3e6c8c; }
-body.shift .card.tc.face.deck_3 { border-color: #687e33; }
-body.shift .card.tc.face.deck_4 { border-color: #ac4531; }
-body.shift .card.tc.face.deck_1 { border-color: silver; }
-
-body.shift .card.tc.face.deck_1 { box-shadow: 0 0 0 2px #7d643d; }
-body.shift .card.tc.face.deck_2 { box-shadow: 0 0 0 2px #3e6c8c; }
-body.shift .card.tc.face.deck_3 { box-shadow: 0 0 0 2px #687e33; }
-body.shift .card.tc.face.deck_4 { box-shadow: 0 0 0 2px #ac4531; }
-body.shift .card.tc.face.deck_1 { box-shadow: 0 0 0 2px silver; }
-*/
-
 /* CARDS */
 
 .card {
@@ -490,19 +475,21 @@ body.shift .card.tc.face.deck_1 { box-shadow: 0 0 0 2px silver; }
 .card.fate { cursor: zoom-in }
 .card.fate.zoom { cursor: zoom-out }
 
-.draw-break { margin-left: 145px; }
-.card.tc { margin-right: -145px; }
-.card.tc.reverse { margin-right: -165px; }
-.panel_body { padding-right: calc(18px + 145px); }
+.draw-break { margin-left: 167px; }
+.card.tc { margin-right: calc(-167px + 40px); }
+.card.tc.reverse { margin-right: calc(-167px + 20px); }
+.card.tc.discard { margin-right: calc(-167px + 6px); }
+.panel_body { padding-right: calc(18px + 167px); }
+.panel_body { gap: 18px 0; }
 
 #clock_of_fate { padding: 18px; }
+#discard_pile_body { padding: 18px; gap: 18px; }
 #clock_of_fate .card.tc { margin-right: 0px; }
 
 .discard_pile {
 	display: flex;
 	flex-wrap: wrap;
-	width: 230px;
-	gap: 4px;
+	width: calc(167px + 6px * 9);
 }
 
 .card.tc.S13 { background-image: url(cards/Friedrich.TC.01.075.jpg) }
