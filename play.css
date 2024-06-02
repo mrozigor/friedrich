@@ -423,6 +423,14 @@ span.suit.reserve { color: var(--color-reserve); font-weight: bold; font-family:
 .number.france { background-color: var(--color-france); }
 */
 
+/* CARD COUNTING AIDS */
+
+@media (hover: hover) {
+	#shift_button {
+		display: none;
+	}
+}
+
 /* CARDS */
 
 .card {

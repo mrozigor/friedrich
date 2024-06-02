@@ -18,6 +18,10 @@ function toggle_pieces() {
 	}
 }
 
+function toggle_shift() {
+	document.body.classList.toggle("shift")
+}
+
 /* DATA */
 
 const R_FREDERICK = "Frederick"
