@@ -442,6 +442,13 @@ const ui = {
 	pieces_element: document.getElementById("pieces"),
 	markers_element: document.getElementById("markers"),
 	clock_of_fate: document.getElementById("clock_of_fate"),
+	discard: [
+		document.getElementById("discard_1"),
+		document.getElementById("discard_2"),
+		document.getElementById("discard_3"),
+		document.getElementById("discard_4"),
+		document.getElementById("discard_5"),
+	],
 	power_panel_list: document.getElementById("power_panel_list"),
 	power_header: [
 		document.getElementById("hand_prussia_header"),
@@ -526,12 +533,12 @@ function make_tc_deck(n) {
 	for (let suit = 0; suit <= 3; ++suit) {
 		for (let value = 2; value <= 13; ++value) {
 			let c = (n << 7) | (suit << 4) | value
-			ui.tc[c] = create_element("card", c, "card tc deck_" + (n+1) + " " + suit_class[suit] + " " + suit_letter[suit] + value)
+			ui.tc[c] = create_element("card", c, "card tc face deck_" + (n+1) + " " + suit_class[suit] + " " + suit_letter[suit] + value)
 		}
 	}
 	for (let value = 2; value <= 3; ++value) {
 		let c = (n << 7) | (4 << 4) | value
-		ui.tc[c] = create_element("card", c, "card tc deck_" + (n+1) + " reserve R")
+		ui.tc[c] = create_element("card", c, "card tc face deck_" + (n+1) + " reserve R")
 	}
 }
 
@@ -540,6 +547,16 @@ function make_tc_deck_back(n) {
 	for (let i = 0; i < 50; ++i) {
 		let e = document.createElement("div")
 		e.className = "card tc reverse " + n
+		list.push(e)
+	}
+	return list
+}
+
+function make_tc_deck_discard(n) {
+	let list = []
+	for (let i = 0; i < 10; ++i) {
+		let e = document.createElement("div")
+		e.className = "card tc discard reverse " + n
 		list.push(e)
 	}
 	return list
@@ -645,6 +662,14 @@ function on_init() {
 		make_tc_deck_back("deck_3"),
 		make_tc_deck_back("deck_4"),
 		make_tc_deck_back("deck_5"),
+	]
+
+	ui.tc_discard = [
+		make_tc_deck_discard("deck_1"),
+		make_tc_deck_discard("deck_2"),
+		make_tc_deck_discard("deck_3"),
+		make_tc_deck_discard("deck_4"),
+		make_tc_deck_discard("deck_5"),
 	]
 
 	ui.combat = document.createElement("div")
@@ -1078,6 +1103,12 @@ function on_update() {
 	if (typeof view.fate === "object")
 		for (let c of view.fate)
 			ui.clock_of_fate.appendChild(ui.fate[c])
+
+	for (let deck = 0; deck < 5; ++deck) {
+		ui.discard[deck].replaceChildren()
+		for (let i = 0; i < view.discard[deck]; ++i)
+			ui.discard[deck].appendChild(ui.tc_discard[deck][i])
+	}
 
 	ui.markers_element.replaceChildren()
 	for (let s of view.conquest)

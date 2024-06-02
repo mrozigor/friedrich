@@ -8,6 +8,52 @@
 	unicode-range:U+2660-2667;
 }
 
+#prompt {
+	font-family: "Suit Symbols", var(--font-widget);
+	font-variant-numeric: tabular-nums;
+}
+
+#log {
+	font-family: "Suit Symbols", var(--font-small);
+	font-variant-numeric: tabular-nums;
+}
+
+#role_Frederick { background-color: var(--color-role-prussia) }
+#role_Elisabeth { background-color: var(--color-role-russia) }
+#role_Maria_Theresa { background-color: var(--color-role-austria) }
+#role_Pompadour { background-color: var(--color-role-france) }
+
+.role.active span { text-decoration: dotted underline; }
+
+header.your_turn.prussia { background-color: var(--color-light-prussia); }
+header.your_turn.hanover { background-color: var(--color-light-hanover); }
+header.your_turn.russia { background-color: var(--color-light-russia); }
+header.your_turn.sweden { background-color: var(--color-light-sweden); }
+header.your_turn.austria { background-color: var(--color-light-austria); }
+header.your_turn.imperial { background-color: var(--color-light-imperial); }
+header.your_turn.france { background-color: var(--color-light-france); }
+
+#mapwrap {
+	width: 2485px;
+	height: 1654px;
+	box-shadow: 2px 2px 4px #0006;
+}
+
+#map {
+	position: absolute;
+	width: 2485px;
+	height: 1654px;
+	background-size: cover;
+	background-image: url(Fried.Gameboard.075.jpg);
+	background-color: #ece1a9;
+}
+
+body {
+	background-color: slategray;
+}
+
+/* COLORS */
+
 :root {
 	--color-prussia: #005478;
 	--color-hanover: #91c9ed;
@@ -66,51 +112,7 @@
 	--color-reserve: #0094c9;
 }
 
-#role_Frederick { background-color: var(--color-role-prussia) }
-#role_Elisabeth { background-color: var(--color-role-russia) }
-#role_Maria_Theresa { background-color: var(--color-role-austria) }
-#role_Pompadour { background-color: var(--color-role-france) }
-
-.role.active span { text-decoration: dotted underline; }
-
-#prompt {
-	font-family: "Suit Symbols", var(--font-widget);
-	font-variant-numeric: tabular-nums;
-}
-
-header.your_turn.prussia { background-color: var(--color-light-prussia); }
-header.your_turn.hanover { background-color: var(--color-light-hanover); }
-header.your_turn.russia { background-color: var(--color-light-russia); }
-header.your_turn.sweden { background-color: var(--color-light-sweden); }
-header.your_turn.austria { background-color: var(--color-light-austria); }
-header.your_turn.imperial { background-color: var(--color-light-imperial); }
-header.your_turn.france { background-color: var(--color-light-france); }
-
-#mapwrap {
-	width: 2485px;
-	height: 1654px;
-	box-shadow: 2px 2px 4px #0006;
-}
-
-#map {
-	position: absolute;
-	width: 2485px;
-	height: 1654px;
-	background-size: cover;
-	background-image: url(Fried.Gameboard.075.jpg);
-	background-color: #ece1a9;
-}
-
-body {
-	background-color: slategray;
-}
-
 /* LOG */
-
-#log {
-	font-family: "Suit Symbols", var(--font-small);
-	font-variant-numeric: tabular-nums;
-}
 
 #log { background-color: #f3ebd4 }
 
@@ -170,6 +172,7 @@ span.suit.reserve { font-weight: bold; font-family: "Source Serif SmText"; }
 #hand_imperial_header { background-color: var(--color-light-imperial); }
 #hand_france_header { background-color: var(--color-light-france); }
 #clock_of_fate_header { background-color: var(--color-light-clock); }
+#discard_pile_header { background-color: var(--color-light-clock); }
 
 #hand_prussia_panel { background-color: var(--color-medium-prussia); }
 #hand_hanover_panel { background-color: var(--color-medium-hanover); }
@@ -179,6 +182,7 @@ span.suit.reserve { font-weight: bold; font-family: "Source Serif SmText"; }
 #hand_imperial_panel { background-color: var(--color-medium-imperial); }
 #hand_france_panel { background-color: var(--color-medium-france); }
 #clock_of_fate_panel { background-color: var(--color-medium-clock); }
+#discard_pile_panel { background-color: var(--color-medium-clock); }
 
 .panel {
 	background-color: darkgray;
@@ -202,7 +206,7 @@ span.suit.reserve { font-weight: bold; font-family: "Source Serif SmText"; }
 	flex-wrap: wrap;
 	padding: 18px;
 	gap: 18px;
-	min-height: 256px;
+	min-height: calc(257px + 4px);
 }
 
 /* MARKERS */
@@ -458,7 +462,7 @@ body.shift .card.tc.face.deck_1 { box-shadow: 0 0 0 2px silver; }
 
 .card {
 	width: 165px;
-	height: 256px;
+	height: 257px;
 	background-size: 100%;
 	background-color: #f3ebd5;
 	border-radius: 8px;
@@ -488,10 +492,18 @@ body.shift .card.tc.face.deck_1 { box-shadow: 0 0 0 2px silver; }
 
 .draw-break { margin-left: 145px; }
 .card.tc { margin-right: -145px; }
+.card.tc.reverse { margin-right: -165px; }
 .panel_body { padding-right: calc(18px + 145px); }
 
 #clock_of_fate { padding: 18px; }
 #clock_of_fate .card.tc { margin-right: 0px; }
+
+.discard_pile {
+	display: flex;
+	flex-wrap: wrap;
+	width: 230px;
+	gap: 4px;
+}
 
 .card.tc.S13 { background-image: url(cards/Friedrich.TC.01.075.jpg) }
 .card.tc.S12 { background-image: url(cards/Friedrich.TC.02.075.jpg) }

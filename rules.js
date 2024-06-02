@@ -1050,7 +1050,7 @@ function find_largest_discard(u) {
 	throw "OUT OF CARDS"
 }
 
-function next_tactics_deck() {
+function count_used_cards() {
 	let held = [ 0, 0, 0, 0, 0 ]
 
 	// count cards in hands
@@ -1058,11 +1058,25 @@ function next_tactics_deck() {
 		for (let c of game.hand[pow])
 			held[to_deck(c)]++
 	}
+
+	// count cards currently being drawn
 	if (game.draw)
 		for (let c of game.draw)
 			held[to_deck(c)]++
+
+	// count cards remaining in deck
+	for (let c of game.deck)
+		held[to_deck(c)]++
+
+	// set-aside prussian card
 	if (game.oo > 0)
 		held[to_deck(game.oo)]++
+
+	return held
+}
+
+function next_tactics_deck() {
+	let held = count_used_cards()
 
 	// find next unused deck
 	for (let i = 1; i < 5; ++i) {
@@ -4425,6 +4439,13 @@ function total_troops_list() {
 	return list
 }
 
+function total_discard_list() {
+	let discard = count_used_cards()
+	for (let i = 0; i < 5; ++i)
+		discard[i] = Math.ceil((50 - discard[i]) / 5)
+	return discard
+}
+
 exports.view = function (state, player) {
 	game = state
 	view = {
@@ -4440,6 +4461,7 @@ exports.view = function (state, player) {
 		hand: mask_hand(player),
 		oo: game.oo,
 		pt: total_troops_list(),
+		discard: total_discard_list(),
 
 		power: game.power,
 		retro: game.retro,
