@@ -441,7 +441,7 @@ const ui = {
 	spaces_element: document.getElementById("spaces"),
 	pieces_element: document.getElementById("pieces"),
 	markers_element: document.getElementById("markers"),
-	clock_of_fate: document.getElementById("clock_of_fate"),
+	clock_of_fate: document.getElementById("clock_of_fate_display"),
 	discard: [
 		document.getElementById("discard_1"),
 		document.getElementById("discard_2"),
@@ -1097,12 +1097,11 @@ function on_update() {
 	}
 
 	ui.clock_of_fate.replaceChildren()
-	if (view.oo > 0)
-		ui.clock_of_fate.appendChild(ui.tc[view.oo])
-	ui.clock_of_fate.appendChild(ui.fate[0])
 	if (typeof view.fate === "object")
 		for (let c of view.fate)
 			ui.clock_of_fate.appendChild(ui.fate[c])
+	if (view.oo > 0)
+		ui.clock_of_fate.appendChild(ui.tc[view.oo])
 
 	for (let deck = 0; deck < 5; ++deck) {
 		ui.discard[deck].replaceChildren()

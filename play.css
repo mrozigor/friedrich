@@ -479,17 +479,23 @@ body.shift span.value.deck_5 { background-color: #0002 }
 .card.tc { margin-right: calc(-167px + 40px); }
 .card.tc.reverse { margin-right: calc(-167px + 20px); }
 .card.tc.discard { margin-right: calc(-167px + 6px); }
+.card.fate.reverse { margin-right: calc(-167px + 6px); }
 .panel_body { padding-right: calc(18px + 167px); }
 .panel_body { gap: 18px 0; }
 
-#clock_of_fate { padding: 18px; }
-#discard_pile_body { padding: 18px; gap: 18px; }
+#discard_pile_body, #clock_of_fate { padding: 18px; gap: 18px; }
 #clock_of_fate .card.tc { margin-right: 0px; }
 
-.discard_pile {
+.card_pile {
 	display: flex;
 	flex-wrap: wrap;
 	width: calc(167px + 6px * 9);
+}
+
+#clock_of_fate_display {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 18px;
 }
 
 .card.tc.S13 { background-image: url(cards/Friedrich.TC.01.075.jpg) }
