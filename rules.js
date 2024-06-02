@@ -1060,9 +1060,10 @@ function count_used_cards() {
 	}
 
 	// count cards currently being drawn
-	if (game.draw)
+	if (game.draw) {
 		for (let c of game.draw)
 			held[to_deck(c)]++
+	}
 
 	// count cards remaining in deck
 	for (let c of game.deck)
@@ -3769,7 +3770,7 @@ states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_o
 		c = game.hand[P_AUSTRIA][x]
 		set_delete(game.hand[P_AUSTRIA], c)
 
-		game.draw = c
+		game.draw = [ c ]
 		game.state = "prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_2"
 	},
 	pass() {
@@ -3781,11 +3782,11 @@ states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_o
 	inactive: "randomly draw one TC from Austria",
 	prompt() {
 		prompt("You randomly drew " + format_card_prompt(game.draw) + " from Austria.")
-		view.draw = [ game.draw ]
+		view.draw = game.draw
 		view.actions.done = 1
 	},
 	done() {
-		set_add(game.hand[P_PRUSSIA], game.draw)
+		set_add(game.hand[P_PRUSSIA], game.draw[0])
 		delete game.draw
 		goto_start_turn()
 	},
