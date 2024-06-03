@@ -3204,19 +3204,19 @@ function goto_clock_of_fate() {
 		}
 
 		if (fc === FC_ELISABETH) {
-			set_active_to_power(P_PRUSSIA)
+			set_active_to_power(P_RUSSIA)
 			game.state = "russia_quits_the_game_1"
 			return
 		}
 
 		if (fc === FC_SWEDEN) {
-			set_active_to_power(P_PRUSSIA)
+			set_active_to_power(P_SWEDEN)
 			game.state = "sweden_quits_the_game_1"
 			return
 		}
 
 		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))) {
-			set_active_to_power(P_HANOVER)
+			set_active_to_power(P_FRANCE)
 			game.state = "france_quits_the_game_1"
 			return
 		}
@@ -3249,8 +3249,10 @@ states.russia_quits_the_game_1 = {
 		game.pos[p] = REMOVED
 		if (is_general(p))
 			game.troops[p] = 0
-		if (has_removed_all_pieces(P_RUSSIA))
+		if (has_removed_all_pieces(P_RUSSIA)) {
+			set_active_to_power(P_PRUSSIA)
 			game.state = "russia_quits_the_game_2"
+		}
 	},
 }
 
@@ -3294,8 +3296,10 @@ states.sweden_quits_the_game_1 = {
 		game.pos[p] = REMOVED
 		if (is_general(p))
 			game.troops[p] = 0
-		if (has_removed_all_pieces(P_SWEDEN))
+		if (has_removed_all_pieces(P_SWEDEN)) {
+			set_active_to_power(P_PRUSSIA)
 			game.state = "sweden_quits_the_game_2"
+		}
 	},
 }
 
@@ -3339,8 +3343,10 @@ states.france_quits_the_game_1 = {
 		game.pos[p] = REMOVED
 		if (is_general(p))
 			game.troops[p] = 0
-		if (has_removed_all_pieces(P_FRANCE))
+		if (has_removed_all_pieces(P_FRANCE)) {
+			set_active_to_power(P_HANOVER)
 			game.state = "france_quits_the_game_2"
+		}
 	},
 }
 
