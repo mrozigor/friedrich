@@ -832,13 +832,13 @@ function retire_general(p) {
 			}
 		}
 		if (n > 1)
-			log("P" + p + " retired with " + n + " troops.")
+			log("P" + p + " removed from S" + s + " with " + n + " troops.")
 		else if (n === 1)
-			log("P" + p + " retired with 1 troop.")
+			log("P" + p + " removed from S" + s + " with 1 troop.")
 		else
-			log("P" + p + " retired.")
+			log("P" + p + " removed.")
 	} else {
-		log("P" + p + " retired.")
+		log("P" + p + " removed.")
 	}
 }
 
@@ -3131,6 +3131,7 @@ function goto_clock_of_fate() {
 					log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
 				else
 					log("For Sweden eased victory conditions come into effect.")
+				log_br()
 				break
 			case FC_SWEDEN:
 				log("Sweden quits the game!")
@@ -3142,6 +3143,7 @@ function goto_clock_of_fate() {
 					log_br()
 					log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
 				}
+				log_br()
 				break
 			case FC_AMERICA:
 			case FC_INDIA:
@@ -3153,6 +3155,7 @@ function goto_clock_of_fate() {
 					log("Cumberland is removed permanently from the game. Hanover receives only 1 TC from now on.")
 					log_br()
 					log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
+					log_br()
 				} else {
 					if (game.scenario === 1)
 						break
