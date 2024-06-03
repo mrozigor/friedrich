@@ -850,16 +850,15 @@ function get_cylinder_power(id) {
 }
 
 function layout_general(id, s) {
-	let e = ui.pieces[id]
 	let x, y, n
 
 	if (s === REMOVED) {
-		if (e.parentElement === ui.pieces_element)
-			e.remove()
+		if (ui.pieces[id].parentElement === ui.pieces_element)
+			ui.pieces[id].remove()
+		if (ui.troops[id].parentElement === ui.pieces_element)
+			ui.troops[id].remove()
 		return
 	}
-	if (e.parentElement !== ui.pieces_element)
-		ui.pieces_element.appendChild(e)
 
 	if (s === ELIMINATED) {
 		n = layout_general_offset_elim(id)
@@ -875,6 +874,9 @@ function layout_general(id, s) {
 
 	let selected = set_has(view.selected, id)
 
+	let e = ui.pieces[id]
+	if (e.parentElement !== ui.pieces_element)
+		ui.pieces_element.appendChild(e)
 	e.style.left = (x - 21) + "px"
 	e.style.top = (y - 29 - 15 * n) + "px"
 	e.style.zIndex = y + n
@@ -882,10 +884,9 @@ function layout_general(id, s) {
 	e.classList.toggle("oos", (view.oos & (1 <<id)) !== 0)
 
 	e = ui.troops[id]
-	// e.style.left = (x + 21 + 1) + "px"
-	// e.style.top = (y - 7 - 14 * n) + "px"
+	if (e.parentElement !== ui.pieces_element)
+		ui.pieces_element.appendChild(e)
 	e.style.left = (x - 7) + "px"
-	// e.style.top = (y + 7 - 15 * n) + "px"
 	e.style.top = (y + 2 - 15 * n) + "px"
 	e.style.zIndex = y + n + 1
 	e.className = power_class[GENERAL_POWER[id]] + " piece number n" + view.troops[id]
