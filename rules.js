@@ -3237,9 +3237,9 @@ const strokes_of_fate_name = [
 ]
 
 states.russia_quits_the_game_1 = {
-	inactive: "remove Russia from the game",
+	inactive: "remove all Russian pieces",
 	prompt() {
-		prompt("Russia quits the game. Remove all Russian pieces.")
+		prompt("Remove all Russian pieces.")
 		for (let p of all_power_generals[P_RUSSIA])
 			gen_action_piece(p)
 		for (let p of all_power_trains[P_RUSSIA])
@@ -3259,7 +3259,7 @@ states.russia_quits_the_game_1 = {
 states.russia_quits_the_game_2 = {
 	inactive: "retire one Prussian general",
 	prompt() {
-		prompt("Russia quits the game. Retire one Prussian general.")
+		prompt("Retire one Prussian general.")
 		for (let p of all_power_generals[game.power])
 			if (p !== GEN_FRIEDRICH && game.pos[p] < REMOVED)
 				gen_action_piece(p)
@@ -3274,7 +3274,7 @@ states.russia_quits_the_game_2 = {
 states.russia_quits_the_game_3 = {
 	inactive: "retire one Prussian general",
 	prompt() {
-		prompt("Russia quits the game.")
+		prompt("Retire one Prussian general.")
 		view.actions.done = 1
 	},
 	done() {
@@ -3284,9 +3284,9 @@ states.russia_quits_the_game_3 = {
 }
 
 states.sweden_quits_the_game_1 = {
-	inactive: "remove Sweden from the game",
+	inactive: "remove all Swedish pieces",
 	prompt() {
-		prompt("Sweden quits the game. Remove all Swedish pieces.")
+		prompt("Remove all Swedish pieces.")
 		for (let p of all_power_generals[P_SWEDEN])
 			gen_action_piece(p)
 		for (let p of all_power_trains[P_SWEDEN])
@@ -3306,7 +3306,7 @@ states.sweden_quits_the_game_1 = {
 states.sweden_quits_the_game_2 = {
 	inactive: "retire one Prussian general",
 	prompt() {
-		prompt("Sweden quits the game. Retire one Prussian general.")
+		prompt("Retire one Prussian general.")
 		for (let p of all_power_generals[game.power])
 			if (p !== GEN_FRIEDRICH && game.pos[p] < REMOVED)
 				gen_action_piece(p)
@@ -3321,7 +3321,7 @@ states.sweden_quits_the_game_2 = {
 states.sweden_quits_the_game_3 = {
 	inactive: "retire one Prussian general",
 	prompt() {
-		prompt("Sweden quits the game.")
+		prompt("Retire one Prussian general.")
 		view.actions.done = 1
 	},
 	done() {
@@ -3331,9 +3331,9 @@ states.sweden_quits_the_game_3 = {
 }
 
 states.france_quits_the_game_1 = {
-	inactive: "remove France from the game",
+	inactive: "remove all French pieces",
 	prompt() {
-		prompt("France quits the game. Remove all French pieces.")
+		prompt("Remove all French pieces.")
 		for (let p of all_power_generals[P_FRANCE])
 			gen_action_piece(p)
 		for (let p of all_power_trains[P_FRANCE])
@@ -3353,7 +3353,7 @@ states.france_quits_the_game_1 = {
 states.france_quits_the_game_2 = {
 	inactive: "retire Cumberland",
 	prompt() {
-		prompt("France quits the game. Retire Cumberland.")
+		prompt("Retire Cumberland.")
 		gen_action_piece(GEN_CUMBERLAND)
 	},
 	piece(p) {
