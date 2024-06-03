@@ -3257,7 +3257,7 @@ states.russia_quits_the_game_1 = {
 }
 
 states.russia_quits_the_game_2 = {
-	inactive: "remove Russia from the game",
+	inactive: "retire one Prussian general",
 	prompt() {
 		prompt("Russia quits the game. Retire one Prussian general.")
 		for (let p of all_power_generals[game.power])
@@ -3272,7 +3272,7 @@ states.russia_quits_the_game_2 = {
 }
 
 states.russia_quits_the_game_3 = {
-	inactive: "remove Russia from the game",
+	inactive: "retire one Prussian general",
 	prompt() {
 		prompt("Russia quits the game.")
 		view.actions.done = 1
@@ -3304,7 +3304,7 @@ states.sweden_quits_the_game_1 = {
 }
 
 states.sweden_quits_the_game_2 = {
-	inactive: "remove Sweden from the game",
+	inactive: "retire one Prussian general",
 	prompt() {
 		prompt("Sweden quits the game. Retire one Prussian general.")
 		for (let p of all_power_generals[game.power])
@@ -3319,7 +3319,7 @@ states.sweden_quits_the_game_2 = {
 }
 
 states.sweden_quits_the_game_3 = {
-	inactive: "remove Sweden from the game",
+	inactive: "retire one Prussian general",
 	prompt() {
 		prompt("Sweden quits the game.")
 		view.actions.done = 1
@@ -3351,7 +3351,7 @@ states.france_quits_the_game_1 = {
 }
 
 states.france_quits_the_game_2 = {
-	inactive: "remove France from the game",
+	inactive: "retire Cumberland",
 	prompt() {
 		prompt("France quits the game. Retire Cumberland.")
 		gen_action_piece(GEN_CUMBERLAND)
