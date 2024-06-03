@@ -3820,6 +3820,8 @@ states.austria_may_move_laudon_by_one_city_immediately = {
 			view.actions.take = 1
 		if (s_give > 0 && u_take > 0)
 			view.actions.give = 1
+
+		view.actions.pass = 1
 	},
 	take() {
 		push_undo()
@@ -3839,6 +3841,10 @@ states.austria_may_move_laudon_by_one_city_immediately = {
 		move_general_immediately(s)
 		game.state = "laudon_done"
 	},
+	pass() {
+		clear_undo()
+		goto_start_turn()
+	}
 }
 
 states.laudon_take = states.move_take
