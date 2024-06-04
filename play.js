@@ -635,11 +635,21 @@ function make_tc_deck_back(n) {
 	return list
 }
 
-function make_tc_deck_discard(n) {
+function make_tc_deck_pile(n) {
 	let list = []
 	for (let i = 0; i < 10; ++i) {
 		let e = document.createElement("div")
-		e.className = "card tc discard reverse " + n
+		e.className = "card tc pile reverse " + n
+		list.push(e)
+	}
+	return list
+}
+
+function make_tc_deck_hand(n) {
+	let list = []
+	for (let i = 0; i < 100; ++i) {
+		let e = document.createElement("div")
+		e.className = "card tc hand reverse " + n
 		list.push(e)
 	}
 	return list
@@ -747,12 +757,22 @@ function on_init() {
 		make_tc_deck_back("deck_5"),
 	]
 
+	ui.tc_hand = [
+		make_tc_deck_hand("deck_2"),
+		make_tc_deck_hand("deck_2"),
+		make_tc_deck_hand("deck_3"),
+		make_tc_deck_hand("deck_3"),
+		make_tc_deck_hand("deck_5"),
+		make_tc_deck_hand("deck_1"),
+		make_tc_deck_hand("deck_4"),
+	]
+
 	ui.tc_discard = [
-		make_tc_deck_discard("deck_1"),
-		make_tc_deck_discard("deck_2"),
-		make_tc_deck_discard("deck_3"),
-		make_tc_deck_discard("deck_4"),
-		make_tc_deck_discard("deck_5"),
+		make_tc_deck_pile("deck_1"),
+		make_tc_deck_pile("deck_2"),
+		make_tc_deck_pile("deck_3"),
+		make_tc_deck_pile("deck_4"),
+		make_tc_deck_pile("deck_5"),
 	]
 
 	ui.combat = document.createElement("div")
@@ -1172,12 +1192,17 @@ function on_update() {
 		ui.power_panel[pow].classList.toggle("hide", has_removed_all_pieces(pow))
 
 		ui.hand[pow].replaceChildren()
-		view.hand[pow].sort(cmp_tc)
-		for (let c of view.hand[pow]) {
-			if ((c & 15) === 0)
-				ui.hand[pow].appendChild(ui.tc_back[c>>7][back[c>>7]++])
-			else
-				ui.hand[pow].appendChild(ui.tc[c])
+		if (typeof view.hand[pow] === "number") {
+			for (let i = 0; i < view.hand[pow]; ++i)
+				ui.hand[pow].appendChild(ui.tc_hand[pow][i])
+		} else {
+			view.hand[pow].sort(cmp_tc)
+			for (let c of view.hand[pow]) {
+				if ((c & 15) === 0)
+					ui.hand[pow].appendChild(ui.tc_back[c>>7][back[c>>7]++])
+				else
+					ui.hand[pow].appendChild(ui.tc[c])
+			}
 		}
 	}
 

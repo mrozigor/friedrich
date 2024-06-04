@@ -505,8 +505,9 @@ body.shift span.value.deck_5 { background-color: #0002 }
 .draw-break { margin-left: 167px; }
 .card.tc { margin-right: calc(-167px + 40px); }
 .card.tc.reverse { margin-right: calc(-167px + 20px); }
-.card.tc.discard { margin-right: calc(-167px + 6px); }
-.card.fate.reverse { margin-right: calc(-167px + 6px); }
+.card.tc.pile { margin-right: calc(-167px + 6px); }
+.card.tc.hand { margin-right: calc(-167px + 10px); }
+.card.fate.pile { margin-right: calc(-167px + 6px); }
 .panel_body { padding-right: calc(18px + 167px); }
 .panel_body { gap: 18px 0; }
 
