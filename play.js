@@ -1264,7 +1264,7 @@ function on_update() {
 	action_button("end_turn", "End turn")
 
 	confirm_action_button("confirm_end_movement", "End movement",
-		"You still have UNMOVED pieces!")
+		"You have NOT moved ANY pieces!\nAre you sure you want to SKIP movement?")
 
 	action_button("undo", "Undo")
 
