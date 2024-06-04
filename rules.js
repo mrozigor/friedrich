@@ -2289,23 +2289,24 @@ function format_combat(value) {
 	let a = format_combat_stack(game.attacker)
 	let d = format_combat_stack(game.defender)
 	let s = signed_number(value)
+	let city = data.cities.name[game.attacker]
 	let p = POWER_NAME[game.power]
-	return `${a} vs ${d}. ${p} is at ${s}`
+	return `${p} at ${s} in combat (${a} vs ${d} at ${city}).`
 }
 
 function inactive_attack() {
-	return "combat " + format_combat(game.count)
+	return "Waiting for " + format_combat(game.count)
 }
 
 function inactive_defend() {
-	return "combat " + format_combat(-game.count)
+	return "Waiting for " + format_combat(-game.count)
 }
 
 function prompt_combat(value, extra = null) {
-	let text = "Combat " + format_combat(value) + "."
+	let text = format_combat(value)
 	if (extra)
 		text += " " + extra
-	prompt(text)
+	view.prompt = text
 }
 
 function set_active_attacker() {
@@ -4500,8 +4501,9 @@ exports.view = function (state, player) {
 	} else if (game.active !== player) {
 		let inactive = states[game.state].inactive || game.state
 		if (typeof inactive === "function")
-			inactive = inactive()
-		view.prompt = `Waiting for ${POWER_NAME[game.power]} to ${inactive}.`
+			view.prompt = inactive()
+		else
+			view.prompt = `Waiting for ${POWER_NAME[game.power]} to ${inactive}.`
 	} else {
 		view.actions = {}
 		if (states[game.state])
