@@ -472,8 +472,8 @@ body.shift span.value.deck_5 { background-color: #0002 }
 	border-radius: 16px;
 }
 
-.card.fate { cursor: zoom-in }
-.card.fate.zoom { cursor: zoom-out }
+.card.fate.face { cursor: zoom-in }
+.card.fate.face.zoom { cursor: zoom-out }
 
 .draw-break { margin-left: 167px; }
 .card.tc { margin-right: calc(-167px + 40px); }

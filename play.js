@@ -567,7 +567,7 @@ function make_fate_card(fc) {
 	if (fc === 0)
 		e.className = "card fate reverse"
 	else
-		e.className = "card fate c" + fc
+		e.className = "card fate face c" + fc
 	e.onclick = on_click_fate_card
 	return e
 }

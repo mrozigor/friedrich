@@ -135,7 +135,6 @@ const all_home_or_depot_cities = [
 	data.country.Sweden,
 	data.country.Austria,
 	set_union(data.country.Empire, data.country.Saxony),
-	find_city_list([ "Hildburghausen" ]),
 	find_city_list([ "Koblenz", "Gemünden" ]),
 ]
 
