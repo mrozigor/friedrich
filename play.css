@@ -120,8 +120,8 @@ body {
 	min-height: 6px;
 }
 
-#log .city_tip:hover { cursor: pointer; text-decoration: underline; }
-#log .piece_tip:hover { cursor: pointer; text-decoration: underline; }
+.city_tip .piece_tip, .path_tip { cursor: pointer; }
+.city_tip:hover, .piece_tip:hover, .path_tip:hover { text-decoration: underline; }
 
 #log .h {
 	background-color: tan;
@@ -428,6 +428,21 @@ span.suit.reserve { font-weight: bold; font-family: "Source Serif SmText"; }
 .number.imperial { background-color: var(--color-imperial); }
 .number.france { background-color: var(--color-france); }
 */
+
+/* ROADS */
+
+svg .road {
+	stroke: white;
+	stroke-width: 6;
+	stroke-linecap: round;
+	stroke-dashpattern: 6 6;
+}
+
+svg .main_road {
+	stroke: white;
+	stroke-width: 6;
+	stroke-linecap: round;
+}
 
 /* CARD COUNTING AIDS */
 

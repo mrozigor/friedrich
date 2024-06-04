@@ -368,6 +368,79 @@ const the_austrian_theater_text = `<p>Prussia receives 5 TC per round. Every sub
 <p>Prussia wins by controlling all of her blue objectives in Bohemia, or if the game ends before Austria or the Imperial Army have won.
 `
 
+/* SHOW PATHS */
+
+const svgNS = "http://www.w3.org/2000/svg"
+
+var _show_path = []
+
+function make_road(a, b, type) {
+	let e = document.createElementNS(svgNS, "line")
+	e.setAttribute("class", type)
+	let x1 = data.cities.x[a]
+	let y1 = data.cities.y[a]
+	let x2 = data.cities.x[b]
+	let y2 = data.cities.y[b]
+
+	let v = Math.hypot(x2 - x1, y2 - y1)
+	let dx = (x2 - x1) / v
+	let dy = (y2 - y1) / v
+	let r = 0
+	x1 += r * dx
+	y1 += r * dy
+	x2 -= r * dx
+	y2 -= r * dy
+
+	e.setAttribute("x1", x1)
+	e.setAttribute("y1", y1)
+	e.setAttribute("x2", x2)
+	e.setAttribute("y2", y2)
+	e.setAttribute("visibility", "hidden")
+	document.getElementById("roads").appendChild(e)
+
+	if (!ui.roads[a]) ui.roads[a] = {}
+	if (!ui.roads[b]) ui.roads[b] = {}
+	ui.roads[a][b] = e
+	ui.roads[b][a] = e
+}
+
+function on_focus_path_tip(list) {
+	on_focus_city_tip(list[list.length-1])
+	hide_move_path()
+	_show_path = list
+	show_move_path()
+	ui.status.textContent = list.map(s => data.cities.name[s]).join(" - ")
+}
+
+function on_blur_path_tip() {
+	if (_show_path.length > 0) {
+		on_blur_city_tip(_show_path[_show_path.length-1])
+		hide_move_path()
+	}
+	ui.status.textContent = ""
+}
+
+function show_move_path() {
+	if (_show_path) {
+		for (let i = 1; i < _show_path.length; ++i) {
+			let x = _show_path[i-1]
+			let y = _show_path[i]
+			ui.roads[x][y].setAttribute("visibility", "visible")
+		}
+	}
+}
+
+function hide_move_path() {
+	if (_show_path) {
+		for (let i = 1; i < _show_path.length; ++i) {
+			let x = _show_path[i-1]
+			let y = _show_path[i]
+			ui.roads[x][y].setAttribute("visibility", "hidden")
+		}
+		_show_path = null
+	}
+}
+
 /* PANEL ORDER */
 
 const panel_order = [ P_PRUSSIA, P_HANOVER, P_RUSSIA, P_SWEDEN, P_AUSTRIA, P_IMPERIAL, P_FRANCE, P_FRANCE+1 ]
@@ -481,6 +554,7 @@ const ui = {
 	],
 	cities: [],
 	action_register: [],
+	roads: [],
 }
 
 function register_action(target, action, id) {
@@ -733,6 +807,15 @@ function on_init() {
 		e.style.top = y + "px"
 
 		ui.spaces_element.appendChild(e)
+	}
+
+	for (let a = 0; a <= last_city; ++a) {
+		for (let b of data.cities.main_roads[a])
+			if (a < b)
+				make_road(a, b, "main_road")
+		for (let b of data.cities.roads[a])
+			if (a < b)
+				make_road(a, b, "road")
 	}
 
 	sort_power_panel(false)
@@ -1289,6 +1372,12 @@ function sub_space(_match, p1) {
 	return `<span class="city_tip" onclick="on_click_city_tip(${x})" onmouseenter="on_focus_city_tip(${x})" onmouseleave="on_blur_city_tip(${x})">${n}</span>`
 }
 
+function sub_path(list) {
+	let x = list[list.length-1]
+	let name = data.cities.name[x]
+	return `<span class="path_tip" onclick="on_click_city_tip(${x})" onmouseenter="on_focus_path_tip([${list.join(",")}])" onmouseleave="on_blur_path_tip()">to ${name}</span>`
+}
+
 const suit_icon = [
 	'<span class="suit spades">\u2660</span>',
 	'<span class="suit clubs">\u2663</span>',
@@ -1332,7 +1421,11 @@ function on_log(text) {
 	text = text.replace(/P(\d+)/g, sub_piece)
 	text = text.replace(/C(\d+)/g, sub_tc)
 
-	if (text.match(/^\$(\d+)/)) {
+	if (text.startsWith("%")) {
+		p.className = "i"
+		text = sub_path(text.substring(1).split(","))
+	}
+	else if (text.match(/^\$(\d+)/)) {
 		let fx = parseInt(text.substring(1))
 		if (fx < 48)
 			text = `<div class="q">${fate_flavor_text[fx]}</div><div></div><div>${fate_effect_text[fx]}</div><div></div>`

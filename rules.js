@@ -361,6 +361,23 @@ function log_selected() {
 	log(game.selected.map(p => "P" + p).join(" and "))
 }
 
+function is_important_move(s) {
+	return set_has(game.move_conq, s) || set_has(game.move_reconq, s) || set_has(game.retro, s)
+}
+
+function log_selected_move_path() {
+	if (0) {
+		log_selected()
+		log(">from S" + game.move_path[0])
+		for (let i = 1; i < game.move_path.length; ++i)
+			if (is_important_move(game.move_path[i]) || i === game.move_path.length-1)
+				log(">to S" + game.move_path[i])
+	} else {
+		log_selected()
+		log("%" + game.move_path.join(","))
+	}
+}
+
 /* OBJECTIVES */
 
 const all_objectives = []
@@ -1365,10 +1382,10 @@ states.movement = {
 		else
 			prompt("Move your generals and supply trains.")
 
-		if (done_trains && done_generals)
-			view.actions.end_movement = 1
-		else
+		if (game.moved.length === 0)
 			view.actions.confirm_end_movement = 1
+		else
+			view.actions.end_movement = 1
 	},
 	piece(p) {
 		push_undo()
@@ -1386,11 +1403,12 @@ states.movement = {
 
 		game.count = 0
 
-		if (data.cities.major_roads[here].length > 0)
-			game.major = 1
+		if (data.cities.main_roads[here].length > 0)
+			game.main = 1
 		else
-			game.major = 0
+			game.main = 0
 
+		game.move_path = [ here ]
 		if (is_supply_train(p))
 			game.state = "move_supply_train"
 		else
@@ -1417,7 +1435,7 @@ states.movement = {
 
 function format_move(max) {
 	let n = max - game.count
-	if (game.major)
+	if (game.main)
 		return ` up to ${n} cities (${n+1} on main roads).`
 	return ` up to ${n} cities.`
 }
@@ -1496,7 +1514,7 @@ function can_move_general_to(to) {
 		let from = game.pos[game.selected[0]]
 		if (!can_continue_general_from(to))
 			return false
-		if (game.major && set_has(data.cities.major_roads[from], to))
+		if (game.main && set_has(data.cities.main_roads[from], to))
 			return game.count < movement_range()
 		return game.count < movement_range() - 1
 	}
@@ -1538,7 +1556,7 @@ function move_general_to(to) {
 		if (is_protected_from_conquest(from)) {
 			set_add(game.retro, from)
 		} else {
-			game.move_conq.push(from)
+			set_add(game.move_conq, from)
 			set_add(game.conquest, from)
 		}
 	}
@@ -1548,7 +1566,7 @@ function move_general_to(to) {
 		if (is_protected_from_reconquest(from)) {
 			set_add(game.retro, from)
 		} else {
-			game.move_reconq.push(from)
+			set_add(game.move_reconq, from)
 			set_delete(game.conquest, from)
 		}
 	}
@@ -1603,8 +1621,8 @@ states.move_supply_train = {
 		let who = game.selected[0]
 		let here = game.pos[who]
 
-		if (game.count < 2 + game.major)
-			for (let next of data.cities.major_roads[here])
+		if (game.count < 2 + game.main)
+			for (let next of data.cities.main_roads[here])
 				if (!has_any_piece(next))
 					gen_action_space(next)
 		if (game.count < 2)
@@ -1628,20 +1646,15 @@ states.move_supply_train = {
 		let who = game.selected[0]
 		let from = game.pos[who]
 
-		if (game.count === 0) {
-			log_selected()
-			log(">from S" + from)
-		}
+		game.move_path.push(to)
 
-		log(">to S" + to)
-
-		if (!set_has(data.cities.major_roads[from], to))
-			game.major = 0
+		if (!set_has(data.cities.main_roads[from], to))
+			game.main = 0
 
 		set_add(game.moved, who)
 		game.pos[who] = to
 
-		if (++game.count === 2 + game.major)
+		if (++game.count === 2 + game.main)
 			end_move_piece()
 	},
 }
@@ -1708,8 +1721,8 @@ states.move_general = {
 			}
 		}
 
-		if (game.count < movement_range() + game.major)
-			for (let next of data.cities.major_roads[here])
+		if (game.count < movement_range() + game.main)
+			for (let next of data.cities.main_roads[here])
 				if (can_move_general_to(next))
 					gen_action_space_or_piece(next)
 
@@ -1749,17 +1762,12 @@ states.move_general = {
 		let who = game.selected[0]
 		let from = game.pos[who]
 
-		if (game.count === 0) {
-			log_selected()
-			log(">from S" + from)
-		}
+		game.move_path.push(to)
 
-		log(">to S" + to)
+		if (!set_has(data.cities.main_roads[from], to))
+			game.main = 0
 
-		if (!set_has(data.cities.major_roads[from], to))
-			game.major = 0
-
-		if (move_general_to(to) || ++game.count === movement_range() + game.major)
+		if (move_general_to(to) || ++game.count === movement_range() + game.main)
 			end_move_piece()
 	},
 }
@@ -1807,6 +1815,9 @@ states.move_give = {
 }
 
 function end_move_piece() {
+	log_selected_move_path()
+
+	delete game.move_path
 	game.selected = null
 	game.state = "movement"
 }
@@ -2052,13 +2063,10 @@ function end_recruit() {
 	if (game.recruit) {
 		if (game.recruit.used.length > 0) {
 			log_br()
-			log("Recruited")
-			log(">" + game.recruit.used.map(format_card).join(", "))
+			log("Recruited " + game.recruit.troops + " troops with " + game.recruit.used.map(format_card).join(", ") + ".")
 			map_for_each(game.recruit.pieces, (p,s) => {
-				log(">P" + p + " at S" + s)
+				log("Re-entered P" + p + " at S" + s + ".")
 			})
-			if (game.recruit.troops)
-				log(">" + game.recruit.troops + " troops")
 		}
 
 		// put back into hand unused cards

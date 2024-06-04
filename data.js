@@ -1494,7 +1494,7 @@ const data = {
 			[ 158, 548 ],
 			[ 562, 622, 637 ],
 		],
-		major_roads: [
+		main_roads: [
 			[],
 			[],
 			[],

@@ -309,7 +309,7 @@ for (let key in points) {
 				x: Math.round(x),
 				y: Math.round(y),
 				adjacent: [],
-				major_roads: [],
+				main_roads: [],
 				roads: [],
 			})
 		} else {
@@ -345,11 +345,11 @@ cities.sort((a,b) => {
 	return b.y - a.y
 })
 
-for (let e of edges.major_road) {
+for (let e of edges.main_road) {
 	let a = find_closest_city(e.x1, e.y1)
 	let b = find_closest_city(e.x2, e.y2)
-	set_add(cities[a].major_roads, b)
-	set_add(cities[b].major_roads, a)
+	set_add(cities[a].main_roads, b)
+	set_add(cities[b].main_roads, a)
 	set_add(cities[a].adjacent, b)
 	set_add(cities[b].adjacent, a)
 }
@@ -371,7 +371,7 @@ let arrays = {
 	x: [],
 	y: [],
 	adjacent: [],
-	major_roads: [],
+	main_roads: [],
 	roads: [],
 }
 

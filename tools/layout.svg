@@ -40,10 +40,10 @@
      inkscape:window-height="480"
      id="namedview6"
      showgrid="false"
-     inkscape:zoom="1.3492621"
+     inkscape:zoom="1.1602604"
      inkscape:cx="417.73716"
      inkscape:cy="1363.1515"
-     inkscape:current-layer="g2856"
+     inkscape:current-layer="svg4"
      inkscape:document-rotation="0"
      showguides="false">
     <inkscape:grid
@@ -53,13 +53,13 @@
   <image
      sodipodi:absref="/home/tor/src/rally/public/friedrich/Fried.Gameboard.075.png"
      xlink:href="../Fried.Gameboard.075.png"
-     style="display:inline"
-     id="image2"
-     sodipodi:insensitive="true"
-     height="1654"
-     width="2485"
+     x="0"
      y="0"
-     x="0" />
+     width="2485"
+     height="1654"
+     sodipodi:insensitive="true"
+     id="image2"
+     style="display:inline" />
   <g
      id="g3080"
      inkscape:label="city"
@@ -11152,7 +11152,7 @@
   </g>
   <g
      id="g2271"
-     inkscape:label="major_road"
+     inkscape:label="main_road"
      style="display:none;stroke:#808080"
      sodipodi:insensitive="true">
     <path
