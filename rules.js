@@ -365,6 +365,17 @@ function is_important_move(s) {
 	return set_has(game.move_conq, s) || set_has(game.move_reconq, s) || set_has(game.retro, s)
 }
 
+function log_small_move_to(to) {
+	if (0) {
+		log_selected()
+		log(">from S" + game.pos[game.selected[0]])
+		log(">to S" + s)
+	} else {
+		let from = game.pos[game.selected[0]]
+		log("@" + game.selected.join(",") + ";" + from + "," + to)
+	}
+}
+
 function log_selected_move_path() {
 	if (0) {
 		log_selected()
@@ -3842,9 +3853,7 @@ states.austria_may_move_laudon_by_one_city_immediately = {
 	space(s) {
 		push_undo()
 
-		log_selected()
-		log(">from S" + game.pos[game.selected[0]])
-		log(">to S", s)
+		log_small_move_to(s)
 
 		move_general_immediately(s)
 		game.state = "laudon_done"
@@ -4003,9 +4012,7 @@ states.move_to_any_empty_adjacent_city = {
 				gen_action_space(next)
 	},
 	space(s) {
-		log_selected()
-		log(">from S" + game.pos[game.selected[0]])
-		log(">to S" + s)
+		log_small_move_to(s)
 		for (let p of game.selected)
 			game.pos[p] = s
 		game.state = "prussians_who_are_attacked_by_daun_may_move"
