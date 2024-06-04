@@ -373,8 +373,7 @@ function log_selected_move_path() {
 			if (is_important_move(game.move_path[i]) || i === game.move_path.length-1)
 				log(">to S" + game.move_path[i])
 	} else {
-		log_selected()
-		log("%" + game.move_path.join(","))
+		log("@" + game.selected.join(",") + ";" + game.move_path.join(","))
 	}
 }
 

@@ -120,8 +120,8 @@ body {
 	min-height: 6px;
 }
 
-.city_tip .piece_tip, .path_tip { cursor: pointer; }
-.city_tip:hover, .piece_tip:hover, .path_tip:hover { text-decoration: underline; }
+.city_tip .piece_tip, .move_tip { cursor: pointer; }
+.city_tip:hover, .piece_tip:hover, .move_tip:hover { text-decoration: underline; }
 
 #log .h {
 	background-color: tan;
@@ -148,6 +148,11 @@ body {
 
 #log .i { padding-left: 20px }
 #log .ii { padding-left: 32px }
+
+#log .move_tip {
+	padding-left: 20px;
+	text-indent: -12px;
+}
 
 #log span.suit { font-size: 11px; }
 
@@ -431,11 +436,18 @@ span.suit.reserve { font-weight: bold; font-family: "Source Serif SmText"; }
 
 /* ROADS */
 
+.space.move {
+	background-color: #fff8;
+}
+
+.space.move_end {
+	background-color: #0f08;
+}
+
 svg .road {
 	stroke: white;
 	stroke-width: 6;
 	stroke-linecap: round;
-	stroke-dashpattern: 6 6;
 }
 
 svg .main_road {

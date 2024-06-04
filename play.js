@@ -372,6 +372,7 @@ const the_austrian_theater_text = `<p>Prussia receives 5 TC per round. Every sub
 
 const svgNS = "http://www.w3.org/2000/svg"
 
+var _show_path_pcs = []
 var _show_path = []
 
 function make_road(a, b, type) {
@@ -404,24 +405,29 @@ function make_road(a, b, type) {
 	ui.roads[b][a] = e
 }
 
-function on_focus_path_tip(list) {
-	on_focus_city_tip(list[list.length-1])
+function on_focus_path_tip(ps, ss) {
+	_show_path_pcs = ps
+	for (let p of _show_path_pcs)
+		on_focus_piece_tip(p)
 	hide_move_path()
-	_show_path = list
-	show_move_path()
-	ui.status.textContent = list.map(s => data.cities.name[s]).join(" - ")
+	_show_path = ss
+	show_move_path(view.pos[ps[0]] !== ss[ss.length-1])
+	ui.status.textContent = ss.map(s => data.cities.name[s]).join(" - ")
 }
 
 function on_blur_path_tip() {
-	if (_show_path.length > 0) {
-		on_blur_city_tip(_show_path[_show_path.length-1])
-		hide_move_path()
-	}
+	for (let p of _show_path_pcs)
+		on_blur_piece_tip(p)
+	hide_move_path()
 	ui.status.textContent = ""
 }
 
-function show_move_path() {
-	if (_show_path) {
+function show_move_path(tip_end) {
+	if (_show_path && _show_path.length > 0) {
+		for (let i = 0; i < _show_path.length; ++i)
+			ui.cities[_show_path[i]].classList.add("move")
+		if (tip_end)
+			ui.cities[_show_path[_show_path.length-1]].classList.add("tip")
 		for (let i = 1; i < _show_path.length; ++i) {
 			let x = _show_path[i-1]
 			let y = _show_path[i]
@@ -431,7 +437,10 @@ function show_move_path() {
 }
 
 function hide_move_path() {
-	if (_show_path) {
+	if (_show_path && _show_path.length > 0) {
+		for (let i = 0; i < _show_path.length; ++i)
+			ui.cities[_show_path[i]].classList.remove("move")
+		ui.cities[_show_path[_show_path.length-1]].classList.remove("tip")
 		for (let i = 1; i < _show_path.length; ++i) {
 			let x = _show_path[i-1]
 			let y = _show_path[i]
@@ -1239,7 +1248,7 @@ function on_update() {
 
 /* LOG */
 
-const piece_log_name = [
+const piece_name = [
 	"Friedrich", "Winterfeldt", "Heinrich", "Schwerin", "Keith", "Seydlitz", "Dohna", "Lehwaldt",
 	"Ferdinand", "Cumberland",
 	"Saltikov", "Fermor", "Apraxin", "Tottleben",
@@ -1247,13 +1256,13 @@ const piece_log_name = [
 	"Daun", "Browne", "Karl", "Laudon", "Lacy",
 	"Hildburghausen",
 	"Richelieu", "Soubise", "Chevert",
-	"Prussian supply train", "Prussian supply train",
-	"Hanoverian supply train",
-	"Russian supply train", "Russian supply train",
-	"Swedish supply train",
-	"Austrian supply train", "Austrian supply train",
-	"Imperial Army supply train",
-	"French supply train", "French supply train",
+	"Prussian ST", "Prussian ST",
+	"Hanoverian ST",
+	"Russian ST", "Russian ST",
+	"Swedish ST",
+	"Austrian ST", "Austrian ST",
+	"Imperial Army ST",
+	"French ST", "French ST",
 ]
 
 const piece_power = [
@@ -1361,7 +1370,7 @@ const piece_tooltip_name = [
 
 function sub_piece(_match, p1) {
 	let x = p1 | 0
-	let n = piece_log_name[x]
+	let n = piece_name[x]
 	let p = power_class[piece_power[x]]
 	return `<span class="piece_tip ${p}" onclick="on_click_piece_tip(${x})" onmouseenter="on_focus_piece_tip(${x})" onmouseleave="on_blur_piece_tip(${x})">${n}</span>`
 }
@@ -1372,10 +1381,13 @@ function sub_space(_match, p1) {
 	return `<span class="city_tip" onclick="on_click_city_tip(${x})" onmouseenter="on_focus_city_tip(${x})" onmouseleave="on_blur_city_tip(${x})">${n}</span>`
 }
 
-function sub_path(list) {
-	let x = list[list.length-1]
-	let name = data.cities.name[x]
-	return `<span class="path_tip" onclick="on_click_city_tip(${x})" onmouseenter="on_focus_path_tip([${list.join(",")}])" onmouseleave="on_blur_path_tip()">to ${name}</span>`
+function sub_path(pieces_and_spaces) {
+	let ps = pieces_and_spaces[0].split(",")
+	let ss = pieces_and_spaces[1].split(",")
+	let x = ss[ss.length-1]
+	let ps_name = ps.map(p => piece_name[p]).join(" and ")
+	let ss_name = data.cities.name[x]
+	return `<span onclick="on_click_city_tip(${x})" onmouseenter="on_focus_path_tip([${ps.join(",")}],[${ss.join(",")}])" onmouseleave="on_blur_path_tip()">${ps_name} to ${ss_name}.</span>`
 }
 
 const suit_icon = [
@@ -1421,9 +1433,9 @@ function on_log(text) {
 	text = text.replace(/P(\d+)/g, sub_piece)
 	text = text.replace(/C(\d+)/g, sub_tc)
 
-	if (text.startsWith("%")) {
-		p.className = "i"
-		text = sub_path(text.substring(1).split(","))
+	if (text.startsWith("@")) {
+		p.className = "move_tip"
+		text = sub_path(text.substring(1).split(";"))
 	}
 	else if (text.match(/^\$(\d+)/)) {
 		let fx = parseInt(text.substring(1))
