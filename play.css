@@ -11,6 +11,7 @@
 #prompt {
 	font-family: "Suit Symbols", var(--font-widget);
 	font-variant-numeric: tabular-nums;
+	white-space: wrap;
 }
 
 #log {

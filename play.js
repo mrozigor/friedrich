@@ -1453,6 +1453,8 @@ function on_log(text) {
 	text = text.replace(/</g, "&lt;")
 	text = text.replace(/>/g, "&gt;")
 
+	text = text.replaceAll(" 1 troops", " 1 troop")
+
 	text = colorize(text)
 	text = text.replace(/S(\d+)/g, sub_space)
 	text = text.replace(/P(\d+)/g, sub_piece)

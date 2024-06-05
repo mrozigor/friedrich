@@ -2300,9 +2300,8 @@ function format_combat(value) {
 	let a = format_combat_stack(game.attacker)
 	let d = format_combat_stack(game.defender)
 	let s = signed_number(value)
-	let city = data.cities.name[game.attacker]
 	let p = POWER_NAME[game.power]
-	return `${p} at ${s} in combat (${a} vs ${d} at ${city}).`
+	return `${a} vs ${d}. ${p} is at ${s}.`
 }
 
 function inactive_attack() {
