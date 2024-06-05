@@ -4450,10 +4450,14 @@ function mask_troops(player) {
 function mask_hand(player) {
 	let view_hand = []
 	for (let pow of all_powers) {
-		if (player_from_power(pow) === player)
+		if (player_from_power(pow) === player) {
 			view_hand[pow] = game.hand[pow]
-		else
+		} else {
 			view_hand[pow] = game.hand[pow].map(c => c & ~127)
+			// TODO: obfuscate number of cards in hand
+			// view_hand[pow] = Math.ceil(game.hand[pow].length / 3) * 3
+			// view_hand[pow] = Math.ceil(game.hand[pow].length / 5)
+		}
 	}
 	return view_hand
 }
