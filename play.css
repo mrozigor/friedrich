@@ -438,21 +438,11 @@ span.suit.reserve { font-weight: bold; font-family: "Source Serif SmText"; }
 /* ROADS */
 
 .space.move {
-	background-color: #fff8;
-}
-
-.space.move_end {
-	background-color: #0f08;
+	background-color: #fff6;
 }
 
 svg .road {
-	stroke: white;
-	stroke-width: 6;
-	stroke-linecap: round;
-}
-
-svg .main_road {
-	stroke: white;
+	stroke: red;
 	stroke-width: 6;
 	stroke-linecap: round;
 }

@@ -858,10 +858,8 @@ function retire_general(p) {
 				n -= x
 			}
 		}
-		if (n > 1)
+		if (n > 0)
 			log("P" + p + " removed from S" + s + " with " + n + " troops.")
-		else if (n === 1)
-			log("P" + p + " removed from S" + s + " with 1 troop.")
 		else
 			log("P" + p + " removed.")
 	} else {
@@ -869,8 +867,11 @@ function retire_general(p) {
 	}
 }
 
-function eliminate_general(p) {
-	log(">P" + p + " eliminated")
+function eliminate_general(p, indent) {
+	if (indent)
+		log(">P" + p + " eliminated")
+	else
+		log("P" + p + " eliminated.")
 	game.pos[p] = ELIMINATED
 	game.troops[p] = 0
 	set_in_supply(p)
@@ -1585,7 +1586,10 @@ function move_general_to(to) {
 	// eliminate supply train
 	for (let p of all_enemy_trains[pow]) {
 		if (game.pos[p] === to) {
-			eliminate_train(p)
+			if (!game.move_elim)
+				game.move_elim = []
+			set_add(game.move_elim, p)
+			game.pos[p] = ELIMINATED
 			stop = true
 		}
 	}
@@ -1827,6 +1831,12 @@ states.move_give = {
 
 function end_move_piece() {
 	log_selected_move_path()
+
+	if (game.move_elim) {
+		for (let p of game.move_elim)
+			log("P" + p + " eliminated.")
+		delete game.move_elim
+	}
 
 	delete game.move_path
 	game.selected = null
@@ -2683,7 +2693,7 @@ states.retreat_eliminate_hits = {
 				gen_action_piece(p)
 	},
 	piece(p) {
-		eliminate_general(p)
+		eliminate_general(p, false)
 		set_delete(game.selected, p)
 		resume_retreat()
 	},
@@ -2697,9 +2707,9 @@ states.retreat_eliminate_trapped = {
 			gen_action_piece(p)
 	},
 	piece(_) {
-		log("Trapped")
+		log("Trapped.")
 		for (let p of game.selected)
-			eliminate_general(p)
+			eliminate_general(p, false)
 		next_combat()
 	},
 }
@@ -3029,7 +3039,8 @@ states.supply_eliminate = {
 
 		for (let p of all_power_generals[game.power])
 			if (game.pos[p] === s)
-				eliminate_general(p)
+				eliminate_general(p, true)
+
 		resume_supply_eliminate()
 	},
 }

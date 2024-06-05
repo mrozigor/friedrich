@@ -383,14 +383,16 @@ function make_road(a, b, type) {
 	let x2 = data.cities.x[b]
 	let y2 = data.cities.y[b]
 
+	/*
 	let v = Math.hypot(x2 - x1, y2 - y1)
 	let dx = (x2 - x1) / v
 	let dy = (y2 - y1) / v
-	let r = 0
+	let r = 18
 	x1 += r * dx
 	y1 += r * dy
 	x2 -= r * dx
 	y2 -= r * dy
+	*/
 
 	e.setAttribute("x1", x1)
 	e.setAttribute("y1", y1)
@@ -841,7 +843,7 @@ function on_init() {
 	for (let a = 0; a <= last_city; ++a) {
 		for (let b of data.cities.main_roads[a])
 			if (a < b)
-				make_road(a, b, "main_road")
+				make_road(a, b, "road")
 		for (let b of data.cities.roads[a])
 			if (a < b)
 				make_road(a, b, "road")
@@ -1027,6 +1029,7 @@ function layout_train(id, s) {
 
 	e.style.left = (x - 14 + n * 33) + "px"
 	e.style.top = (y - 21 - n * 0) + "px"
+	e.style.zIndex = y
 	e.classList.toggle("selected", set_has(view.selected, id))
 }
 
@@ -1044,6 +1047,7 @@ function create_conquest(style, s) {
 	e.dataset.id = s
 	e.style.left = (x - 16) + "px"
 	e.style.top = (y - 16) + "px"
+	e.style.zIndex = 1
 	e.className = style
 	return e
 }
