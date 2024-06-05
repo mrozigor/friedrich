@@ -4519,6 +4519,8 @@ exports.view = function (state, player) {
 
 	if (game.state === "game_over") {
 		view.prompt = game.victory
+		view.troops = game.troops
+		view.hand = game.hand
 	} else if (game.active !== player) {
 		let inactive = states[game.state].inactive || game.state
 		if (typeof inactive === "function")
