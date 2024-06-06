@@ -339,12 +339,6 @@ function is_west_of(here, there) {
 	return dx < 0 && Math.abs(dx) >= Math.abs(dy)
 }
 
-function format_card_list(list) {
-	if (list.length > 0)
-		return list.map(format_card).join(", ")
-	return "nothing"
-}
-
 function format_card_list_prompt(list) {
 	if (list.length > 0)
 		return list.map(format_card_prompt).join(", ")
@@ -357,36 +351,14 @@ function format_selected() {
 	return game.selected.map(p => piece_name[p]).join(" and ")
 }
 
-function log_selected() {
-	log(game.selected.map(p => "P" + p).join(" and "))
+function log_move_to(to) {
+	let from = game.pos[game.selected[0]]
+	log("@" + game.selected.join(",") + ";" + from + "," + to)
 }
 
-function is_important_move(s) {
-	return set_has(game.move_conq, s) || set_has(game.move_reconq, s) || set_has(game.retro, s)
-}
-
-function log_small_move_to(to) {
-	if (0) {
-		log_selected()
-		log(">from S" + game.pos[game.selected[0]])
-		log(">to S" + s)
-	} else {
-		let from = game.pos[game.selected[0]]
-		log("@" + game.selected.join(",") + ";" + from + "," + to)
-	}
-}
-
-function log_selected_move_path() {
-	if (0) {
-		log_selected()
-		log(">from S" + game.move_path[0])
-		for (let i = 1; i < game.move_path.length; ++i)
-			if (is_important_move(game.move_path[i]) || i === game.move_path.length-1)
-				log(">to S" + game.move_path[i])
-	} else {
-		if (game.move_path.length > 1)
-			log("@" + game.selected.join(",") + ";" + game.move_path.join(","))
-	}
+function log_move_path() {
+	if (game.move_path.length > 1)
+		log("@" + game.selected.join(",") + ";" + game.move_path.join(","))
 }
 
 /* OBJECTIVES */
@@ -1830,7 +1802,7 @@ states.move_give = {
 }
 
 function end_move_piece() {
-	log_selected_move_path()
+	log_move_path()
 
 	if (game.move_elim) {
 		for (let p of game.move_elim)
@@ -2084,7 +2056,10 @@ function end_recruit() {
 	if (game.recruit) {
 		if (game.recruit.used.length > 0) {
 			log_br()
-			log("Recruited " + game.recruit.troops + " troops with " + game.recruit.used.map(format_card).join(", ") + ".")
+			if (game.recruit.troops > 0)
+				log("Recruited " + game.recruit.troops + " troops with " + game.recruit.used.map(format_card).join(", ") + ".")
+			else
+				log("Recruited with " + game.recruit.used.map(format_card).join(", ") + ".")
 			map_for_each(game.recruit.pieces, (p,s) => {
 				log("Re-entered P" + p + " at S" + s + ".")
 			})
@@ -3863,7 +3838,7 @@ states.austria_may_move_laudon_by_one_city_immediately = {
 	space(s) {
 		push_undo()
 
-		log_small_move_to(s)
+		log_move_to(s)
 
 		move_general_immediately(s)
 		game.state = "laudon_done"
@@ -4022,7 +3997,7 @@ states.move_to_any_empty_adjacent_city = {
 				gen_action_space(next)
 	},
 	space(s) {
-		log_small_move_to(s)
+		log_move_to(s)
 		for (let p of game.selected)
 			game.pos[p] = s
 		game.state = "prussians_who_are_attacked_by_daun_may_move"

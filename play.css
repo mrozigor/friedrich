@@ -121,7 +121,7 @@ body {
 	min-height: 6px;
 }
 
-.city_tip .piece_tip, .move_tip { cursor: pointer; }
+.city_tip, .piece_tip, .move_tip { cursor: pointer; }
 .city_tip:hover, .piece_tip:hover, .move_tip:hover { text-decoration: underline; }
 
 #log .h {

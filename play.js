@@ -564,8 +564,8 @@ const ui = {
 		document.getElementById("hand_france"),
 	],
 	cities: [],
-	action_register: [],
 	roads: [],
+	action_register: [],
 }
 
 function register_action(target, action, id) {
@@ -1091,9 +1091,6 @@ function colorize(text) {
 	text = text.replaceAll("\u2663", colorize_C)
 	text = text.replaceAll("\u2665", colorize_H)
 	text = text.replaceAll("\u2666", colorize_D)
-
-/*
-	*/
 	return text
 }
 
@@ -1133,7 +1130,7 @@ function player_from_power(pow) {
 	return role
 }
 
-function update_player_power_list(role, powers) {
+function update_player_power_list(role) {
 	if (roles[role]) {
 		roles[role].stat.replaceChildren()
 		for (let pow of all_powers)
@@ -1148,7 +1145,7 @@ function update_player_active(name) {
 }
 
 function on_prompt(text) {
-	return colorize(view.prompt)
+	return colorize(text)
 }
 
 function on_update() {
@@ -1433,22 +1430,6 @@ function sub_path(pieces_and_spaces) {
 	return `<span onclick="on_click_city_tip(${x})" onmouseenter="on_focus_path_tip([${ps.join(",")}],[${ss.join(",")}])" onmouseleave="on_blur_path_tip()">${ps_name} to ${ss_name}.</span>`
 }
 
-const suit_icon = [
-	'<span class="suit spades">\u2660</span>',
-	'<span class="suit clubs">\u2663</span>',
-	'<span class="suit hearts">\u2665</span>',
-	'<span class="suit diamonds">\u2666</span>',
-	'<span class="suit reserve">R</span>',
-]
-
-function sub_tc(_match, p1) {
-	let c = p1 | 0
-	let d = to_deck(c)
-	let v = to_value(c)
-	let s = to_suit(c)
-	return `<span class="value deck_${d+1}">${v}</span>${suit_icon[s]}`
-}
-
 const strokes_of_fate_name = [
 	"Poems",
 	"Lord Bute",
@@ -1485,7 +1466,6 @@ function on_log(text) {
 	text = colorize(text)
 	text = text.replace(/S(\d+)/g, sub_space)
 	text = text.replace(/P(\d+)/g, sub_piece)
-	text = text.replace(/C(\d+)/g, sub_tc)
 
 	if (text.startsWith("@")) {
 		p.className = "move_tip"
