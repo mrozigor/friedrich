@@ -1,7 +1,7 @@
 "use strict"
 
 // vim: set nowrap:
-/* globals data, view, action_button, action_button_with_argument, confirm_action_button, send_action, params, roles
+/* globals data, view, action_button, action_button_with_argument, confirm_action_button, send_action, params, roles, game_log
 */
 
 function toggle_pieces() {
@@ -1275,6 +1275,20 @@ function on_update() {
 	process_actions()
 }
 
+function turn_summary() {
+	let turn = 0
+	let list = []
+	for (let line of game_log) {
+		if (line.startsWith("#")) {
+			let fate = line.substring(2)
+			if (strokes_of_fate_name.includes(fate) || fate.startsWith("Card of Fate"))
+				list.push("Turn " + turn + ": " + fate)
+			++turn
+		}
+	}
+	return list.join("\n") + "<div></div>"
+}
+
 /* LOG */
 
 const piece_name = [
@@ -1435,6 +1449,15 @@ function sub_tc(_match, p1) {
 	return `<span class="value deck_${d+1}">${v}</span>${suit_icon[s]}`
 }
 
+const strokes_of_fate_name = [
+	"Poems",
+	"Lord Bute",
+	"Elisabeth",
+	"Sweden",
+	"India",
+	"America",
+]
+
 function on_log(text) {
 	let p = document.createElement("div")
 
@@ -1468,24 +1491,28 @@ function on_log(text) {
 		p.className = "move_tip"
 		text = sub_path(text.substring(1).split(";"))
 	}
-	else if (text.match(/^\$(\d+)/)) {
+	else if (text.startsWith("#")) {
+		p.className = "h fate"
+		text = text.substring(2)
+	}
+	else if (text.startsWith("$")) {
 		let fx = parseInt(text.substring(1))
 		if (fx < 48)
 			text = `<div class="q">${fate_flavor_text[fx]}</div><div></div><div>${fate_effect_text[fx]}</div><div></div>`
 		else
 			text = `<div class="q">${fate_flavor_text[fx]}</div><div></div>`
 	}
-	else if (text.match(/^# /)) {
-		p.className = "h fate"
-		text = text.substring(2)
-	}
-	else if (text.match(/^\.s1/))
-		text = the_war_in_the_west_text
-	else if (text.match(/^\.s2/))
-		text = the_austrian_theater_text
-	else if (text.match(/^=\d/)) {
+	else if (text.startsWith("=")) {
 		p.className = "h " + power_class[text[1]]
 		text = power_name[text[1]]
+	}
+	else if (text === ".s1")
+		text = the_war_in_the_west_text
+	else if (text === ".s2")
+		text = the_austrian_theater_text
+	else if (text === ".summary") {
+		p.className = "q"
+		text = turn_summary()
 	}
 
 	p.innerHTML = text

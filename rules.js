@@ -4547,11 +4547,12 @@ exports.view = function (state, player) {
 /* COMMON FRAMEWORK */
 
 function goto_game_over(result, victory) {
+	log("# The End")
 	game.active = "None"
 	game.state = "game_over"
 	game.result = result
 	game.victory = victory
-	log("# Game Over")
+	log(".summary")
 	log(game.victory)
 	return true
 }
