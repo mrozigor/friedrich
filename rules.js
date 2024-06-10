@@ -942,7 +942,7 @@ function check_power_victory(victory, city_list, power) {
 			set_add(victory, power)
 		return
 	}
-		
+
 	if (has_conquered_all_of(city_list[power]))
 		set_add(victory, power)
 }
@@ -2158,7 +2158,6 @@ function next_combat() {
 		goto_retroactive_conquest()
 }
 
-
 states.combat = {
 	inactive: "attack",
 	prompt() {
@@ -2659,7 +2658,7 @@ function resume_retreat() {
 }
 
 states.retreat_eliminate_hits = {
-	inactive: "retreat loser",
+	inactive: "retreat",
 	prompt() {
 		prompt("Eliminate generals without troops.")
 		// remove eliminated generals
@@ -2675,7 +2674,7 @@ states.retreat_eliminate_hits = {
 }
 
 states.retreat_eliminate_trapped = {
-	inactive: "retreat loser",
+	inactive: "retreat",
 	prompt() {
 		prompt("Eliminate " + format_selected() + " without a retreat path.")
 		for (let p of game.selected)
@@ -2751,7 +2750,7 @@ function search_retreat(loser, winner, range) {
 }
 
 states.retreat = {
-	inactive: "retreat loser",
+	inactive: "retreat defeated general",
 	prompt() {
 		prompt("Retreat " + format_selected() + " " + Math.abs(game.count) + " cities.")
 		view.selected = game.selected
@@ -2769,7 +2768,7 @@ states.retreat = {
 }
 
 states.retreat_done = {
-	inactive: "retreat loser",
+	inactive: "retreat defeated general",
 	prompt() {
 		prompt("Retreat done.")
 		view.actions.next = 1
@@ -4285,7 +4284,6 @@ exports.setup = function (seed, scenario, options) {
 		log("# 1756")
 		log("$54")
 	}
-
 
 	return game
 }
