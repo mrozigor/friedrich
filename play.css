@@ -24,7 +24,7 @@
 #role_Maria_Theresa { background-color: var(--color-role-austria) }
 #role_Pompadour { background-color: var(--color-role-france) }
 
-.role.active span { text-decoration: dotted underline; }
+.role.active span { font-weight: bold }
 
 header.your_turn.prussia { background-color: var(--color-light-prussia); }
 header.your_turn.hanover { background-color: var(--color-light-hanover); }
