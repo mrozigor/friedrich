@@ -2239,10 +2239,13 @@ function goto_resolve_combat() {
 	}
 }
 
-function end_resolve_combat() {
+function end_combat_card_play() {
+	clear_undo()
 	if (must_reach_positive_score())
 		clear_fate_effect()
+}
 
+function end_resolve_combat() {
 	if (game.fx === NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL)
 		if (get_supreme_commander(game.attacker) === GEN_HILDBURGHAUSEN)
 			game.ia_attack = get_space_suit(game.attacker)
@@ -2487,7 +2490,7 @@ states.combat_attack = {
 		play_combat_card(c, +1, resume_combat_attack, "combat_attack_reserve")
 	},
 	pass() {
-		clear_undo()
+		end_combat_card_play()
 		end_resolve_combat()
 	},
 }
@@ -2502,7 +2505,7 @@ states.combat_defend = {
 		play_combat_card(c, -1, resume_combat_defend, "combat_defend_reserve")
 	},
 	pass() {
-		clear_undo()
+		end_combat_card_play()
 		end_resolve_combat()
 	},
 }
@@ -2540,7 +2543,7 @@ states.combat_attack_swap = {
 		view.actions.next = 1
 	},
 	next() {
-		clear_undo()
+		end_combat_card_play()
 		set_active_defender()
 		game.state = "combat_defend"
 	},
@@ -2553,7 +2556,7 @@ states.combat_defend_swap = {
 		view.actions.next = 1
 	},
 	next() {
-		clear_undo()
+		end_combat_card_play()
 		set_active_attacker()
 		game.state = "combat_attack"
 	},
