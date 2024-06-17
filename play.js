@@ -1240,6 +1240,7 @@ function on_update() {
 	}
 
 	/* troops 1-8, reserve 1-10 with modifiers +1 and +5 */
+	action_button_with_argument("value", 22, "22")
 	for (let v = 16; v >= 0; --v)
 		action_button_with_argument("value", v, v)
 

@@ -1824,18 +1824,31 @@ function troop_cost() {
 }
 
 function sum_card_values(list) {
+	let s11 = may_double_11_spades_any()
 	let n = 0
-	for (let c of list)
+	for (let c of list) {
 		n += to_value(c)
+		if (s11 && is_11_spades(c)) {
+			n += 11
+			s11 = false
+		}
+	}
 	return n
 }
 
 function find_largest_card(list) {
+	if (may_double_11_spades_any()) {
+		for (let c of list)
+			if (is_11_spades(c))
+				return c
+	}
+
 	for (let v = 13; v >= 2; --v) {
 		for (let c of list)
 			if (to_value(c) === v)
 				return c
 	}
+
 	throw "NO CARDS FOUND IN LIST"
 }
 
@@ -1853,6 +1866,10 @@ function spend_recruit_cost() {
 	while (spend > 0) {
 		let c = find_largest_card(game.recruit.pool)
 		let v = to_value(c)
+		if (may_double_11_spades(c)) {
+			v += 11
+			clear_fate_effect()
+		}
 		set_delete(game.recruit.pool, c)
 		set_add(game.recruit.used, c)
 		if (v > spend) {
@@ -2332,6 +2349,18 @@ function resume_combat_defend() {
 		game.state = "combat_defend"
 }
 
+function may_double_11_spades_any() {
+	return (game.fx === NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_ONCE_AT_DOUBLE_VALUE && game.power === P_PRUSSIA)
+}
+
+function is_11_spades(c) {
+	return (to_suit(c) === SPADES && to_value(c) === 11)
+}
+
+function may_double_11_spades(c) {
+	return may_double_11_spades_any() && is_11_spades(c)
+}
+
 function can_and_must_reach_positive_score(from) {
 	if (must_reach_positive_score()) {
 		let target = Math.abs(game.count)
@@ -2393,7 +2422,7 @@ function gen_play_reserve() {
 	} else if (fate_card_zero()) {
 		view.actions.value.push(0)
 	} else {
-		let bonus = fate_card_bonus(0, 0)
+		let bonus = fate_card_bonus()
 		let max = 10
 		if (forbid_play_value_10_or_more())
 			max = 9
@@ -2409,16 +2438,13 @@ function fate_card_zero() {
 	return false
 }
 
-function fate_card_bonus(c) {
+function fate_card_bonus() {
 	if (game.fx === NEXT_TURN_THE_FIRST_TC_PLAYED_BY_FRANCE_IS_WORTH_AN_ADDITIONAL_POINT)
 		if (game.power === P_FRANCE)
 			return 1
 	if (game.fx === NEXT_TURN_IF_FRIEDRICH_ATTACKS_HIS_FIRST_TC_IS_WORTH_5_ADDITIONAL_POINTS)
 		if (game.power === P_PRUSSIA && game.pos[GEN_FRIEDRICH] === game.attacker)
 			return 5
-	if (game.fx === NEXT_TURN_PRUSSIA_MAY_PLAY_THE_11_OF_SPADES_ONCE_AT_DOUBLE_VALUE)
-		if (game.power === P_PRUSSIA && to_suit(c) === SPADES && to_value(c) === 11)
-			return 11
 	return 0
 }
 
@@ -2430,7 +2456,7 @@ function play_card(c, sign) {
 		clear_fate_effect()
 		return
 	}
-	let bonus = fate_card_bonus(c)
+	let bonus = fate_card_bonus()
 	if (sign < 0)
 		game.count -= to_value(c) + bonus
 	else
@@ -2454,7 +2480,7 @@ function play_reserve(v, sign) {
 		clear_fate_effect()
 		return
 	}
-	let bonus = fate_card_bonus(0)
+	let bonus = fate_card_bonus()
 	if (sign < 0)
 		game.count -= v
 	else
@@ -2468,12 +2494,32 @@ function play_reserve(v, sign) {
 		clear_fate_effect()
 }
 
-function play_combat_card(c, sign, resume, next_state) {
+function play_11_spades(v, sign) {
+	let c = game.spades
+	delete game.spades
+	let prefix = (sign < 0 ? ">>" : ">") + POWER_NAME[game.power]
+	if (sign < 0)
+		game.count -= v
+	else
+		game.count += v
+	let score = signed_number(sign * game.count)
+	if (v === 22)
+		log(`${prefix} ${format_card(c)} + 11 = ${score}`)
+	else
+		log(`${prefix} ${format_card(c)} = ${score}`)
+	if (v === 22)
+		clear_fate_effect()
+}
+
+function play_combat_card(c, sign, resume, next_state, next_state_11_spades) {
 	push_undo()
 	array_remove_item(game.hand[game.power], c)
 	if (is_reserve(c)) {
 		game.state = next_state
 		game.reserve = c
+	} else if (may_double_11_spades(c)) {
+		game.state = next_state_11_spades
+		game.spades = c
 	} else {
 		play_card(c, sign)
 		resume()
@@ -2487,7 +2533,7 @@ states.combat_attack = {
 		gen_play_card(get_space_suit(game.attacker))
 	},
 	card(c) {
-		play_combat_card(c, +1, resume_combat_attack, "combat_attack_reserve")
+		play_combat_card(c, +1, resume_combat_attack, "combat_attack_reserve", "combat_attack_11_spades")
 	},
 	pass() {
 		end_combat_card_play()
@@ -2502,7 +2548,7 @@ states.combat_defend = {
 		gen_play_card(get_space_suit(game.defender))
 	},
 	card(c) {
-		play_combat_card(c, -1, resume_combat_defend, "combat_defend_reserve")
+		play_combat_card(c, -1, resume_combat_defend, "combat_defend_reserve", "combat_defend_11_spades")
 	},
 	pass() {
 		end_combat_card_play()
@@ -2532,6 +2578,32 @@ states.combat_defend_reserve = {
 	},
 	value(v) {
 		play_reserve(v, -1)
+		resume_combat_defend()
+	},
+}
+
+states.combat_attack_11_spades = {
+	inactive: inactive_attack,
+	prompt() {
+		prompt_combat(game.count, "Choose value.")
+		view.draw = [ game.spades ]
+		view.actions.value = [ 11, 22 ]
+	},
+	value(v) {
+		play_11_spades(v, +1)
+		resume_combat_attack()
+	},
+}
+
+states.combat_defend_11_spades = {
+	inactive: inactive_defend,
+	prompt() {
+		prompt_combat(-game.count, "Choose value.")
+		view.draw = [ game.spades ]
+		view.actions.value = [ 11, 22 ]
+	},
+	value(v) {
+		play_11_spades(v, -1)
 		resume_combat_defend()
 	},
 }
