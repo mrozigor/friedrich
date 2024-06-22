@@ -1157,6 +1157,8 @@ function on_update() {
 	ui.header.classList.toggle("imperial", view.power === P_IMPERIAL)
 	ui.header.classList.toggle("france", view.power === P_FRANCE)
 
+	roles.Frederick.element.classList.toggle("oo", !!view.oo)
+
 	update_player_power_list("Frederick")
 	update_player_power_list("Elisabeth")
 	update_player_power_list("Maria Theresa")

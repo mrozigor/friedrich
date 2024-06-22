@@ -24,6 +24,8 @@
 #role_Maria_Theresa { background-color: var(--color-role-austria) }
 #role_Pompadour { background-color: var(--color-role-france) }
 
+#role_Frederick.oo .role_name::after { content: " (OO)" }
+
 .role.active span { font-weight: bold }
 
 header.your_turn.prussia { background-color: var(--color-light-prussia); }
