@@ -427,7 +427,7 @@ make_protect(P_AUSTRIA, data.country.Austria)
 
 function is_conquest_space(pow, s) {
 	if (pow === P_PRUSSIA && game.scenario >= 3) {
-		if (is_offensive_option() || game.turn < 3)
+		if (is_offensive_option_active() || game.turn < 3)
 			return set_has(primary_objective[pow], s)
 		return false
 	}
@@ -546,6 +546,10 @@ function is_offensive_option() {
 function has_offensive_option_failed() {
 	// if Austria has picked up the card AND subsidy reduction event has triggered
 	return game.oo < 0 && (set_has(game.fate, FC_POEMS) || set_has(game.fate, FC_LORD_BUTE))
+}
+
+function is_offensive_option_active() {
+	return (!!game.oo && !has_offensive_option_failed())
 }
 
 function has_power_dropped_out(pow) {
