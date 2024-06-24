@@ -999,6 +999,8 @@ function check_victory_the_austrian_theatre() {
 }
 
 function has_eased_victory(power) {
+	if (game.scenario === 1 || game.scenario === 2)
+		return false
 	if (power === P_SWEDEN)
 		return has_russia_dropped_out()
 	if (power === P_AUSTRIA)
