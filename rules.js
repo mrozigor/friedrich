@@ -3584,14 +3584,14 @@ function austria_and_russia_may_exchange_one_tc_with_each_other() {
 function france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck() {
 	set_active_to_power(P_FRANCE)
 	if (!has_power_dropped_out(P_FRANCE))
-		game.state = "france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck"
+		game.state = "france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_1"
 	else
 		goto_start_turn()
 }
 
 function prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria() {
 	set_active_to_power(P_PRUSSIA)
-	game.state = "prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria"
+	game.state = "prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_1"
 }
 
 function austria_may_move_laudon_by_one_city_immediately() {
@@ -3754,14 +3754,28 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_1 = {
 		view.actions.pass = 1
 	},
 	card(c) {
+		push_undo()
 		set_delete(game.hand[P_AUSTRIA], c)
 		game.exchange_a = c
-		set_active_to_power(P_RUSSIA)
-		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_2"
+		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_1b"
 	},
 	pass() {
 		log("Austria and Russia did not exchange TC.")
 		goto_start_turn()
+	},
+}
+
+states.austria_and_russia_may_exchange_one_tc_with_each_other_1b = {
+	inactive: "exchange TC with Russia",
+	prompt() {
+		prompt("You may exchange one TC with Russia.")
+		view.draw = [ game.exchange_a ]
+		view.actions.next = 1
+	},
+	next() {
+		clear_undo()
+		set_active_to_power(P_RUSSIA)
+		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_2"
 	},
 }
 
@@ -3774,15 +3788,29 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_2 = {
 		view.actions.pass = 1
 	},
 	card(c) {
+		push_undo()
 		set_delete(game.hand[P_RUSSIA], c)
 		game.exchange_r = c
-		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_3"
+		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_2b"
 	},
 	pass() {
 		log("Austria and Russia did not exchange TC.")
 		set_add(game.hand[P_AUSTRIA], game.exchange_a)
 		delete game.exchange_a
 		goto_start_turn()
+	},
+}
+
+states.austria_and_russia_may_exchange_one_tc_with_each_other_2b = {
+	inactive: "exchange TC with Austria",
+	prompt() {
+		prompt("You may exchange one TC with Austria.")
+		view.draw = [ game.exchange_r ]
+		view.actions.next = 1
+	},
+	next() {
+		clear_undo()
+		game.state = "austria_and_russia_may_exchange_one_tc_with_each_other_3"
 	},
 }
 
@@ -3816,7 +3844,7 @@ states.austria_and_russia_may_exchange_one_tc_with_each_other_4 = {
 	},
 }
 
-states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
+states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_1 = {
 	inactive: "discard a TC for a new one",
 	prompt() {
 		prompt("You may discard one TC to draw a new one.")
@@ -3825,9 +3853,9 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 		view.actions.pass = 1
 	},
 	card(c) {
-		log("France discarded one TC.")
+		push_undo()
 		set_delete(game.hand[P_FRANCE], c)
-		draw_tc(1)
+		game.draw = [ c ]
 		game.state = "france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_2"
 	},
 	pass() {
@@ -3836,6 +3864,23 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck = {
 }
 
 states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_2 = {
+	inactive: "discard a TC for a new one",
+	prompt() {
+		prompt("You may discard one TC to draw a new one.")
+		view.draw = game.draw
+		view.actions.next = 1
+	},
+	next() {
+		clear_undo()
+		let c = game.draw[0]
+		log("France discarded one TC.")
+		set_delete(game.hand[P_FRANCE], c)
+		draw_tc(1)
+		game.state = "france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_3"
+	},
+}
+
+states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_3 = {
 	inactive: "discard a TC for a new one",
 	prompt() {
 		prompt("You drew " + format_card_list_prompt(game.draw) + " from the draw deck.")
@@ -3850,7 +3895,7 @@ states.france_may_discard_any_one_tc_for_a_new_one_from_the_draw_deck_2 = {
 	},
 }
 
-states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria = {
+states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_1 = {
 	inactive: "give one TC to Austria",
 	prompt() {
 		prompt("You may give Austria one TC to draw a random TC from her.")
@@ -3859,17 +3904,9 @@ states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_o
 		view.actions.pass = 1
 	},
 	card(c) {
-		log("Prussia gave one TC to Austria.")
-		log("Prussia took one random TC from Austria.")
-
-		set_delete(game.hand[P_PRUSSIA], c)
-		set_add(game.hand[P_AUSTRIA], c)
-
-		let x = random_bigint(game.hand[P_AUSTRIA].length)
-		c = game.hand[P_AUSTRIA][x]
-		set_delete(game.hand[P_AUSTRIA], c)
-
-		game.draw = [ c ]
+		push_undo()
+		game.p_give = c
+		set_delete(game.hand[P_PRUSSIA], game.p_give)
 		game.state = "prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_2"
 	},
 	pass() {
@@ -3878,15 +3915,66 @@ states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_o
 }
 
 states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_2 = {
+	inactive: "give one TC to Austria",
+	prompt() {
+		prompt("You may give Austria one TC to draw a random TC from her.")
+		view.draw = [ game.p_give ]
+		view.actions.next = 1
+	},
+	next() {
+		clear_undo()
+
+		log("Prussia gave one TC to Austria.")
+		log("Prussia took one random TC from Austria.")
+
+		let x = random_bigint(game.hand[P_AUSTRIA].length)
+		game.p_take = game.hand[P_AUSTRIA][x]
+
+		game.state = "prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_3"
+	},
+}
+
+states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_3 = {
 	inactive: "randomly draw one TC from Austria",
 	prompt() {
-		prompt("You randomly drew " + format_card_prompt(game.draw) + " from Austria.")
-		view.draw = game.draw
+		prompt("You randomly drew " + format_card_prompt(game.p_take) + " from Austria.")
+		view.draw = [ game.p_take ]
 		view.actions.done = 1
 	},
 	done() {
-		set_add(game.hand[P_PRUSSIA], game.draw[0])
-		delete game.draw
+		set_active_to_power(P_AUSTRIA)
+
+		set_delete(game.hand[P_AUSTRIA], game.p_take)
+		set_add(game.hand[P_PRUSSIA], game.p_take)
+
+		game.state = "prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_4"
+	},
+}
+
+states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_4 = {
+	inactive: "look at the taken TC",
+	prompt() {
+		prompt("Prussia randomly drew " + format_card_prompt(game.p_take) + " from you.")
+		view.draw = [ game.p_take ]
+		view.actions.next = 1
+	},
+	next() {
+		game.state = "prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_5"
+	},
+}
+
+states.prussia_may_draw_randomly_one_tc_from_austria_after_first_giving_one_tc_of_her_choice_to_austria_5 = {
+	inactive: "look at the given TC",
+	prompt() {
+		prompt("Prussia gave you " + format_card_prompt(game.p_give) + ".")
+		view.draw = [ game.p_give ]
+		view.actions.done = 1
+	},
+	done() {
+		set_add(game.hand[P_AUSTRIA], game.p_give)
+
+		delete game.p_give
+		delete game.p_take
 		goto_start_turn()
 	},
 }
