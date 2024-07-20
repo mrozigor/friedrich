@@ -485,8 +485,14 @@ function remove_secondary_objectives(power) {
 }
 
 function remove_offensive_option_objectives() {
-	for (let s of primary_objective[P_PRUSSIA])
+	for (let s of primary_objective[P_PRUSSIA]) {
 		set_delete(game.conquest, s)
+		set_delete(game.retro, s)
+		if (game.move_conq)
+			set_delete(game.move_conq, s)
+		if (game.move_reconq)
+			set_delete(game.move_reconq, s)
+	}
 }
 
 /* STATE */
