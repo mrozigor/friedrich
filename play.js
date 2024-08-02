@@ -179,6 +179,8 @@ function has_power_dropped_out(pow) {
 }
 
 function has_eased_victory(power) {
+	if (is_austrian_theatre() || is_war_in_the_west())
+		return false
 	if (power === P_SWEDEN)
 		return has_russia_dropped_out()
 	if (power === P_AUSTRIA)
