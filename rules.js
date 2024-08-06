@@ -4053,11 +4053,12 @@ states.prussia_may_move_hildburghausen_2_cities_westwards = {
 		view.actions.pass = 1
 
 		let here = game.pos[GEN_HILDBURGHAUSEN]
-		for (let a of data.cities.adjacent[here])
-			if (!has_any_piece(a))
-				for (let b of data.cities.adjacent[a])
-					if (is_west_of(here, b) && !has_any_piece(b))
-						gen_action_space(b)
+		if (here < ELIMINATED)
+			for (let a of data.cities.adjacent[here])
+				if (!has_any_piece(a))
+					for (let b of data.cities.adjacent[a])
+						if (is_west_of(here, b) && !has_any_piece(b))
+							gen_action_space(b)
 	},
 	space(s) {
 		log("P" + GEN_HILDBURGHAUSEN)
