@@ -3701,7 +3701,7 @@ function goto_flip_5_or_6_from_nearest_train(power, list) {
 	game.selected = []
 	for (let p of list)
 		if (game.pos[p] < ELIMINATED && !is_out_of_supply(p))
-			if (!set_has(game.supply, game.pos[p]))
+			if (!game.supply || !set_has(game.supply, game.pos[p]))
 				game.selected.push(p)
 
 	delete game.supply
