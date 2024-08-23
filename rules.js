@@ -414,6 +414,8 @@ const full_objective = [
 	set_union(primary_objective[6], secondary_objective[6]),
 ]
 
+const austrian_saxony_objectives = set_intersect(full_objective[P_AUSTRIA], data.country.Saxony)
+
 function make_protect(power, country) {
 	for (let s of all_objectives)
 		if (set_has(country, s))
@@ -954,7 +956,7 @@ function check_offensive_option_victory() {
 function check_power_victory(victory, city_list, power) {
 	if (power === P_AUSTRIA && is_offensive_option()) {
 		let n = count_captured_objectives(power)
-		if (n >= city_list[power].length - 4 && has_conquered_one_of(data.country.Saxony))
+		if (n >= city_list[power].length - 4 && has_conquered_one_of(austrian_saxony_objectives))
 			set_add(victory, power)
 		return
 	}
