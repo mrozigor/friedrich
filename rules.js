@@ -1961,12 +1961,20 @@ states.re_enter_choose_city = {
 	},
 }
 
-function has_re_entry_space(p) {
-	let can_re_enter_at = is_general(p) ? can_re_enter_general : can_re_enter_supply_train
+function has_re_entry_space_for_general() {
 	if (game.recruit.re_enter < ELIMINATED)
-		return can_re_enter_at(game.recruit.re_enter)
+		return can_re_enter_general(game.recruit.re_enter)
 	for (let s of all_power_depots[game.power])
-		if (can_re_enter_at(s))
+		if (can_re_enter_general(s))
+			return true
+	return false
+}
+
+function has_re_entry_space_for_supply_train() {
+	if (game.recruit.re_enter < ELIMINATED)
+		return can_re_enter_supply_train(game.recruit.re_enter)
+	for (let s of all_power_depots[game.power])
+		if (can_re_enter_supply_train(s))
 			return true
 	return false
 }
@@ -1992,10 +2000,10 @@ function can_recruit_anything() {
 	if (unused_everywhere > 0 && unused_on_map > 0)
 		return true
 	// can re-enter eliminated generals
-	if (unused_everywhere > 0 && elim_generals > 0 && has_re_entry_space())
+	if (unused_everywhere > 0 && elim_generals > 0 && has_re_entry_space_for_general())
 		return true
 	// can re-enter eliminated supply trains
-	if (elim_trains > 0 && has_re_entry_space())
+	if (elim_trains > 0 && has_re_entry_space_for_supply_train())
 		return true
 	return false
 }
@@ -2050,13 +2058,13 @@ states.recruit = {
 								continue
 						gen_action_supreme_commander(s)
 					}
-					else if (game.pos[p] === ELIMINATED && has_re_entry_space(p))
+					else if (game.pos[p] === ELIMINATED && has_re_entry_space_for_general())
 						gen_action_piece(p)
 				}
 			}
 			if (av_trains > 0) {
 				for (let p of all_power_trains[game.power]) {
-					if (game.pos[p] === ELIMINATED && has_re_entry_space(p))
+					if (game.pos[p] === ELIMINATED && has_re_entry_space_for_supply_train())
 						gen_action_piece(p)
 				}
 			}
