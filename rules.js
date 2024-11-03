@@ -230,7 +230,8 @@ const all_power_trains = [
 const TRAIN_IA = 32
 
 const all_pieces = [ ...all_power_generals.flat(), ...all_power_trains.flat() ]
-const all_generals = [ ...all_power_generals.flat() ]
+const all_generals = all_power_generals.flat()
+const all_trains = all_power_trains.flat()
 
 const all_prussia_trains = [
 	...all_power_trains[P_PRUSSIA],
@@ -747,6 +748,13 @@ function count_unused_generals() {
 function has_any_piece(to) {
 	for (let s of game.pos)
 		if (s === to)
+			return true
+	return false
+}
+
+function has_any_supply_train(to) {
+	for (let p of all_trains)
+		if (game.pos[p] === to)
 			return true
 	return false
 }
@@ -1910,7 +1918,7 @@ function has_available_depot() {
 }
 
 function can_re_enter_general(to) {
-	if (has_friendly_supply_train(to))
+	if (has_any_supply_train(to))
 		return false
 	if (has_any_other_general(to))
 		return false
