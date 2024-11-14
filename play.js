@@ -1093,6 +1093,7 @@ function colorize(text) {
 	text = text.replaceAll("\u2663", colorize_C)
 	text = text.replaceAll("\u2665", colorize_H)
 	text = text.replaceAll("\u2666", colorize_D)
+	text = text.replace(/-( ?\d)/g, "\u2212$1")
 	return text
 }
 
@@ -1471,6 +1472,7 @@ function on_log(text) {
 	text = colorize(text)
 	text = text.replace(/S(\d+)/g, sub_space)
 	text = text.replace(/P(\d+)/g, sub_piece)
+	text = text.replace(/-( ?\d)/g, "\u2212$1")
 
 	if (text.startsWith("@")) {
 		p.className = "move_tip"

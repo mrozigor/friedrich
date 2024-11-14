@@ -2332,7 +2332,7 @@ function signed_number(v) {
 	if (v > 0)
 		return "+" + v
 	if (v < 0)
-		return "\u2212" + (-v)
+		return "-" + (-v)
 	return "0"
 }
 
