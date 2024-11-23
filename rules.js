@@ -384,8 +384,7 @@ for (let s of all_objectives) {
 
 function make_protect_range(result, start, here, range) {
 	for (let next of data.cities.adjacent[here]) {
-		if (next !== start)
-			set_add(result, next)
+		set_add(result, next)
 		if (range > 1)
 			make_protect_range(result, start, next, range - 1)
 	}
