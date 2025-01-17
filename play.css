@@ -231,6 +231,7 @@ span.suit.reserve { font-weight: bold; font-family: "Source Serif SmText"; }
 	background-image: url(images/bang.svg);
 	background-size: contain;
 	background-repeat: no-repeat;
+	pointer-events: none;
 }
 
 .marker {
