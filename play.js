@@ -223,6 +223,21 @@ function count_total_objectives(pow) {
 	return n
 }
 
+const max_power_troops_4 = [ 32, 12, 16, 4, 30, 6, 20 ]
+
+function max_power_troops(pow) {
+	if (is_war_in_the_west() && pow === P_PRUSSIA)
+		return 3
+	if (is_austrian_theatre() && pow === P_PRUSSIA)
+		return 24
+	let max = max_power_troops_4[pow]
+	let n = 0
+	for (let p of all_power_generals[pow])
+		if (view.pos[p] < REMOVED)
+			n += 8
+	return Math.min(n, max)
+}
+
 /* CARD TEXTS */
 
 const fate_flavor_text = [
@@ -1185,7 +1200,7 @@ function on_update() {
 		ui.turns[i].classList.toggle("hide", (typeof view.fate === "object") || (i + 1 < view.fate))
 
 	for (let pow = 0; pow < 7; ++pow) {
-		let banner = `${power_name[pow]} \u2014 ${view.pt[pow]} troops`
+		let banner = `${power_name[pow]} \u2014 ${view.pt[pow]} of ${max_power_troops(pow)} troops`
 		let m_obj = count_total_objectives(pow)
 		if (m_obj > 0) {
 			let n_obj = count_captured_objectives(pow)
