@@ -694,7 +694,7 @@ function has_removed_all_pieces(pow) {
 	return true
 }
 
-function on_init() {
+function my_init() {
 	ui.pieces = [
 		create_piece("piece", 0, "piece cylinder prussia prussia_1"),
 		create_piece("piece", 1, "piece cylinder prussia prussia_2"),
@@ -870,8 +870,6 @@ function on_init() {
 
 	update_favicon()
 }
-
-on_init()
 
 /* TOOLTIPS */
 
@@ -1568,3 +1566,5 @@ function set_add_all(set, other) {
 	for (let item of other)
 		set_add(set, item)
 }
+
+my_init()
