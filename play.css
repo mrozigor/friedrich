@@ -24,6 +24,11 @@
 #role_Maria_Theresa { background-color: var(--color-role-austria) }
 #role_Pompadour { background-color: var(--color-role-france) }
 
+#chat_text .Frederick { background-color: var(--blue) }
+#chat_text .Elisabeth { background-color: var(--green) }
+#chat_text .Maria_Theresa { background-color: var(--white) }
+#chat_text .Pompadour { background-color: var(--red) }
+
 #role_Frederick.oo .role_name::after { content: " (OO)" }
 
 .role.active span { font-weight: bold }
