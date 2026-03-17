@@ -373,8 +373,13 @@ const fate_effect_text = [
 	"If Hildburghausen has lost a battle this turn, Prussia may move him 2 cities westwards (if possible).",
 	"No effect.",
 
-	// "From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
-	// "From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
+	"Poems: From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
+	"Lord Bute: From now on Prussia will receive two less Tactical Cards, but always a minimum of four.",
+	"Elisabeth: Russia quits the game!",
+	"Sweden quits the game!",
+	"India: From now on Austria receives only 4 TC; France only 3 (which she may all keep).",
+	"America: From now on Austria receives only 4 TC; France only 3 (which she may all keep).",
+
 	// "Russia quits the game! Also, Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map. For Sweden eased victory conditions come into effect. If Sweden has already quit the game, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
 	// "Sweden quits the game! Also, Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map. If Russia has already quit the game as well, the Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
 	// "From now on Austria receives only 4 TC; France only 3 (which she may all keep). If this has already happened, then: France quits the game! Cumberland is removed permanently from the game. Hanover receives only 1 TC from now on. The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army (see rule 11).",
@@ -1193,6 +1198,14 @@ function update_player_active(name) {
 }
 
 function on_prompt(text) {
+	text = text.replace(/\$(\d+)/, function (_, m) {
+		let fx = parseInt(m)
+		if (fx === 52 && set_has(view.fate, FC_AMERICA))
+			return "India: France quits the game!"
+		if (fx === 53 && set_has(view.fate, FC_INDIA))
+			return "America: France quits the game!"
+		return "<i>" + fate_effect_text[fx] + "</i>"
+	})
 	return colorize(text)
 }
 

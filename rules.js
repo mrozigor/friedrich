@@ -919,7 +919,7 @@ function goto_action_stage() {
 	}
 
 	log("=" + game.power)
-	goto_tactical_cards()
+	goto_fate_reminder()
 }
 
 function end_action_stage() {
@@ -3177,6 +3177,48 @@ function end_supply() {
 
 /* THE CLOCK OF FATE */
 
+function is_main_player_power() {
+	if (game.power == P_HANOVER)
+		return false
+	if (game.power == P_SWEDEN)
+		return has_russia_dropped_out()
+	if (game.power == P_IMPERIAL)
+		return (has_russia_dropped_out() && has_sweden_dropped_out()) || has_france_dropped_out()
+	return true
+}
+
+function goto_fate_reminder() {
+	if (game.fc && is_main_player_power())
+		game.state = "fate_reminder"
+	else
+		goto_tactical_cards()
+}
+
+states.fate_reminder = {
+	inactive: "draw tactical cards",
+	prompt() {
+		if (game.fc > 12) {
+			view.prompt = "Stroke of Fate: $" + (game.fc - 13 + 48)
+		} else {
+			view.prompt = "Clock of Fate: $" + game.fx
+		}
+		view.actions.next = 1
+	},
+	next() {
+		goto_tactical_cards()
+	},
+
+	// for replay backwards compatibility
+	end_cards() {
+		goto_tactical_cards()
+		states[game.state].end_cards()
+	},
+	card(c) {
+		goto_tactical_cards()
+		states[game.state].card(c)
+	},
+}
+
 function goto_clock_of_fate() {
 	delete game.ia_attack
 
@@ -3198,7 +3240,7 @@ function goto_clock_of_fate() {
 		for (let i = 1; i <= 12; ++i)
 			set_delete(game.fate, i)
 
-		let fc = game.clock.pop()
+		let fc = game.fc = game.clock.pop()
 
 		let fs = SPADES
 		if (game.scenario >= 3)
