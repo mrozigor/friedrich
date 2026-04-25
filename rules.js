@@ -3167,6 +3167,7 @@ function end_supply() {
 	delete game.supply
 
 	if (game.pick_up_oo) {
+		clear_undo()
 		set_active_to_power(P_AUSTRIA)
 		game.state = "pick_up_oo_card_after_supply"
 		return
