@@ -2184,6 +2184,7 @@ function goto_combat() {
 
 	if (game.fx === NEXT_TURN_ANY_PRUSSIANS_WHO_ARE_ATTACKED_BY_DAUN_MAY_MOVE_TO_ANY_EMPTY_ADJACENT_CITY) {
 		if (are_prussians_attacked_by_daun()) {
+			clear_undo()
 			set_active_to_power(P_PRUSSIA)
 			game.state = "prussians_who_are_attacked_by_daun_may_move"
 			return
@@ -2731,6 +2732,7 @@ function goto_retreat() {
 
 	// OO and Prussia loses vs Austria with at least -3
 	if (game.oo > 0 && loser_power === P_PRUSSIA && winner_power === P_AUSTRIA && lost >= 3) {
+		clear_undo()
 		set_active_to_power(P_AUSTRIA)
 		game.state = "pick_up_oo_card_after_retreat"
 		return
