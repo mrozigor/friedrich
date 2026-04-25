@@ -128,8 +128,15 @@ function to_deck(c) {
 	return c >> 7
 }
 
+// NOTE: This function is used only to order cards in hand
+var alt_card_sort = false
 function to_suit(c) {
-	return (c >> 4) & 7
+	var suit = (c >> 4) & 7
+	if (alt_card_sort) {
+		if (suit === 1) return 2
+		if (suit === 2) return 1
+	}
+	return suit
 }
 
 function to_value(c) {
@@ -694,7 +701,32 @@ function has_removed_all_pieces(pow) {
 	return true
 }
 
-function my_init() {
+function get_preference(name, fallback) {
+	var key = params.title_id + "/" + name
+	var value = window.localStorage.getItem(key)
+	if (value)
+		return JSON.parse(value)
+	return fallback
+}
+
+function set_preference(name, value) {
+	var key = params.title_id + "/" + name
+	window.localStorage.setItem(key, JSON.stringify(value))
+	close_toolbar_menus()
+	on_update()
+}
+
+function init_preference_checkbox(name, initial, onchange) {
+	var value = get_preference(name, initial)
+	var input = document.querySelector(`input[name="${name}"]`)
+	input.checked = value
+	input.onchange = () => set_preference(name, input.checked, onchange)
+	document.body.dataset[name] = value
+}
+
+function on_init() {
+	init_preference_checkbox("alt_card_sort")
+
 	ui.pieces = [
 		create_piece("piece", 0, "piece cylinder prussia prussia_1"),
 		create_piece("piece", 1, "piece cylinder prussia prussia_2"),
@@ -1165,6 +1197,8 @@ function on_prompt(text) {
 }
 
 function on_update() {
+	alt_card_sort = get_preference("alt_card_sort", false)
+
 	ui.header.classList.toggle("prussia", view.power === P_PRUSSIA)
 	ui.header.classList.toggle("hanover", view.power === P_HANOVER)
 	ui.header.classList.toggle("russia", view.power === P_RUSSIA)
@@ -1566,5 +1600,3 @@ function set_add_all(set, other) {
 	for (let item of other)
 		set_add(set, item)
 }
-
-my_init()
