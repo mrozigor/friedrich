@@ -19,6 +19,18 @@
 	font-variant-numeric: tabular-nums;
 }
 
+#fwc_points {
+  background-color: tan;
+  border-bottom: 1px black solid;
+  white-space: normal;
+  text-align: center;
+}
+
+#fwc_points_header {
+  font-style: italic;
+  text-decoration: underline;
+}
+
 #role_Frederick { background-color: var(--color-role-prussia) }
 #role_Elisabeth { background-color: var(--color-role-russia) }
 #role_Maria_Theresa { background-color: var(--color-role-austria) }

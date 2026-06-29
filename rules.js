@@ -1,7 +1,5 @@
 "use strict"
 
-// TODO: final score summary at game end (FWC rules)
-
 const R_FREDERICK = "Frederick"
 const R_ELISABETH = "Elisabeth"
 const R_MARIA_THERESA = "Maria Theresa"
@@ -557,13 +555,17 @@ function is_offensive_option() {
 	return !!game.oo
 }
 
+function has_austria_picked_up_oo_card() {
+  return game.oo < 0
+}
+
 function has_offensive_option_failed() {
 	// if Austria has picked up the card AND subsidy reduction event has triggered
-	return game.oo < 0 && (set_has(game.fate, FC_POEMS) || set_has(game.fate, FC_LORD_BUTE))
+	return has_austria_picked_up_oo_card() && (set_has(game.fate, FC_POEMS) || set_has(game.fate, FC_LORD_BUTE))
 }
 
 function is_offensive_option_active() {
-	return (!!game.oo && !has_offensive_option_failed())
+	return (is_offensive_option() && !has_offensive_option_failed())
 }
 
 function has_power_dropped_out(pow) {
@@ -1039,14 +1041,8 @@ function count_captured_objectives(pow) {
 	return n
 }
 
-function check_victory_4() {
-	// Prussian victory
-	if (has_russia_dropped_out() && has_sweden_dropped_out() && has_france_dropped_out()) {
-		goto_game_over(R_FREDERICK, "Prussia won.")
-		return true
-	}
-
-	let victory = []
+function create_victory_list() {
+  let victory = []
 
 	check_power_victory(victory, full_objective, P_RUSSIA)
 	check_power_victory(victory, full_objective, P_FRANCE)
@@ -1064,6 +1060,18 @@ function check_victory_4() {
 		check_power_victory(victory, full_objective, P_AUSTRIA)
 		check_power_victory(victory, full_objective, P_IMPERIAL)
 	}
+
+  return victory
+}
+
+function check_victory_4() {
+	// Prussian victory
+	if (has_russia_dropped_out() && has_sweden_dropped_out() && has_france_dropped_out()) {
+		goto_game_over(R_FREDERICK, "Prussia won.")
+		return true
+	}
+
+	let victory = create_victory_list()
 
 	return check_victory_list(victory)
 }
@@ -3344,16 +3352,22 @@ function goto_clock_of_fate() {
 			return
 		}
 
-		/* TODO: remember score when powers drop out
-		if (fc === FC_ELISABETH)
+		// remember score when powers drop out
+		if (fc === FC_ELISABETH) {
 			game.score[P_RUSSIA] = count_captured_objectives(P_RUSSIA)
-		if (fc === FC_SWEDEN)
+    }
+		if (fc === FC_SWEDEN) {
 			game.score[P_SWEDEN] = count_captured_objectives(P_SWEDEN)
-		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA)))
+      if (has_russia_dropped_out()) {
+        game.score[P_SWEDEN] *= 2 // due to only 5 primary objectives
+      }
+    }
+		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))) {
 			game.score[P_FRANCE] = count_captured_objectives(P_FRANCE)
-		if (did_imperial_army_switch_players_now(fc))
+    }
+		if (did_imperial_army_switch_players_now(fc)) {
 			game.score[P_AUSTRIA] = count_captured_objectives(P_IMPERIAL)
-		*/
+    }
 
 		// eased victory conditions
 		if (has_russia_dropped_out()) {
@@ -4251,6 +4265,8 @@ states.move_to_any_empty_adjacent_city = {
 
 function trigger_offensive_option_failed() {
 	if (has_offensive_option_failed()) {
+    game.score[P_PRUSSIA] = count_captured_objectives(P_PRUSSIA)
+    game.oo_failed = game.turn
 		log_br()
 		log("Prussian offensive failed.")
 		log_br()
@@ -4492,6 +4508,7 @@ exports.setup = function (seed, scenario, options) {
 		clock: null,
 		fate: [],
 		oo: 0, // offensive option
+    oo_failed: 0, // oo failed turn
 		vg: 0, // last victorious general for fate effect selection
 		fx: 0, // current card of fate effect
 		deck: null,
@@ -4501,6 +4518,7 @@ exports.setup = function (seed, scenario, options) {
 		oos: 0,
 		troops: SETUP_TROOPS.slice(),
 		conquest: [],
+    score: [0, 0, 0, 0, 0, 0, 0],
 
 		moved: [],
 		retro: [],
@@ -4708,6 +4726,131 @@ function total_discard_list() {
 	return discard
 }
 
+function calculate_frederick_fwc_points() {
+  let duration_points = game.result === R_FREDERICK ? 10 : Math.min(11.5, game.turn * 0.5)
+  let oo_points = 0
+  if (is_offensive_option()) {
+    oo_points = count_captured_objectives(P_PRUSSIA) / 1.4
+
+    if (has_offensive_option_failed()) {
+      oo_points = game.score[P_PRUSSIA] / 1.4 - 1
+    }
+  }
+  let bonus_points = game.result === R_FREDERICK ? 2 : 0
+
+  return Math.max(duration_points, oo_points) + bonus_points
+}
+
+function calculate_bonus_points_for_player(player) {
+  if (!game.result) {
+    return 0
+  }
+
+  let result = 0
+  let winners = create_victory_list()
+  let bonus_points = 2 + winners.length - 1
+  let point_per_nation = bonus_points / winners.length
+
+  for (let i = 0; i < winners.length; i++) {
+    if (player_from_power(winners[i]) === player) {
+      result += point_per_nation
+    }
+  }
+
+  return result
+}
+
+function calculate_pompadour_fwc_points() {
+  let france_points = has_france_dropped_out() ? game.score[P_FRANCE] : count_captured_objectives(P_FRANCE)
+  let imperial_army_points = has_france_dropped_out() ? count_captured_objectives(P_IMPERIAL) * 2 : 0
+  let bonus_points = calculate_bonus_points_for_player(R_POMPADOUR)
+
+  return Math.max(france_points + imperial_army_points) + bonus_points
+}
+
+function calculate_elisabeth_fwc_points() {
+  let russia_points = has_russia_dropped_out() ? game.score[P_RUSSIA] : count_captured_objectives(P_RUSSIA)
+  let sweden_points = has_sweden_dropped_out() ? game.score[P_SWEDEN] : count_captured_objectives(P_SWEDEN)
+  let imperial_army_points = 0
+  if (player_from_power(P_IMPERIAL) === R_ELISABETH) {
+    imperial_army_points = count_captured_objectives(P_IMPERIAL) * 2
+  }
+  let bonus_points = calculate_bonus_points_for_player(R_ELISABETH)
+
+  let max = Math.max(russia_points, Math.max(sweden_points, imperial_army_points))
+  let min = Math.min(russia_points, Math.min(sweden_points, imperial_army_points))
+  let sum = russia_points + sweden_points + imperial_army_points
+
+  // second entry is the second best result
+  return [(max + bonus_points), (sum - max - min)]
+}
+
+function has_imperial_won_by_maria() {
+  let winners = create_victory_list()
+
+  for (let i in winners) {
+    if ((i === P_IMPERIAL) && (player_from_power(i) === R_MARIA_THERESA)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function calculate_maria_fwc_points() {
+  let austria_points = count_captured_objectives(P_AUSTRIA)
+  let objectives_count = is_offensive_option() ? 12 : 16
+  if (has_imperial_army_switched_players()) {
+    objectives_count -= 4
+  }
+  austria_points = austria_points / objectives_count * 10
+  let imperial_army_points = has_imperial_army_switched_players() ? game.score[P_IMPERIAL] : count_captured_objectives(P_IMPERIAL)
+
+  let oo_points = 0
+  if (is_offensive_option()) {
+    let oo_end_turn = has_offensive_option_failed() ? game.oo_failed : game.turn
+    oo_points = oo_end_turn * 0.5
+
+    if (has_austria_picked_up_oo_card()) {
+      oo_points += 1
+    }
+
+    oo_points += (14 - (has_offensive_option_failed() ? game.score[P_PRUSSIA] : count_captured_objectives(P_PRUSSIA)))
+
+    oo_points = Math.min(9.5, oo_points)
+  }
+
+  austria_points = Math.max(austria_points, oo_points)
+
+  let bonus_points = calculate_bonus_points_for_player(R_MARIA_THERESA)
+  let first = austria_points
+  let second = imperial_army_points
+  if (has_imperial_won_by_maria()) {
+    first = imperial_army_points
+    second = austria_points
+  }
+
+  return [first + bonus_points, second]
+}
+
+function calculate_fwc_points() {
+  let points = {
+    "Frederick": 0,
+    "Elisabeth": [0, 0],
+    "Maria Theresa": [0, 0],
+    "Pompadour": 0
+  }
+
+  if (game.scenario === 4) {
+    points["Frederick"] = calculate_frederick_fwc_points()
+    points["Elisabeth"] = calculate_elisabeth_fwc_points()
+    points["Maria Theresa"] = calculate_maria_fwc_points()
+    points["Pompadour"] = calculate_pompadour_fwc_points()
+  }
+
+  return points
+}
+
 exports.view = function (state, player) {
 	game = state
 	view = {
@@ -4724,6 +4867,7 @@ exports.view = function (state, player) {
 		oo: game.oo,
 		pt: total_troops_list(),
 		discard: total_discard_list(),
+    fwc: calculate_fwc_points(),
 
 		power: game.power,
 		retro: game.retro,

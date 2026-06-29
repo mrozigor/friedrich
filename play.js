@@ -213,6 +213,10 @@ function is_3p_scenario() {
 	return !!roles["Frederick"] && !!roles["Elisabeth"] && !!roles["Maria Theresa"] && !roles["Pompadour"]
 }
 
+function is_4p_scenario() {
+	return !!roles["Frederick"] && !!roles["Elisabeth"] && !!roles["Maria Theresa"] && !!roles["Pompadour"]
+}
+
 function count_total_objectives(pow) {
 	let n = objective1[pow].length
 	if (!has_eased_victory(pow))
@@ -731,6 +735,7 @@ function init_preference_checkbox(name, initial, onchange) {
 
 function on_init() {
 	init_preference_checkbox("alt_card_sort")
+  init_preference_checkbox("fwc_points_switch")
 
 	ui.pieces = [
 		create_piece("piece", 0, "piece cylinder prussia prussia_1"),
@@ -1197,6 +1202,14 @@ function update_player_active(name) {
 		roles[name].element.classList.toggle("active", player_from_power(view.power) === name)
 }
 
+let fwc_points_switch = false
+function update_fwc_points() {
+  document.getElementById("fwc_points_value").textContent = `F: ${+view.fwc["Frederick"].toFixed(2)}, `
+  document.getElementById("fwc_points_value").textContent += `E: ${+view.fwc["Elisabeth"][0].toFixed(2)} (${+view.fwc["Elisabeth"][1].toFixed(2)}), `
+  document.getElementById("fwc_points_value").textContent += `MT: ${+view.fwc["Maria Theresa"][0].toFixed(2)} (${+view.fwc["Maria Theresa"][1].toFixed(2)}), `
+  document.getElementById("fwc_points_value").textContent += `P: ${+view.fwc["Pompadour"].toFixed(2)}`
+}
+
 function on_prompt(text) {
 	text = text.replace(/\$(\d+)/, function (_, m) {
 		let fx = parseInt(m)
@@ -1211,6 +1224,7 @@ function on_prompt(text) {
 
 function on_update() {
 	alt_card_sort = get_preference("alt_card_sort", false)
+  fwc_points_switch = get_preference("fwc_points_switch", false)
 
 	ui.header.classList.toggle("prussia", view.power === P_PRUSSIA)
 	ui.header.classList.toggle("hanover", view.power === P_HANOVER)
@@ -1231,6 +1245,16 @@ function on_update() {
 	update_player_active("Elisabeth")
 	update_player_active("Maria Theresa")
 	update_player_active("Pompadour")
+
+  if (is_4p_scenario()) {
+    let fwc_points = document.getElementById("fwc_points")
+    if (fwc_points_switch) {
+      fwc_points.classList.contains("hide") && fwc_points.classList.remove("hide")
+      update_fwc_points()
+    } else {
+      !fwc_points.classList.contains("hide") && fwc_points.classList.add("hide")
+    }
+  }
 
 	sort_power_panel(true)
 
@@ -1349,6 +1373,7 @@ function turn_summary() {
 			++turn
 		}
 	}
+  list.push("Turn " + turn + ": Game End")
 	return list.join("\n") + "<div></div>"
 }
 
