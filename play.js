@@ -1246,14 +1246,18 @@ function on_update() {
 	update_player_active("Maria Theresa")
 	update_player_active("Pompadour")
 
+  let fwc_points = document.getElementById("fwc_points")
   if (is_4p_scenario()) {
-    let fwc_points = document.getElementById("fwc_points")
     if (fwc_points_switch) {
       fwc_points.classList.contains("hide") && fwc_points.classList.remove("hide")
       update_fwc_points()
     } else {
       !fwc_points.classList.contains("hide") && fwc_points.classList.add("hide")
     }
+  } else {
+    let checkbox = document.getElementById("fwc_points_switch")
+    !checkbox.classList.contains("hide") && checkbox.classList.add("hide")
+    !fwc_points.classList.contains("hide") && fwc_points.classList.add("hide")
   }
 
 	sort_power_panel(true)
