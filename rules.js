@@ -38,10 +38,10 @@ const ROLE_NAME_4 = [
 exports.roles = function (scenario, _options) {
 	let n = SCENARIO_INDEX[scenario]
 	switch (n) {
-		case 1: return ROLE_NAME_1
-		case 2: return ROLE_NAME_2
-		case 3: return ROLE_NAME_3
-		case 4: return ROLE_NAME_4
+	case 1: return ROLE_NAME_1
+	case 2: return ROLE_NAME_2
+	case 3: return ROLE_NAME_3
+	case 4: return ROLE_NAME_4
 	}
 	return [ "Nobody" ]
 }
@@ -516,37 +516,37 @@ function tc_per_turn() {
 	}
 
 	switch (game.power) {
-		case P_PRUSSIA:
-			n = 7
-			if (set_has(game.fate, FC_LORD_BUTE))
-				n = Math.max(4, n - 2)
-			if (set_has(game.fate, FC_POEMS))
-				n = Math.max(4, n - 2)
-			break
-		case P_HANOVER:
-			n = 2
-			if (set_has(game.fate, FC_INDIA) && set_has(game.fate, FC_AMERICA))
-				n = 1
-			break
-		case P_RUSSIA:
-			n = 4
-			break
-		case P_SWEDEN:
+	case P_PRUSSIA:
+		n = 7
+		if (set_has(game.fate, FC_LORD_BUTE))
+			n = Math.max(4, n - 2)
+		if (set_has(game.fate, FC_POEMS))
+			n = Math.max(4, n - 2)
+		break
+	case P_HANOVER:
+		n = 2
+		if (set_has(game.fate, FC_INDIA) && set_has(game.fate, FC_AMERICA))
 			n = 1
-			break
-		case P_AUSTRIA:
-			n = 5
-			if (set_has(game.fate, FC_INDIA) || set_has(game.fate, FC_AMERICA))
-				n = 4
-			break
-		case P_IMPERIAL:
-			n = 1
-			break
-		case P_FRANCE:
+		break
+	case P_RUSSIA:
+		n = 4
+		break
+	case P_SWEDEN:
+		n = 1
+		break
+	case P_AUSTRIA:
+		n = 5
+		if (set_has(game.fate, FC_INDIA) || set_has(game.fate, FC_AMERICA))
 			n = 4
-			if (set_has(game.fate, FC_INDIA) || set_has(game.fate, FC_AMERICA))
-				n = 3
-			break
+		break
+	case P_IMPERIAL:
+		n = 1
+		break
+	case P_FRANCE:
+		n = 4
+		if (set_has(game.fate, FC_INDIA) || set_has(game.fate, FC_AMERICA))
+			n = 3
+		break
 	}
 	return n
 }
@@ -556,7 +556,7 @@ function is_offensive_option() {
 }
 
 function has_austria_picked_up_oo_card() {
-  return game.oo < 0
+	return game.oo < 0
 }
 
 function has_offensive_option_failed() {
@@ -574,9 +574,9 @@ function has_power_dropped_out(pow) {
 	if (game.scenario === 2)
 		return pow !== P_PRUSSIA && pow !== P_AUSTRIA && pow !== P_IMPERIAL
 	switch (pow) {
-		case P_RUSSIA: return has_russia_dropped_out()
-		case P_SWEDEN: return has_sweden_dropped_out()
-		case P_FRANCE: return has_france_dropped_out()
+	case P_RUSSIA: return has_russia_dropped_out()
+	case P_SWEDEN: return has_sweden_dropped_out()
+	case P_FRANCE: return has_france_dropped_out()
 	}
 	return false
 }
@@ -626,28 +626,28 @@ function player_from_power(pow) {
 		return R_MARIA_THERESA
 
 	switch (pow) {
-		case P_PRUSSIA:
-		case P_HANOVER:
-			role = R_FREDERICK
-			break
-		case P_RUSSIA:
-		case P_SWEDEN:
+	case P_PRUSSIA:
+	case P_HANOVER:
+		role = R_FREDERICK
+		break
+	case P_RUSSIA:
+	case P_SWEDEN:
+		role = R_ELISABETH
+		break
+	case P_AUSTRIA:
+		role = R_MARIA_THERESA
+		break
+	case P_IMPERIAL:
+		if (has_russia_dropped_out() && has_sweden_dropped_out())
 			role = R_ELISABETH
-			break
-		case P_AUSTRIA:
-			role = R_MARIA_THERESA
-			break
-		case P_IMPERIAL:
-			if (has_russia_dropped_out() && has_sweden_dropped_out())
-				role = R_ELISABETH
-			else if (has_france_dropped_out())
-				role = R_POMPADOUR
-			else
-				role = R_MARIA_THERESA
-			break
-		case P_FRANCE:
+		else if (has_france_dropped_out())
 			role = R_POMPADOUR
-			break
+		else
+			role = R_MARIA_THERESA
+		break
+	case P_FRANCE:
+		role = R_POMPADOUR
+		break
 	}
 
 	if (game.scenario === 3 && role === R_POMPADOUR)
@@ -1042,7 +1042,7 @@ function count_captured_objectives(pow) {
 }
 
 function create_victory_list() {
-  let victory = []
+	let victory = []
 
 	check_power_victory(victory, full_objective, P_RUSSIA)
 	check_power_victory(victory, full_objective, P_FRANCE)
@@ -1061,7 +1061,7 @@ function create_victory_list() {
 		check_power_victory(victory, full_objective, P_IMPERIAL)
 	}
 
-  return victory
+	return victory
 }
 
 function check_victory_4() {
@@ -1461,44 +1461,44 @@ function format_move(max) {
 
 function forbid_stopping_at(from) {
 	switch (game.fx) {
-		case NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL:
-			return set_has(game.selected, GEN_SOUBISE) && game.ia_attack === get_space_suit(from) && is_attack_position(from)
-		case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
-			return set_has(data.cities.adjacent[HALLE], from) && has_enemy_general(HALLE)
-		case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return set_has(game.selected, GEN_CUMBERLAND) && is_attack_position(from)
-		case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return set_has(game.selected, GEN_SOUBISE) && is_attack_position(from)
-		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return set_has(game.selected, GEN_FRIEDRICH) && is_attack_position(from)
+	case NEXT_TURN_SOUBISE_AND_HILDBURGHAUSEN_MAY_NOT_ATTACK_WITH_THE_SAME_TC_SYMBOL:
+		return set_has(game.selected, GEN_SOUBISE) && game.ia_attack === get_space_suit(from) && is_attack_position(from)
+	case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
+		return set_has(data.cities.adjacent[HALLE], from) && has_enemy_general(HALLE)
+	case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+		return set_has(game.selected, GEN_CUMBERLAND) && is_attack_position(from)
+	case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+		return set_has(game.selected, GEN_SOUBISE) && is_attack_position(from)
+	case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+		return set_has(game.selected, GEN_FRIEDRICH) && is_attack_position(from)
 	}
 	return false
 }
 
 function forbid_capture(s) {
 	switch (game.fx) {
-		case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return set_has(game.selected, GEN_CUMBERLAND)
-		case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return set_has(game.selected, GEN_SOUBISE)
-		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return set_has(game.selected, GEN_FRIEDRICH)
-		case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
-			return s === HALLE
+	case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+		return set_has(game.selected, GEN_CUMBERLAND)
+	case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+		return set_has(game.selected, GEN_SOUBISE)
+	case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+		return set_has(game.selected, GEN_FRIEDRICH)
+	case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
+		return s === HALLE
 	}
 	return false
 }
 
 function forbid_capture_by(p, s) {
 	switch (game.fx) {
-		case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return p === GEN_CUMBERLAND
-		case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return p === GEN_SOUBISE
-		case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
-			return p === GEN_FRIEDRICH
-		case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
-			return s === HALLE
+	case NEXT_TURN_CUMBERLAND_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+		return p === GEN_CUMBERLAND
+	case NEXT_TURN_SOUBISE_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+		return p === GEN_SOUBISE
+	case NEXT_TURN_FRIEDRICH_MAY_NOT_MOVE_INTO_ATTACK_POSITION:
+		return p === GEN_FRIEDRICH
+	case NEXT_TURN_NO_GENERAL_MAY_BE_ATTACKED_IN_THE_CITY_OF_HALLE:
+		return s === HALLE
 	}
 	return false
 }
@@ -3268,66 +3268,66 @@ function goto_clock_of_fate() {
 		}
 
 		switch (fc) {
-			case FC_POEMS:
-			case FC_LORD_BUTE:
-				if (set_has(game.fate, FC_POEMS) || set_has(game.fate, FC_LORD_BUTE)) {
-					if (game.scenario === 1)
-						log("No effect.")
-					if (game.scenario === 2)
-						log("From now on Prussia will receive three Tactical Cards.")
-					if (game.scenario >= 3)
-						log("From now on Prussia will receive four Tactical Cards.")
-				} else {
-					if (game.scenario === 1)
-						log("From now on Prussia will receive one Tactical Card.")
-					if (game.scenario === 2)
-						log("From now on Prussia will receive four Tactical Cards.")
-					if (game.scenario >= 3)
-						log("From now on Prussia will receive five Tactical Cards.")
-				}
+		case FC_POEMS:
+		case FC_LORD_BUTE:
+			if (set_has(game.fate, FC_POEMS) || set_has(game.fate, FC_LORD_BUTE)) {
+				if (game.scenario === 1)
+					log("No effect.")
+				if (game.scenario === 2)
+					log("From now on Prussia will receive three Tactical Cards.")
+				if (game.scenario >= 3)
+					log("From now on Prussia will receive four Tactical Cards.")
+			} else {
+				if (game.scenario === 1)
+					log("From now on Prussia will receive one Tactical Card.")
+				if (game.scenario === 2)
+					log("From now on Prussia will receive four Tactical Cards.")
+				if (game.scenario >= 3)
+					log("From now on Prussia will receive five Tactical Cards.")
+			}
+			break
+		case FC_ELISABETH:
+			log("Russia quits the game!")
+			if (game.scenario === 1 || game.scenario === 2)
 				break
-			case FC_ELISABETH:
-				log("Russia quits the game!")
+			log_br()
+			log("Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map.")
+			log_br()
+			if (set_has(game.fate, FC_SWEDEN))
+				log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
+			else
+				log("For Sweden eased victory conditions come into effect.")
+			log_br()
+			break
+		case FC_SWEDEN:
+			log("Sweden quits the game!")
+			if (game.scenario === 1 || game.scenario === 2)
+				break
+			log_br()
+			log("Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map.")
+			if (set_has(game.fate, FC_ELISABETH)) {
+				log_br()
+				log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
+			}
+			log_br()
+			break
+		case FC_AMERICA:
+		case FC_INDIA:
+			if (set_has(game.fate, FC_AMERICA) || set_has(game.fate, FC_INDIA)) {
+				log("France quits the game!")
 				if (game.scenario === 1 || game.scenario === 2)
 					break
 				log_br()
-				log("Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map.")
+				log("Cumberland is removed permanently from the game. Hanover receives only 1 TC from now on.")
 				log_br()
-				if (set_has(game.fate, FC_SWEDEN))
-					log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
-				else
-					log("For Sweden eased victory conditions come into effect.")
+				log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
 				log_br()
-				break
-			case FC_SWEDEN:
-				log("Sweden quits the game!")
-				if (game.scenario === 1 || game.scenario === 2)
+			} else {
+				if (game.scenario === 1)
 					break
-				log_br()
-				log("Prussia has to remove any one general (other than Friedrich) permanently from the game; this general may be off-map.")
-				if (set_has(game.fate, FC_ELISABETH)) {
-					log_br()
-					log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
-				}
-				log_br()
-				break
-			case FC_AMERICA:
-			case FC_INDIA:
-				if (set_has(game.fate, FC_AMERICA) || set_has(game.fate, FC_INDIA)) {
-					log("France quits the game!")
-					if (game.scenario === 1 || game.scenario === 2)
-						break
-					log_br()
-					log("Cumberland is removed permanently from the game. Hanover receives only 1 TC from now on.")
-					log_br()
-					log("The Imperial Army switches players and eased victory conditions come into effect for Austria and the Imperial Army.")
-					log_br()
-				} else {
-					if (game.scenario === 1)
-						break
-					log("From now on Austria receives only 4 TC; France only 3 (which she may all keep).")
-				}
-				break
+				log("From now on Austria receives only 4 TC; France only 3 (which she may all keep).")
+			}
+			break
 		}
 
 		set_add(game.fate, fc)
@@ -3355,19 +3355,19 @@ function goto_clock_of_fate() {
 		// remember score when powers drop out
 		if (fc === FC_ELISABETH) {
 			game.score[P_RUSSIA] = count_captured_objectives(P_RUSSIA)
-    }
+		}
 		if (fc === FC_SWEDEN) {
 			game.score[P_SWEDEN] = count_captured_objectives(P_SWEDEN)
-      if (has_russia_dropped_out()) {
-        game.score[P_SWEDEN] *= 2 // due to only 5 primary objectives
-      }
-    }
+			if (has_russia_dropped_out()) {
+				game.score[P_SWEDEN] *= 2 // due to only 5 primary objectives
+			}
+		}
 		if ((fc === FC_INDIA && set_has(game.fate, FC_AMERICA)) || (fc === FC_AMERICA && set_has(game.fate, FC_INDIA))) {
 			game.score[P_FRANCE] = count_captured_objectives(P_FRANCE)
-    }
+		}
 		if (did_imperial_army_switch_players_now(fc)) {
 			game.score[P_AUSTRIA] = count_captured_objectives(P_IMPERIAL)
-    }
+		}
 
 		// eased victory conditions
 		if (has_russia_dropped_out()) {
@@ -4265,8 +4265,8 @@ states.move_to_any_empty_adjacent_city = {
 
 function trigger_offensive_option_failed() {
 	if (has_offensive_option_failed()) {
-    game.score[P_PRUSSIA] = count_captured_objectives(P_PRUSSIA)
-    game.oo_failed = game.turn
+		game.score[P_PRUSSIA] = count_captured_objectives(P_PRUSSIA)
+		game.oo_failed = game.turn
 		log_br()
 		log("Prussian offensive failed.")
 		log_br()
@@ -4508,7 +4508,7 @@ exports.setup = function (seed, scenario, options) {
 		clock: null,
 		fate: [],
 		oo: 0, // offensive option
-    oo_failed: 0, // oo failed turn
+		oo_failed: 0, // oo failed turn
 		vg: 0, // last victorious general for fate effect selection
 		fx: 0, // current card of fate effect
 		deck: null,
@@ -4518,7 +4518,7 @@ exports.setup = function (seed, scenario, options) {
 		oos: 0,
 		troops: SETUP_TROOPS.slice(),
 		conquest: [],
-    score: [0, 0, 0, 0, 0, 0, 0],
+		score: [0, 0, 0, 0, 0, 0, 0],
 
 		moved: [],
 		retro: [],
@@ -4727,128 +4727,128 @@ function total_discard_list() {
 }
 
 function calculate_frederick_fwc_points() {
-  let duration_points = game.result === R_FREDERICK ? 10 : Math.min(11.5, game.turn * 0.5)
-  let oo_points = 0
-  if (is_offensive_option()) {
-    oo_points = count_captured_objectives(P_PRUSSIA) / 1.4
+	let duration_points = game.result === R_FREDERICK ? 10 : Math.min(11.5, game.turn * 0.5)
+	let oo_points = 0
+	if (is_offensive_option()) {
+		oo_points = count_captured_objectives(P_PRUSSIA) / 1.4
 
-    if (has_offensive_option_failed()) {
-      oo_points = game.score[P_PRUSSIA] / 1.4 - 1
-    }
-  }
-  let bonus_points = game.result === R_FREDERICK ? 2 : 0
+		if (has_offensive_option_failed()) {
+			oo_points = game.score[P_PRUSSIA] / 1.4 - 1
+		}
+	}
+	let bonus_points = game.result === R_FREDERICK ? 2 : 0
 
-  return Math.max(duration_points, oo_points) + bonus_points
+	return Math.max(duration_points, oo_points) + bonus_points
 }
 
 function calculate_bonus_points_for_player(player) {
-  if (!game.result) {
-    return 0
-  }
+	if (!game.result) {
+		return 0
+	}
 
-  let result = 0
-  let winners = create_victory_list()
-  let bonus_points = 2 + winners.length - 1
-  let point_per_nation = bonus_points / winners.length
+	let result = 0
+	let winners = create_victory_list()
+	let bonus_points = 2 + winners.length - 1
+	let point_per_nation = bonus_points / winners.length
 
-  for (let i = 0; i < winners.length; i++) {
-    if (player_from_power(winners[i]) === player) {
-      result += point_per_nation
-    }
-  }
+	for (let i = 0; i < winners.length; i++) {
+		if (player_from_power(winners[i]) === player) {
+			result += point_per_nation
+		}
+	}
 
-  return result
+	return result
 }
 
 function calculate_pompadour_fwc_points() {
-  let france_points = has_france_dropped_out() ? game.score[P_FRANCE] : count_captured_objectives(P_FRANCE)
-  let imperial_army_points = has_france_dropped_out() ? count_captured_objectives(P_IMPERIAL) * 2 : 0
-  let bonus_points = calculate_bonus_points_for_player(R_POMPADOUR)
+	let france_points = has_france_dropped_out() ? game.score[P_FRANCE] : count_captured_objectives(P_FRANCE)
+	let imperial_army_points = has_france_dropped_out() ? count_captured_objectives(P_IMPERIAL) * 2 : 0
+	let bonus_points = calculate_bonus_points_for_player(R_POMPADOUR)
 
-  return Math.max(france_points + imperial_army_points) + bonus_points
+	return Math.max(france_points + imperial_army_points) + bonus_points
 }
 
 function calculate_elisabeth_fwc_points() {
-  let russia_points = has_russia_dropped_out() ? game.score[P_RUSSIA] : count_captured_objectives(P_RUSSIA)
-  let sweden_points = has_sweden_dropped_out() ? game.score[P_SWEDEN] : count_captured_objectives(P_SWEDEN)
-  let imperial_army_points = 0
-  if (player_from_power(P_IMPERIAL) === R_ELISABETH) {
-    imperial_army_points = count_captured_objectives(P_IMPERIAL) * 2
-  }
-  let bonus_points = calculate_bonus_points_for_player(R_ELISABETH)
+	let russia_points = has_russia_dropped_out() ? game.score[P_RUSSIA] : count_captured_objectives(P_RUSSIA)
+	let sweden_points = has_sweden_dropped_out() ? game.score[P_SWEDEN] : count_captured_objectives(P_SWEDEN)
+	let imperial_army_points = 0
+	if (player_from_power(P_IMPERIAL) === R_ELISABETH) {
+		imperial_army_points = count_captured_objectives(P_IMPERIAL) * 2
+	}
+	let bonus_points = calculate_bonus_points_for_player(R_ELISABETH)
 
-  let max = Math.max(russia_points, Math.max(sweden_points, imperial_army_points))
-  let min = Math.min(russia_points, Math.min(sweden_points, imperial_army_points))
-  let sum = russia_points + sweden_points + imperial_army_points
+	let max = Math.max(russia_points, Math.max(sweden_points, imperial_army_points))
+	let min = Math.min(russia_points, Math.min(sweden_points, imperial_army_points))
+	let sum = russia_points + sweden_points + imperial_army_points
 
-  // second entry is the second best result
-  return [(max + bonus_points), (sum - max - min)]
+	// second entry is the second best result
+	return [(max + bonus_points), (sum - max - min)]
 }
 
 function has_imperial_won_by_maria() {
-  let winners = create_victory_list()
+	let winners = create_victory_list()
 
-  for (let i in winners) {
-    if ((i === P_IMPERIAL) && (player_from_power(i) === R_MARIA_THERESA)) {
-      return true
-    }
-  }
+	for (let i in winners) {
+		if ((i === P_IMPERIAL) && (player_from_power(i) === R_MARIA_THERESA)) {
+			return true
+		}
+	}
 
-  return false
+	return false
 }
 
 function calculate_maria_fwc_points() {
-  let austria_points = count_captured_objectives(P_AUSTRIA)
-  let objectives_count = is_offensive_option() ? 12 : 16
-  if (has_imperial_army_switched_players()) {
-    objectives_count -= 4
-  }
-  austria_points = austria_points / objectives_count * 10
-  let imperial_army_points = has_imperial_army_switched_players() ? game.score[P_IMPERIAL] : count_captured_objectives(P_IMPERIAL)
+	let austria_points = count_captured_objectives(P_AUSTRIA)
+	let objectives_count = is_offensive_option() ? 12 : 16
+	if (has_imperial_army_switched_players()) {
+		objectives_count -= 4
+	}
+	austria_points = austria_points / objectives_count * 10
+	let imperial_army_points = has_imperial_army_switched_players() ? game.score[P_IMPERIAL] : count_captured_objectives(P_IMPERIAL)
 
-  let oo_points = 0
-  if (is_offensive_option()) {
-    let oo_end_turn = has_offensive_option_failed() ? game.oo_failed : game.turn
-    oo_points = oo_end_turn * 0.5
+	let oo_points = 0
+	if (is_offensive_option()) {
+		let oo_end_turn = has_offensive_option_failed() ? game.oo_failed : game.turn
+		oo_points = oo_end_turn * 0.5
 
-    if (has_austria_picked_up_oo_card()) {
-      oo_points += 1
-    }
+		if (has_austria_picked_up_oo_card()) {
+			oo_points += 1
+		}
 
-    oo_points += (14 - (has_offensive_option_failed() ? game.score[P_PRUSSIA] : count_captured_objectives(P_PRUSSIA)))
+		oo_points += (14 - (has_offensive_option_failed() ? game.score[P_PRUSSIA] : count_captured_objectives(P_PRUSSIA)))
 
-    oo_points = Math.min(9.5, oo_points)
-  }
+		oo_points = Math.min(9.5, oo_points)
+	}
 
-  austria_points = Math.max(austria_points, oo_points)
+	austria_points = Math.max(austria_points, oo_points)
 
-  let bonus_points = calculate_bonus_points_for_player(R_MARIA_THERESA)
-  let first = austria_points
-  let second = imperial_army_points
-  if (has_imperial_won_by_maria()) {
-    first = imperial_army_points
-    second = austria_points
-  }
+	let bonus_points = calculate_bonus_points_for_player(R_MARIA_THERESA)
+	let first = austria_points
+	let second = imperial_army_points
+	if (has_imperial_won_by_maria()) {
+		first = imperial_army_points
+		second = austria_points
+	}
 
-  return [first + bonus_points, second]
+	return [first + bonus_points, second]
 }
 
 function calculate_fwc_points() {
-  let points = {
-    "Frederick": 0,
-    "Elisabeth": [0, 0],
-    "Maria Theresa": [0, 0],
-    "Pompadour": 0
-  }
+	let points = {
+		"Frederick": 0,
+		"Elisabeth": [0, 0],
+		"Maria Theresa": [0, 0],
+		"Pompadour": 0
+	}
 
-  if (game.scenario === 4) {
-    points["Frederick"] = calculate_frederick_fwc_points()
-    points["Elisabeth"] = calculate_elisabeth_fwc_points()
-    points["Maria Theresa"] = calculate_maria_fwc_points()
-    points["Pompadour"] = calculate_pompadour_fwc_points()
-  }
+	if (game.scenario === 4) {
+		points["Frederick"] = calculate_frederick_fwc_points()
+		points["Elisabeth"] = calculate_elisabeth_fwc_points()
+		points["Maria Theresa"] = calculate_maria_fwc_points()
+		points["Pompadour"] = calculate_pompadour_fwc_points()
+	}
 
-  return points
+	return points
 }
 
 exports.view = function (state, player) {
@@ -4867,7 +4867,7 @@ exports.view = function (state, player) {
 		oo: game.oo,
 		pt: total_troops_list(),
 		discard: total_discard_list(),
-    fwc: calculate_fwc_points(),
+		fwc: calculate_fwc_points(),
 
 		power: game.power,
 		retro: game.retro,

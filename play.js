@@ -178,9 +178,9 @@ function has_power_dropped_out(pow) {
 	if (is_austrian_theatre())
 		return pow !== P_PRUSSIA && pow !== P_AUSTRIA && pow !== P_IMPERIAL
 	switch (pow) {
-		case P_RUSSIA: return has_russia_dropped_out()
-		case P_SWEDEN: return has_sweden_dropped_out()
-		case P_FRANCE: return has_france_dropped_out()
+	case P_RUSSIA: return has_russia_dropped_out()
+	case P_SWEDEN: return has_sweden_dropped_out()
+	case P_FRANCE: return has_france_dropped_out()
 	}
 	return false
 }
@@ -735,7 +735,7 @@ function init_preference_checkbox(name, initial, onchange) {
 
 function on_init() {
 	init_preference_checkbox("alt_card_sort")
-  init_preference_checkbox("fwc_points_switch")
+	init_preference_checkbox("fwc_points_switch")
 
 	ui.pieces = [
 		create_piece("piece", 0, "piece cylinder prussia prussia_1"),
@@ -1112,10 +1112,10 @@ function create_conquest(style, s) {
 function update_favicon() {
 	let favicon = document.querySelector('link[rel="icon"]')
 	switch (params.role) {
-		case "Frederick": favicon.href = "favicon/favicon_frederick.png"; break
-		case "Elisabeth": favicon.href = "favicon/favicon_elisabeth.png"; break
-		case "Maria Theresa": favicon.href = "favicon/favicon_maria_theresa.png"; break
-		case "Pompadour": favicon.href = "favicon/favicon_pompadour.png"; break
+	case "Frederick": favicon.href = "favicon/favicon_frederick.png"; break
+	case "Elisabeth": favicon.href = "favicon/favicon_elisabeth.png"; break
+	case "Maria Theresa": favicon.href = "favicon/favicon_maria_theresa.png"; break
+	case "Pompadour": favicon.href = "favicon/favicon_pompadour.png"; break
 	}
 }
 
@@ -1159,28 +1159,28 @@ function player_from_power(pow) {
 		return R_MARIA_THERESA
 
 	switch (pow) {
-		case P_PRUSSIA:
-		case P_HANOVER:
-			role = R_FREDERICK
-			break
-		case P_RUSSIA:
-		case P_SWEDEN:
+	case P_PRUSSIA:
+	case P_HANOVER:
+		role = R_FREDERICK
+		break
+	case P_RUSSIA:
+	case P_SWEDEN:
+		role = R_ELISABETH
+		break
+	case P_AUSTRIA:
+		role = R_MARIA_THERESA
+		break
+	case P_IMPERIAL:
+		if (has_russia_dropped_out() && has_sweden_dropped_out())
 			role = R_ELISABETH
-			break
-		case P_AUSTRIA:
-			role = R_MARIA_THERESA
-			break
-		case P_IMPERIAL:
-			if (has_russia_dropped_out() && has_sweden_dropped_out())
-				role = R_ELISABETH
-			else if (has_france_dropped_out())
-				role = R_POMPADOUR
-			else
-				role = R_MARIA_THERESA
-			break
-		case P_FRANCE:
+		else if (has_france_dropped_out())
 			role = R_POMPADOUR
-			break
+		else
+			role = R_MARIA_THERESA
+		break
+	case P_FRANCE:
+		role = R_POMPADOUR
+		break
 	}
 
 	if (is_3p_scenario() && role === R_POMPADOUR)
@@ -1204,10 +1204,10 @@ function update_player_active(name) {
 
 let fwc_points_switch = false
 function update_fwc_points() {
-  document.getElementById("fwc_points_value").textContent = `F: ${+view.fwc["Frederick"].toFixed(2)}, `
-  document.getElementById("fwc_points_value").textContent += `E: ${+view.fwc["Elisabeth"][0].toFixed(2)} (${+view.fwc["Elisabeth"][1].toFixed(2)}), `
-  document.getElementById("fwc_points_value").textContent += `MT: ${+view.fwc["Maria Theresa"][0].toFixed(2)} (${+view.fwc["Maria Theresa"][1].toFixed(2)}), `
-  document.getElementById("fwc_points_value").textContent += `P: ${+view.fwc["Pompadour"].toFixed(2)}`
+	document.getElementById("fwc_points_value").textContent = `F: ${+view.fwc["Frederick"].toFixed(2)}, `
+	document.getElementById("fwc_points_value").textContent += `E: ${+view.fwc["Elisabeth"][0].toFixed(2)} (${+view.fwc["Elisabeth"][1].toFixed(2)}), `
+	document.getElementById("fwc_points_value").textContent += `MT: ${+view.fwc["Maria Theresa"][0].toFixed(2)} (${+view.fwc["Maria Theresa"][1].toFixed(2)}), `
+	document.getElementById("fwc_points_value").textContent += `P: ${+view.fwc["Pompadour"].toFixed(2)}`
 }
 
 function on_prompt(text) {
@@ -1224,7 +1224,7 @@ function on_prompt(text) {
 
 function on_update() {
 	alt_card_sort = get_preference("alt_card_sort", false)
-  fwc_points_switch = get_preference("fwc_points_switch", false)
+	fwc_points_switch = get_preference("fwc_points_switch", false)
 
 	ui.header.classList.toggle("prussia", view.power === P_PRUSSIA)
 	ui.header.classList.toggle("hanover", view.power === P_HANOVER)
@@ -1246,19 +1246,19 @@ function on_update() {
 	update_player_active("Maria Theresa")
 	update_player_active("Pompadour")
 
-  let fwc_points = document.getElementById("fwc_points")
-  if (is_4p_scenario()) {
-    if (fwc_points_switch) {
-      fwc_points.classList.contains("hide") && fwc_points.classList.remove("hide")
-      update_fwc_points()
-    } else {
-      !fwc_points.classList.contains("hide") && fwc_points.classList.add("hide")
-    }
-  } else {
-    let checkbox = document.getElementById("fwc_points_switch")
-    !checkbox.classList.contains("hide") && checkbox.classList.add("hide")
-    !fwc_points.classList.contains("hide") && fwc_points.classList.add("hide")
-  }
+	let fwc_points = document.getElementById("fwc_points")
+	if (is_4p_scenario()) {
+		if (fwc_points_switch) {
+			fwc_points.classList.contains("hide") && fwc_points.classList.remove("hide")
+			update_fwc_points()
+		} else {
+			!fwc_points.classList.contains("hide") && fwc_points.classList.add("hide")
+		}
+	} else {
+		let checkbox = document.getElementById("fwc_points_switch")
+		!checkbox.classList.contains("hide") && checkbox.classList.add("hide")
+		!fwc_points.classList.contains("hide") && fwc_points.classList.add("hide")
+	}
 
 	sort_power_panel(true)
 
@@ -1377,7 +1377,7 @@ function turn_summary() {
 			++turn
 		}
 	}
-  list.push("Turn " + turn + ": Game End")
+	list.push("Turn " + turn + ": Game End")
 	return list.join("\n") + "<div></div>"
 }
 
