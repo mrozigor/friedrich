@@ -1372,12 +1372,12 @@ function turn_summary() {
 	for (let line of game_log) {
 		if (line.startsWith("#")) {
 			let fate = line.substring(2)
-			if (strokes_of_fate_name.includes(fate) || fate.startsWith("Card of Fate"))
+			if (strokes_of_fate_name.includes(fate) || fate.startsWith("Card of Fate") || fate.startsWith("The End")) {
 				list.push("Turn " + turn + ": " + fate)
+			}
 			++turn
 		}
 	}
-	list.push("Turn " + turn + ": Game End")
 	return list.join("\n") + "<div></div>"
 }
 

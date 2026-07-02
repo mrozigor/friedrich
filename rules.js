@@ -3366,7 +3366,7 @@ function goto_clock_of_fate() {
 			game.score[P_FRANCE] = count_captured_objectives(P_FRANCE)
 		}
 		if (did_imperial_army_switch_players_now(fc)) {
-			game.score[P_AUSTRIA] = count_captured_objectives(P_IMPERIAL)
+			game.score[P_IMPERIAL] = count_captured_objectives(P_IMPERIAL)
 		}
 
 		// eased victory conditions
@@ -4726,8 +4726,12 @@ function total_discard_list() {
 	return discard
 }
 
+function has_frederick_won() {
+	return game.result === R_FREDERICK
+}
+
 function calculate_frederick_fwc_points() {
-	let duration_points = game.result === R_FREDERICK ? 10 : Math.min(11.5, game.turn * 0.5)
+	let duration_points = has_frederick_won() ? 10 : Math.min(11.5, game.turn * 0.5)
 	let oo_points = 0
 	if (is_offensive_option()) {
 		oo_points = count_captured_objectives(P_PRUSSIA) / 1.4
@@ -4736,7 +4740,7 @@ function calculate_frederick_fwc_points() {
 			oo_points = game.score[P_PRUSSIA] / 1.4 - 1
 		}
 	}
-	let bonus_points = game.result === R_FREDERICK ? 2 : 0
+	let bonus_points = has_frederick_won() ? 2 : 0
 
 	return Math.max(duration_points, oo_points) + bonus_points
 }
@@ -4760,9 +4764,17 @@ function calculate_bonus_points_for_player(player) {
 	return result
 }
 
+function is_pompadour_in_control_of_imperial_army() {
+	return player_from_power(P_IMPERIAL) === R_POMPADOUR
+}
+
+function is_elizabeth_in_control_of_imperial_army() {
+	return player_from_power(P_IMPERIAL) === R_ELISABETH
+}
+
 function calculate_pompadour_fwc_points() {
 	let france_points = has_france_dropped_out() ? game.score[P_FRANCE] : count_captured_objectives(P_FRANCE)
-	let imperial_army_points = has_france_dropped_out() ? count_captured_objectives(P_IMPERIAL) * 2 : 0
+	let imperial_army_points = is_pompadour_in_control_of_imperial_army() ? count_captured_objectives(P_IMPERIAL) * 2 : 0
 	let bonus_points = calculate_bonus_points_for_player(R_POMPADOUR)
 
 	return Math.max(france_points + imperial_army_points) + bonus_points
@@ -4770,11 +4782,16 @@ function calculate_pompadour_fwc_points() {
 
 function calculate_elisabeth_fwc_points() {
 	let russia_points = has_russia_dropped_out() ? game.score[P_RUSSIA] : count_captured_objectives(P_RUSSIA)
-	let sweden_points = has_sweden_dropped_out() ? game.score[P_SWEDEN] : count_captured_objectives(P_SWEDEN)
-	let imperial_army_points = 0
-	if (player_from_power(P_IMPERIAL) === R_ELISABETH) {
-		imperial_army_points = count_captured_objectives(P_IMPERIAL) * 2
+	let sweden_points = 0
+	if (has_sweden_dropped_out()) {
+		sweden_points = game.score[P_SWEDEN]
+	} else {
+		sweden_points = count_captured_objectives(P_SWEDEN)
+		if (has_russia_dropped_out()) {
+			sweden_points *= 2
+		}
 	}
+	let imperial_army_points = is_elizabeth_in_control_of_imperial_army() ? (count_captured_objectives(P_IMPERIAL) * 2) : 0
 	let bonus_points = calculate_bonus_points_for_player(R_ELISABETH)
 
 	let max = Math.max(russia_points, Math.max(sweden_points, imperial_army_points))
@@ -4788,8 +4805,8 @@ function calculate_elisabeth_fwc_points() {
 function has_imperial_won_by_maria() {
 	let winners = create_victory_list()
 
-	for (let i in winners) {
-		if ((i === P_IMPERIAL) && (player_from_power(i) === R_MARIA_THERESA)) {
+	for (let i = 0; i < winners.length; i++) {
+		if ((winners[i] === P_IMPERIAL) && (player_from_power(winners[i]) === R_MARIA_THERESA)) {
 			return true
 		}
 	}
@@ -4833,19 +4850,13 @@ function calculate_maria_fwc_points() {
 	return [first + bonus_points, second]
 }
 
+// Calculate only for 4P scenario
 function calculate_fwc_points() {
 	let points = {
-		"Frederick": 0,
-		"Elisabeth": [0, 0],
-		"Maria Theresa": [0, 0],
-		"Pompadour": 0
-	}
-
-	if (game.scenario === 4) {
-		points["Frederick"] = calculate_frederick_fwc_points()
-		points["Elisabeth"] = calculate_elisabeth_fwc_points()
-		points["Maria Theresa"] = calculate_maria_fwc_points()
-		points["Pompadour"] = calculate_pompadour_fwc_points()
+		"Frederick": calculate_frederick_fwc_points(),
+		"Elisabeth": calculate_elisabeth_fwc_points(),
+		"Maria Theresa": calculate_maria_fwc_points(),
+		"Pompadour": calculate_pompadour_fwc_points()
 	}
 
 	return points
@@ -4867,10 +4878,13 @@ exports.view = function (state, player) {
 		oo: game.oo,
 		pt: total_troops_list(),
 		discard: total_discard_list(),
-		fwc: calculate_fwc_points(),
 
 		power: game.power,
 		retro: game.retro,
+	}
+
+	if (game.scenario === 4) {
+		view.fwc = calculate_fwc_points()
 	}
 
 	if (game.attacker !== undefined && game.defender !== undefined) {
