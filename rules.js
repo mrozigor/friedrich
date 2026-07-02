@@ -3337,21 +3337,6 @@ function goto_clock_of_fate() {
 		if (fc === FC_LORD_BUTE && !set_has(game.fate, FC_POEMS))
 			trigger_offensive_option_failed()
 
-		// Check again in case of eased victory conditions.
-		if (check_victory())
-			return
-
-		if (fate_effect_immediate[game.fx]) {
-			fate_effect_immediate[game.fx]()
-			return
-		}
-
-		// dropped out powers are virtual in 2p scenarios
-		if (game.scenario === 1 || game.scenario === 2) {
-			goto_start_turn()
-			return
-		}
-
 		// remember score when powers drop out
 		if (fc === FC_ELISABETH) {
 			game.score[P_RUSSIA] = count_captured_objectives(P_RUSSIA)
@@ -3367,6 +3352,21 @@ function goto_clock_of_fate() {
 		}
 		if (did_imperial_army_switch_players_now(fc)) {
 			game.score[P_IMPERIAL] = count_captured_objectives(P_IMPERIAL)
+		}
+
+		// Check again in case of eased victory conditions.
+		if (check_victory())
+			return
+
+		if (fate_effect_immediate[game.fx]) {
+			fate_effect_immediate[game.fx]()
+			return
+		}
+
+		// dropped out powers are virtual in 2p scenarios
+		if (game.scenario === 1 || game.scenario === 2) {
+			goto_start_turn()
+			return
 		}
 
 		// eased victory conditions
@@ -4777,7 +4777,7 @@ function calculate_pompadour_fwc_points() {
 	let imperial_army_points = is_pompadour_in_control_of_imperial_army() ? count_captured_objectives(P_IMPERIAL) * 2 : 0
 	let bonus_points = calculate_bonus_points_for_player(R_POMPADOUR)
 
-	return Math.max(france_points + imperial_army_points) + bonus_points
+	return Math.max(france_points, imperial_army_points) + bonus_points
 }
 
 function calculate_elisabeth_fwc_points() {
