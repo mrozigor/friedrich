@@ -4862,6 +4862,27 @@ function calculate_fwc_points() {
 	return points
 }
 
+exports.tournament_points = function (state) {
+	game = state
+	let points = {}
+	if (game.scenario === 4) {
+		let fwc = calculate_fwc_points()
+		for (let role in fwc)
+			points[role] = Array.isArray(fwc[role]) ? fwc[role][0] : fwc[role]
+	} else {
+		let roles = game.scenario === 3 ? ROLE_NAME_3 : game.scenario === 2 ? ROLE_NAME_2 : ROLE_NAME_1
+		for (let role of roles) {
+			if (game.result === role)
+				points[role] = 2
+			else if (game.result && game.result.includes(role))
+				points[role] = 1
+			else
+				points[role] = 0
+		}
+	}
+	return points
+}
+
 exports.view = function (state, player) {
 	game = state
 	view = {
